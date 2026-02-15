@@ -4,14 +4,16 @@ export function formatNumber(num) {
   return Math.round(num).toLocaleString()
 }
 
-/** PNL K 단위 표시 (+$13.8K, -$1.2K) */
+/** PNL K/M 단위 표시 (+$13.80K, -$1.25M) — K·M는 소수점 둘째자리까지 */
 export function formatPnl(num) {
   if (num == null || isNaN(num)) return '$0'
   const sign = num >= 0 ? '+' : '-'
   const abs = Math.abs(num)
+  if (abs >= 1_000_000) {
+    return `${sign}$${(abs / 1_000_000).toFixed(2)}M`
+  }
   if (abs >= 1000) {
-    const k = (abs / 1000).toFixed(1).replace(/\.0$/, '')
-    return `${sign}$${k}K`
+    return `${sign}$${(abs / 1000).toFixed(2)}K`
   }
   return `${sign}$${formatNumber(abs)}`
 }
