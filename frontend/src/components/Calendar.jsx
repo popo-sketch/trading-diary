@@ -25,7 +25,9 @@ export default function Calendar({
     cells.push({ empty: true })
   }
   for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    const mm = String(month).padStart(2, '0')
+    const dd = String(d).padStart(2, '0')
+    const dateStr = `${year}-${mm}-${dd}`
     const pnl = dailyPnl[dateStr] ?? null
     cells.push({ date: dateStr, day: d, pnl })
   }
