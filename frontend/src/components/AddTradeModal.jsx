@@ -1,0 +1,146 @@
+import { useState } from 'react'
+import { useToast } from '../contexts/ToastContext'
+
+const CHAINS = ['Solana', 'Base', 'Bnb', 'etc']
+
+export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onClose }) {
+  const { showToast } = useToast()
+  const [date, setDate] = useState(defaultDate ?? '')
+  const [ticker, setTicker] = useState('')
+  const [chain, setChain] = useState('Solana')
+  const [ca, setCa] = useState('')
+  const [pnl, setPnl] = useState('')
+  const [memo, setMemo] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!date || !ticker || pnl === '') {
+      showToast('날짜, 티커, PNL은 필수입니다', 'error')
+      return
+    }
+    const pnlNum = Number(pnl)
+    if (!Number.isFinite(pnlNum)) {
+      showToast('PNL은 숫자여야 합니다', 'error')
+      return
+    }
+    setLoading(true)
+    try {
+      await onCreated({
+        date,
+        ticker: ticker.startsWith('$') ? ticker : `$${ticker}`,
+        chain,
+        ca: ca || null,
+        pnl: pnlNum,
+        memo: memo || null,
+      })
+      showToast('거래가 추가되었습니다')
+      onClose()
+    } catch (err) {
+      const detail = err?.response?.data?.detail
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
+      showToast(msg || err?.message || '추가 실패', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-bold text-white mb-4">거래 추가</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">날짜</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              readOnly={dateLocked}
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">티커</label>
+            <input
+              type="text"
+              value={ticker}
+              onChange={(e) => setTicker(e.target.value)}
+              placeholder="name"
+              required
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">체인</label>
+            <select
+              value={chain}
+              onChange={(e) => setChain(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              {CHAINS.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">CA</label>
+            <input
+              type="text"
+              value={ca}
+              onChange={(e) => setCa(e.target.value)}
+              placeholder="Contract Address"
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">PNL ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={pnl}
+              onChange={(e) => setPnl(e.target.value)}
+              required
+              placeholder="0"
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">메모</label>
+            <textarea
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+            />
+          </div>
+          <div className="flex gap-3 justify-end pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg border border-[#2a2a2a] text-[#a0a0a0] hover:bg-[#222]"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
+            >
+              {loading ? '생성 중...' : '생성'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
