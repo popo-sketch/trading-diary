@@ -16,32 +16,35 @@ export function formatPnl(num) {
   return `${sign}$${formatNumber(abs)}`
 }
 
-/** 한국 시간 기준 날짜 생성 (YYYY-MM-DD → KST 자정) */
-export function dateKst(dateStr) {
-  return new Date(dateStr + 'T00:00:00+09:00')
+/**
+ * YYYY-MM-DD를 로컬 기준 날짜로만 파싱 (자정 = 로컬 0시).
+ * toISOString() 사용 금지 — UTC 변환 시 KST에서 날짜가 하루 밀림.
+ */
+export function parseDateLocal(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d)
 }
 
-/** 요일 한국어 */
+/** 요일 한국어 (로컬 기준) */
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토']
 
 export function getWeekdayKo(dateStr) {
-  const d = dateKst(dateStr)
-  return WEEKDAY_KO[d.getUTCDay()]
+  const d = parseDateLocal(dateStr)
+  return WEEKDAY_KO[d.getDay()]
 }
 
-/** 날짜 포맷: 2026년 2월 15일 (토) - 한국 시간 기준 */
+/** 날짜 포맷: 2026년 2월 15일 (토) — 로컬 기준 */
 export function formatDateKo(dateStr) {
-  const d = dateKst(dateStr)
-  const year = d.getUTCFullYear()
-  const month = d.getUTCMonth() + 1
-  const day = d.getUTCDate()
+  const d = parseDateLocal(dateStr)
+  const year = d.getFullYear()
+  const month = d.getMonth() + 1
+  const day = d.getDate()
   const weekday = getWeekdayKo(dateStr)
   return `${year}년 ${month}월 ${day}일 (${weekday})`
 }
 
-/** 월 표시: 2026년 2월 (KST) */
+/** 월 표시: 2026년 2월 (KST) — 로컬 기준 */
 export function formatMonthKst(year, month) {
-  const d = dateKst(`${year}-${String(month).padStart(2, '0')}-01`)
   const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
-  return `${d.getUTCFullYear()}년 ${monthNames[d.getUTCMonth()]} (KST)`
+  return `${year}년 ${monthNames[month - 1]} (KST)`
 }

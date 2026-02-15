@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { formatPnl, formatMonthKst } from '../utils/format'
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default function Calendar({
   year,
@@ -16,7 +16,7 @@ export default function Calendar({
 
   const firstDay = new Date(year, month - 1, 1)
   const lastDay = new Date(year, month, 0)
-  const startOffset = (firstDay.getDay() + 6) % 7
+  const startOffset = firstDay.getDay()
   const daysInMonth = lastDay.getDate()
   const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7
   const cells = []
