@@ -137,11 +137,9 @@ export default function MainPage() {
                 <div>
                   <span className="text-[#6B7280] text-xs">Trades: </span>
                   <span className="font-medium text-white">{stats.total_trades}</span>
-                  {winStats && (
-                    <span className="text-[#6B7280] ml-1">
-                      ({winStats.winDays}W / {winStats.lossDays}L)
-                    </span>
-                  )}
+                  <span className="text-[#6B7280] ml-1">
+                    ({stats.wins}W / {stats.losses}L)
+                  </span>
                 </div>
               </div>
             )}
