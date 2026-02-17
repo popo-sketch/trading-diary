@@ -10,11 +10,14 @@ function shortenCa(ca) {
 export default function TradeCard({ trade, onClick }) {
   const { showToast } = useToast()
 
-  const handleCopyCa = (e) => {
+  const handleCopyCa = async (e) => {
     e.stopPropagation()
-    if (trade.ca) {
-      navigator.clipboard.writeText(trade.ca)
+    if (!trade.ca) return
+    try {
+      await navigator.clipboard.writeText(trade.ca)
       showToast('Copied!')
+    } catch {
+      showToast('Failed to copy', 'error')
     }
   }
 
@@ -43,7 +46,7 @@ export default function TradeCard({ trade, onClick }) {
                 className="shrink-0 text-lg hover:opacity-70 transition-opacity"
                 title="Copy CA"
               >
-                🗐
+                ❐
               </button>
             )}
           </div>

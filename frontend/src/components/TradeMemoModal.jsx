@@ -86,10 +86,14 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
     }
   }
 
-  const handleCopyCa = () => {
-    if (trade.ca) {
-      navigator.clipboard.writeText(trade.ca)
+  const handleCopyCa = async (e) => {
+    e?.stopPropagation?.()
+    if (!trade.ca) return
+    try {
+      await navigator.clipboard.writeText(trade.ca)
       showToast('Copied!')
+    } catch {
+      showToast('Failed to copy', 'error')
     }
   }
 
@@ -115,11 +119,12 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
           )}
           {trade.ca && (
             <button
-              onClick={handleCopyCa}
               type="button"
-              className="shrink-0 px-2 py-0.5 rounded bg-[#2a2a2a] hover:bg-[#333] text-xs text-[#a0a0a0]"
+              onClick={handleCopyCa}
+              className="shrink-0 text-lg hover:opacity-70 transition-opacity"
+              title="Copy CA"
             >
-              📋 Copy
+              ❐
             </button>
           )}
         </div>

@@ -15,7 +15,7 @@ export function ToastProvider({ children }) {
       {children}
       {toast && (
         <div
-          className={`fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 ${
+          className={`fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg z-[100] ${
             toast.type === 'error'
               ? 'bg-loss text-white'
               : 'bg-[#1a1a1a] border border-[#2a2a2a] text-white'

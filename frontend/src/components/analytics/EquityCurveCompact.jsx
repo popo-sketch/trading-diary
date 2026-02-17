@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { formatPnl } from '../../utils/format'
+import { formatPnl, formatPnlShort } from '../../utils/format'
 
 export default function EquityCurveCompact({ data }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
@@ -46,16 +46,19 @@ export default function EquityCurveCompact({ data }) {
 
   const width = 1000
   const height = 200
-  const padding = 30
-  const chartWidth = width - padding * 2
-  const chartHeight = height - padding * 2
+  const paddingRight = 30
+  const paddingTop = 30
+  const paddingBottom = 30
+  const paddingLeft = 52
+  const chartWidth = width - paddingLeft - paddingRight
+  const chartHeight = height - paddingTop - paddingBottom
 
   // 0 기준선 Y 좌표
-  const zeroY = padding + chartHeight - ((0 - minPnl) / range) * chartHeight
+  const zeroY = paddingTop + chartHeight - ((0 - minPnl) / range) * chartHeight
 
   const points = data.map((d, i) => {
-    const x = padding + (i / (data.length - 1 || 1)) * chartWidth
-    const y = padding + chartHeight - ((d.cumulative_pnl - minPnl) / range) * chartHeight
+    const x = paddingLeft + (i / (data.length - 1 || 1)) * chartWidth
+    const y = paddingTop + chartHeight - ((d.cumulative_pnl - minPnl) / range) * chartHeight
     return { x, y, ...d, index: i }
   })
 
@@ -124,19 +127,19 @@ export default function EquityCurveCompact({ data }) {
             <>
               {/* 0 이상 영역 (위쪽, 초록) */}
               <rect
-                x={padding}
-                y={padding}
+                x={paddingLeft}
+                y={paddingTop}
                 width={chartWidth}
-                height={zeroY - padding}
+                height={zeroY - paddingTop}
                 fill="#10B981"
                 fillOpacity="0.1"
               />
               {/* 0 이하 영역 (아래쪽, 빨강) */}
               <rect
-                x={padding}
+                x={paddingLeft}
                 y={zeroY}
                 width={chartWidth}
-                height={padding + chartHeight - zeroY}
+                height={paddingTop + chartHeight - zeroY}
                 fill="#EF4444"
                 fillOpacity="0.1"
               />
@@ -144,8 +147,8 @@ export default function EquityCurveCompact({ data }) {
           )}
           {minPnl >= 0 && (
             <rect
-              x={padding}
-              y={padding}
+              x={paddingLeft}
+              y={paddingTop}
               width={chartWidth}
               height={chartHeight}
               fill="#10B981"
@@ -154,8 +157,8 @@ export default function EquityCurveCompact({ data }) {
           )}
           {maxPnl <= 0 && (
             <rect
-              x={padding}
-              y={padding}
+              x={paddingLeft}
+              y={paddingTop}
               width={chartWidth}
               height={chartHeight}
               fill="#EF4444"
@@ -165,26 +168,26 @@ export default function EquityCurveCompact({ data }) {
 
           {/* Grid lines */}
           {yAxisValues.map((value) => {
-            const y = padding + chartHeight - ((value - minPnl) / range) * chartHeight
+            const y = paddingTop + chartHeight - ((value - minPnl) / range) * chartHeight
             const labelColor = value > 0 ? '#10B981' : value < 0 ? '#EF4444' : '#ffffff'
             return (
               <g key={value}>
                 <line
-                  x1={padding}
+                  x1={paddingLeft}
                   y1={y}
-                  x2={width - padding}
+                  x2={width - paddingRight}
                   y2={y}
                   stroke="#2a2a2a"
                   strokeWidth="1"
                 />
                 <text
-                  x={padding - 8}
+                  x={paddingLeft - 6}
                   y={y + 3}
                   fill={labelColor}
                   fontSize="9"
                   textAnchor="end"
                 >
-                  {formatPnl(value)}
+                  {formatPnlShort(value)}
                 </text>
               </g>
             )
@@ -193,9 +196,9 @@ export default function EquityCurveCompact({ data }) {
           {/* Zero line (항상 표시) */}
           {minPnl <= 0 && maxPnl >= 0 && (
             <line
-              x1={padding}
+              x1={paddingLeft}
               y1={zeroY}
-              x2={width - padding}
+              x2={width - paddingRight}
               y2={zeroY}
               stroke="#6B7280"
               strokeWidth="1.5"

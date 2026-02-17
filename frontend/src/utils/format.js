@@ -18,6 +18,20 @@ export function formatPnl(num) {
   return `${sign}$${formatNumber(abs)}`
 }
 
+/** 차트 Y축용 짧은 PNL (+$10.5K, -$3.0K) — 소수점 1자리, 잘림 방지 */
+export function formatPnlShort(num) {
+  if (num == null || isNaN(num)) return '$0'
+  const sign = num >= 0 ? '+' : '-'
+  const abs = Math.abs(num)
+  if (abs >= 1_000_000) {
+    return `${sign}$${(abs / 1_000_000).toFixed(1)}M`
+  }
+  if (abs >= 1000) {
+    return `${sign}$${(abs / 1000).toFixed(1)}K`
+  }
+  return `${sign}$${formatNumber(abs)}`
+}
+
 /**
  * YYYY-MM-DD를 로컬 기준 날짜로만 파싱 (자정 = 로컬 0시).
  * toISOString() 사용 금지 — UTC 변환 시 KST에서 날짜가 하루 밀림.
