@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { formatPnl } from '../utils/format'
 import { useToast } from '../contexts/ToastContext'
 
-const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI']
+const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'ETC']
 
 export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   const { showToast } = useToast()
@@ -189,7 +189,6 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
             onChange={(e) => setTradeType(e.target.value)}
             className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <option value="">None</option>
             {TRADE_TYPES.map((t) => (
               <option key={t} value={t}>
                 {t}

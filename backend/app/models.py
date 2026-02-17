@@ -2,7 +2,7 @@ import re
 from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional
 
-TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI']
+TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'ETC']
 
 
 class TradeCreate(BaseModel):
