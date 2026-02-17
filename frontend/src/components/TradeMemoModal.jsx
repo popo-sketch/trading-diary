@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { formatPnl } from '../utils/format'
 import { useToast } from '../contexts/ToastContext'
 
-const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'ETC']
+const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'ETC']
 
 export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   const { showToast } = useToast()
