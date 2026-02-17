@@ -143,6 +143,7 @@ async def delete_trade(trade_id: str):
 
 
 def _row_to_trade(row) -> TradeResponse:
+    row = dict(row)
     return TradeResponse(
         id=row["id"],
         date=row["date"],
