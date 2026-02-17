@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
 import { getTradesByMonth } from '../api/trades'
 import { getMonthlyStats } from '../api/stats'
+import { getAnalytics } from '../api/analytics'
 import { formatPnl } from '../utils/format'
 import Calendar from '../components/Calendar'
-import StatsPanel from '../components/StatsPanel'
+import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
+import PositionSizeTableCompact from '../components/analytics/PositionSizeTableCompact'
+import TradeTypeTableCompact from '../components/analytics/TradeTypeTableCompact'
 
 const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
@@ -14,6 +16,7 @@ export default function MainPage() {
   const [month, setMonth] = useState(currentMonth)
   const [trades, setTrades] = useState([])
   const [stats, setStats] = useState(null)
+  const [analytics, setAnalytics] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -25,11 +28,13 @@ export default function MainPage() {
     Promise.all([
       getTradesByMonth(year, month),
       getMonthlyStats(year, month),
+      getAnalytics(year, month, null),
     ])
-      .then(([tradesData, statsData]) => {
+      .then(([tradesData, statsData, analyticsData]) => {
         if (!cancelled) {
           setTrades(tradesData)
           setStats(statsData)
+          setAnalytics(analyticsData)
         }
       })
       .catch((err) => {
@@ -95,19 +100,63 @@ export default function MainPage() {
     }
   }
 
+  const bestTrade = stats?.top_wins?.[0]
+  const worstTrade = stats?.top_losses?.[0]
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex-[7] p-8 pb-4">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-white">PNL Calendar</h1>
-            <Link
-              to="/stats"
-              className="px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 text-sm"
-            >
-              Analytics
-            </Link>
+    <div className="min-h-screen p-6 bg-dark-bg">
+      <div className="max-w-7xl mx-auto space-y-4">
+        {/* 헤더 한 줄 */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-white">PNL Calendar</h1>
+          
+          <div className="flex items-center gap-6 flex-1 justify-center">
+            {/* 중앙 좌: Total PNL / Win Rate% / Trades */}
+            {stats && (
+              <div className="flex items-center gap-4 text-sm">
+                <div>
+                  <span className="text-[#6B7280] text-xs">Total PNL: </span>
+                  <span className={`font-medium ${stats.total_pnl >= 0 ? 'text-profit' : 'text-loss'}`}>
+                    {formatPnl(stats.total_pnl)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[#6B7280] text-xs">Win Rate: </span>
+                  <span className="font-medium text-white">
+                    {(stats.win_rate * 100).toFixed(1)}%
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[#6B7280] text-xs">Trades: </span>
+                  <span className="font-medium text-white">{stats.total_trades}</span>
+                </div>
+              </div>
+            )}
+
+            {/* 중앙 우: Best / Worst */}
+            {(bestTrade || worstTrade) && (
+              <div className="flex items-center gap-4 text-xs">
+                {bestTrade && (
+                  <div>
+                    <span className="text-[#6B7280]">Best: </span>
+                    <span className="text-profit font-medium">
+                      {bestTrade.ticker} {formatPnl(bestTrade.pnl)}
+                    </span>
+                  </div>
+                )}
+                {worstTrade && (
+                  <div>
+                    <span className="text-[#6B7280]">Worst: </span>
+                    <span className="text-loss font-medium">
+                      {worstTrade.ticker} {formatPnl(worstTrade.pnl)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* 우: 연도 드롭다운 + 화살표 */}
           <div className="flex items-center gap-4">
             <select
               value={year}
@@ -137,24 +186,13 @@ export default function MainPage() {
           </div>
         </div>
 
-        {stats && (
-          <div className="mb-6">
-            <div
-              className={`text-4xl font-bold ${
-                stats.total_pnl >= 0 ? 'text-profit' : 'text-loss'
-              }`}
-            >
-              {formatPnl(stats.total_pnl)}
-            </div>
-          </div>
-        )}
-
         {error && (
-          <div className="mb-4 p-4 rounded-lg bg-loss/20 text-loss border border-loss/50">
+          <div className="p-3 rounded-lg bg-loss/20 text-loss border border-loss/50 text-sm">
             {error}
           </div>
         )}
 
+        {/* 캘린더 */}
         <Calendar
           year={year}
           month={month}
@@ -164,10 +202,19 @@ export default function MainPage() {
           winStats={winStats}
           isLoading={loading}
         />
-      </div>
 
-      <div className="flex-[3] p-8 pt-4">
-        <StatsPanel stats={stats} isLoading={loading} />
+        {/* Equity Curve */}
+        {analytics && (
+          <EquityCurveCompact data={analytics.equity_curve} />
+        )}
+
+        {/* 좌우 50:50 테이블 */}
+        {analytics && (
+          <div className="grid grid-cols-2 gap-4">
+            <PositionSizeTableCompact buckets={analytics.position_size_buckets} />
+            <TradeTypeTableCompact stats={analytics.trade_type_stats} />
+          </div>
+        )}
       </div>
     </div>
   )
