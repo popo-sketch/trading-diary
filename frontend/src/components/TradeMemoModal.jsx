@@ -26,10 +26,7 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key !== 'Escape') return
-      const discard = window.confirm(
-        'Discard changes and close? Your edits will not be saved.'
-      )
-      if (discard) onClose()
+      onClose()
     }
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)

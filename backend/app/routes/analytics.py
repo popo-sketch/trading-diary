@@ -9,13 +9,13 @@ router = APIRouter()
 def get_bucket(entry_amount: Optional[float]) -> str:
     """포지션 크기에 따라 버킷 반환"""
     if entry_amount is None or entry_amount < 1000:
-        return "< 1000"
+        return "< $1K"
     elif entry_amount < 5000:
-        return "1000-5000"
+        return "$1K-$5K"
     elif entry_amount < 10000:
-        return "5000-10000"
+        return "$5K-$10K"
     else:
-        return "> 10000"
+        return "> $10K"
 
 
 @router.get("", response_model=AnalyticsResponse)
