@@ -66,6 +66,15 @@ export default function MainPage() {
     return map
   }, [trades])
 
+  const dailyTrades = useMemo(() => {
+    const map = {}
+    trades.forEach((t) => {
+      if (!map[t.date]) map[t.date] = []
+      map[t.date].push(t)
+    })
+    return map
+  }, [trades])
+
   const winStats = useMemo(() => {
     if (!stats) return null
     const days = {}
@@ -211,6 +220,7 @@ export default function MainPage() {
           onNextMonth={handleNextMonth}
           dailyPnl={dailyPnl}
           dailyTradeCount={dailyTradeCount}
+          dailyTrades={dailyTrades}
           isLoading={loading}
         />
 

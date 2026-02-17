@@ -10,6 +10,7 @@ export default function Calendar({
   onNextMonth,
   dailyPnl,
   dailyTradeCount = {},
+  dailyTrades = {},
   isLoading,
 }) {
   const navigate = useNavigate()
@@ -30,7 +31,8 @@ export default function Calendar({
     const dateStr = `${year}-${mm}-${dd}`
     const pnl = dailyPnl[dateStr] ?? null
     const tradeCount = dailyTradeCount[dateStr] ?? 0
-    cells.push({ date: dateStr, day: d, pnl, tradeCount })
+    const trades = dailyTrades[dateStr] ?? []
+    cells.push({ date: dateStr, day: d, pnl, tradeCount, trades })
   }
   while (cells.length < totalCells) {
     cells.push({ empty: true })
@@ -93,20 +95,15 @@ export default function Calendar({
                   {cell.pnl != null ? formatPnl(cell.pnl) : '—'}
                 </div>
                 {cell.tradeCount > 0 && (
-                  <div
-                    className={`text-[10px] mt-0.5 tracking-tighter ${
-                      cell.pnl != null
-                        ? cell.pnl > 0
-                          ? 'text-profit'
-                          : cell.pnl < 0
-                          ? 'text-loss'
-                          : 'text-neutral'
-                        : 'text-neutral'
-                    }`}
-                  >
-                    {cell.tradeCount <= 5
-                      ? '●'.repeat(cell.tradeCount)
-                      : `●+${cell.tradeCount}`}
+                  <div className="text-[10px] mt-0.5 tracking-tighter flex flex-wrap gap-0.5">
+                    {cell.trades.slice(0, 5).map((trade, idx) => {
+                      const pnl = Number(trade.pnl || 0)
+                      const colorClass = pnl > 0 ? 'text-profit' : pnl < 0 ? 'text-loss' : 'text-neutral'
+                      return <span key={idx} className={colorClass}>●</span>
+                    })}
+                    {cell.tradeCount > 5 && (
+                      <span className="text-neutral">+{cell.tradeCount}</span>
+                    )}
                   </div>
                 )}
               </>
