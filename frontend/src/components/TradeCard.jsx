@@ -45,7 +45,24 @@ export default function TradeCard({ trade, onClick }) {
               </>
             )}
           </div>
-          <div className="text-sm text-[#a0a0a0]">{memoPreview}</div>
+          <div className="text-sm text-[#a0a0a0] mb-2">{memoPreview}</div>
+          {(trade.entry_amount || trade.return_percent || trade.trade_type) && (
+            <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B7280] mt-2">
+              {trade.entry_amount && (
+                <span>Entry: {formatPnl(trade.entry_amount)}</span>
+              )}
+              {trade.return_percent !== null && trade.return_percent !== undefined && (
+                <span className={trade.return_percent >= 0 ? 'text-profit' : 'text-loss'}>
+                  Return: {trade.return_percent >= 0 ? '+' : ''}{trade.return_percent.toFixed(2)}%
+                </span>
+              )}
+              {trade.trade_type && (
+                <span className="px-2 py-0.5 rounded bg-[#2a2a2a] text-[#a0a0a0]">
+                  {trade.trade_type}
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div
           className={`flex items-center gap-2 font-bold shrink-0 ${

@@ -62,11 +62,28 @@ async def get_analytics(
         equity_curve = []
 
         for row in rows:
+            row = dict(row)
             entry_amount = row.get("entry_amount")
             return_percent = row.get("return_percent")
-            trade_type = row.get("trade_type")
+            trade_type = row.get("trade_type") or "Unknown"
             pnl = row["pnl"]
             date = row["date"]
+            
+            # entry_amount나 return_percent가 None이면 버킷 분석에서 제외
+            if entry_amount is None or return_percent is None:
+                # 거래 타입별 데이터에는 포함 (trade_type만 있으면)
+                if trade_type and trade_type != "Unknown":
+                    if trade_type not in trade_type_data:
+                        trade_type_data[trade_type] = []
+                    trade_type_data[trade_type].append({
+                        "pnl": pnl,
+                        "return_percent": return_percent
+                    })
+                # Equity curve에도 포함 (bucket filter 무관)
+                if bucket_filter is None:
+                    cumulative_pnl += pnl
+                    equity_curve.append({"date": date, "cumulative_pnl": cumulative_pnl})
+                continue
 
             # 버킷 분류
             bucket = get_bucket(entry_amount)
@@ -108,16 +125,16 @@ async def get_analytics(
             win_rate = (win_count / total_trades * 100) if total_trades > 0 else 0
 
             # Avg Win % (positive return_percent의 평균)
-            win_percents = [t["return_percent"] for t in wins if t.get("return_percent") is not None]
-            avg_win_percent = sum(win_percents) / len(win_percents) if win_percents else 0
+            win_percents = [t["return_percent"] for t in wins if t.get("return_percent") is not None and t["return_percent"] is not None]
+            avg_win_percent = sum(win_percents) / len(win_percents) if win_percents and len(win_percents) > 0 else 0
 
             # Avg Loss % (negative return_percent의 평균)
-            loss_percents = [t["return_percent"] for t in losses if t.get("return_percent") is not None]
-            avg_loss_percent = sum(loss_percents) / len(loss_percents) if loss_percents else 0
+            loss_percents = [t["return_percent"] for t in losses if t.get("return_percent") is not None and t["return_percent"] is not None]
+            avg_loss_percent = sum(loss_percents) / len(loss_percents) if loss_percents and len(loss_percents) > 0 else 0
 
             # Avg Win $, Avg Loss $
-            avg_win_dollar = sum(t["pnl"] for t in wins) / len(wins) if wins else 0
-            avg_loss_dollar = sum(t["pnl"] for t in losses) / len(losses) if losses else 0
+            avg_win_dollar = sum(t["pnl"] for t in wins) / len(wins) if wins and len(wins) > 0 else 0
+            avg_loss_dollar = sum(t["pnl"] for t in losses) / len(losses) if losses and len(losses) > 0 else 0
 
             # Total PnL
             total_pnl = sum(t["pnl"] for t in trades)
@@ -151,11 +168,11 @@ async def get_analytics(
             win_rate = (win_count / total_trades * 100) if total_trades > 0 else 0
 
             # Avg Win %, Avg Loss % (내부 계산용)
-            win_percents = [t["return_percent"] for t in wins if t.get("return_percent") is not None]
-            avg_win_percent = sum(win_percents) / len(win_percents) if win_percents else 0
+            win_percents = [t["return_percent"] for t in wins if t.get("return_percent") is not None and t["return_percent"] is not None]
+            avg_win_percent = sum(win_percents) / len(win_percents) if win_percents and len(win_percents) > 0 else 0
 
-            loss_percents = [t["return_percent"] for t in losses if t.get("return_percent") is not None]
-            avg_loss_percent = sum(loss_percents) / len(loss_percents) if loss_percents else 0
+            loss_percents = [t["return_percent"] for t in losses if t.get("return_percent") is not None and t["return_percent"] is not None]
+            avg_loss_percent = sum(loss_percents) / len(loss_percents) if loss_percents and len(loss_percents) > 0 else 0
 
             # EV% = (Avg Win % * Win%) - (abs(Avg Loss %) * (1 - Win%))
             ev_percent = (avg_win_percent * (win_rate / 100)) - (abs(avg_loss_percent) * (1 - win_rate / 100))

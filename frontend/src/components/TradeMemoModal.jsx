@@ -81,12 +81,29 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
             </>
           )}
         </div>
-        <div
-          className={`font-bold mb-4 ${
-            trade.pnl >= 0 ? 'text-profit' : 'text-loss'
-          }`}
-        >
-          PNL: {formatPnl(trade.pnl)}
+        <div className="space-y-2 mb-4">
+          <div
+            className={`font-bold ${
+              trade.pnl >= 0 ? 'text-profit' : 'text-loss'
+            }`}
+          >
+            PNL: {formatPnl(trade.pnl)}
+          </div>
+          {trade.entry_amount && (
+            <div className="text-sm text-[#a0a0a0]">
+              Entry Amount: {formatPnl(trade.entry_amount)}
+            </div>
+          )}
+          {trade.return_percent !== null && trade.return_percent !== undefined && (
+            <div className={`text-sm ${trade.return_percent >= 0 ? 'text-profit' : 'text-loss'}`}>
+              Return: {trade.return_percent >= 0 ? '+' : ''}{trade.return_percent.toFixed(2)}%
+            </div>
+          )}
+          {trade.trade_type && (
+            <div className="text-sm text-[#a0a0a0]">
+              Trade Type: <span className="text-white">{trade.trade_type}</span>
+            </div>
+          )}
         </div>
 
         <div className="mb-4">
