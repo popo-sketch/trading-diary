@@ -34,7 +34,7 @@ export default function TradeCard({ trade, onClick }) {
             <div className="text-xl font-bold text-white">{trade.ticker}</div>
             {trade.chain && (
               <span className="px-2 py-0.5 rounded bg-[#2a2a2a] text-xs text-[#a0a0a0]">
-                [{trade.chain}]
+                {trade.chain}
               </span>
             )}
             {trade.ca && (

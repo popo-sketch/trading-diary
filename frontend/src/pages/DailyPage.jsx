@@ -35,10 +35,10 @@ export default function DailyPage() {
   const losses = trades.filter((t) => t.pnl < 0).length
   const summary = `${formatPnl(dailyPnl)} (${wins}W - ${losses}L)`
 
-  const handleSaveMemo = async ({ memo, pnl }) => {
+  const handleSaveMemo = async (payload) => {
     if (!selectedTrade) return
     try {
-      const updated = await updateTrade(selectedTrade.id, { memo, pnl })
+      const updated = await updateTrade(selectedTrade.id, payload)
       setTrades((prev) =>
         prev.map((t) => (t.id === updated.id ? updated : t))
       )

@@ -129,6 +129,21 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
             />
           </div>
           <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Trade Type</label>
+            <select
+              value={tradeType}
+              onChange={(e) => setTradeType(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="">None</option>
+              {TRADE_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
             <label className="block text-sm text-[#a0a0a0] mb-2">Chain</label>
             <select
               value={chain}
@@ -191,21 +206,6 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
                 ? `Entry = ${pnl} / (${returnPercent}% / 100) = ${calculatedEntryAmount}` 
                 : 'Auto-calculated from PnL and Return %'}
             </p>
-          </div>
-          <div>
-            <label className="block text-sm text-[#a0a0a0] mb-2">Trade Type</label>
-            <select
-              value={tradeType}
-              onChange={(e) => setTradeType(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
-            >
-              <option value="">None</option>
-              {TRADE_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
           </div>
           <div>
             <label className="block text-sm text-[#a0a0a0] mb-2">Memo</label>

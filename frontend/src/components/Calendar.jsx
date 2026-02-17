@@ -9,6 +9,7 @@ export default function Calendar({
   onPrevMonth,
   onNextMonth,
   dailyPnl,
+  dailyTradeCount = {},
   isLoading,
 }) {
   const navigate = useNavigate()
@@ -28,7 +29,8 @@ export default function Calendar({
     const dd = String(d).padStart(2, '0')
     const dateStr = `${year}-${mm}-${dd}`
     const pnl = dailyPnl[dateStr] ?? null
-    cells.push({ date: dateStr, day: d, pnl })
+    const tradeCount = dailyTradeCount[dateStr] ?? 0
+    cells.push({ date: dateStr, day: d, pnl, tradeCount })
   }
   while (cells.length < totalCells) {
     cells.push({ empty: true })
@@ -90,6 +92,23 @@ export default function Calendar({
                 >
                   {cell.pnl != null ? formatPnl(cell.pnl) : '—'}
                 </div>
+                {cell.tradeCount > 0 && (
+                  <div
+                    className={`text-[10px] mt-0.5 tracking-tighter ${
+                      cell.pnl != null
+                        ? cell.pnl > 0
+                          ? 'text-profit'
+                          : cell.pnl < 0
+                          ? 'text-loss'
+                          : 'text-neutral'
+                        : 'text-neutral'
+                    }`}
+                  >
+                    {cell.tradeCount <= 5
+                      ? '●'.repeat(cell.tradeCount)
+                      : `●+${cell.tradeCount}`}
+                  </div>
+                )}
               </>
             )}
           </div>

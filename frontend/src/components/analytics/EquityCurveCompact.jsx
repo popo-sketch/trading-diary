@@ -119,24 +119,24 @@ export default function EquityCurveCompact({ data }) {
           preserveAspectRatio="none"
           onMouseLeave={() => setHoveredIndex(null)}
         >
-          {/* 배경 영역: 0 이상 초록, 0 이하 빨강 */}
+          {/* 배경 영역: 0 이상 초록(위), 0 이하 빨강(아래) — SVG y는 위가 작음 */}
           {minPnl < 0 && maxPnl > 0 && (
             <>
-              {/* 0 이상 영역 (초록) */}
-              <rect
-                x={padding}
-                y={zeroY}
-                width={chartWidth}
-                height={padding + chartHeight - zeroY}
-                fill="#10B981"
-                fillOpacity="0.1"
-              />
-              {/* 0 이하 영역 (빨강) */}
+              {/* 0 이상 영역 (위쪽, 초록) */}
               <rect
                 x={padding}
                 y={padding}
                 width={chartWidth}
                 height={zeroY - padding}
+                fill="#10B981"
+                fillOpacity="0.1"
+              />
+              {/* 0 이하 영역 (아래쪽, 빨강) */}
+              <rect
+                x={padding}
+                y={zeroY}
+                width={chartWidth}
+                height={padding + chartHeight - zeroY}
                 fill="#EF4444"
                 fillOpacity="0.1"
               />
@@ -166,6 +166,7 @@ export default function EquityCurveCompact({ data }) {
           {/* Grid lines */}
           {yAxisValues.map((value) => {
             const y = padding + chartHeight - ((value - minPnl) / range) * chartHeight
+            const labelColor = value > 0 ? '#10B981' : value < 0 ? '#EF4444' : '#ffffff'
             return (
               <g key={value}>
                 <line
@@ -179,7 +180,7 @@ export default function EquityCurveCompact({ data }) {
                 <text
                   x={padding - 8}
                   y={y + 3}
-                  fill="#6B7280"
+                  fill={labelColor}
                   fontSize="9"
                   textAnchor="end"
                 >

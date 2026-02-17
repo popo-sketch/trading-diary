@@ -84,27 +84,16 @@ async def update_trade(trade_id: str, data: TradeUpdate):
     """거래 수정"""
     conn = await get_db()
     try:
+        payload = data.model_dump(exclude_unset=True)
         updates = []
         params = []
-
-        if data.memo is not None:
-            updates.append("memo = ?")
-            params.append(data.memo)
-        if data.pnl is not None:
-            updates.append("pnl = ?")
-            params.append(data.pnl)
-        if data.entry_amount is not None:
-            updates.append("entry_amount = ?")
-            params.append(data.entry_amount)
-        if data.return_percent is not None:
-            updates.append("return_percent = ?")
-            params.append(data.return_percent)
-        if data.trade_type is not None:
-            updates.append("trade_type = ?")
-            params.append(data.trade_type)
+        for key in ("memo", "pnl", "entry_amount", "return_percent", "trade_type"):
+            if key in payload:
+                updates.append(f"{key} = ?")
+                params.append(payload[key])
 
         if not updates:
-            raise HTTPException(status_code=400, detail="수정할 필드가 없습니다")
+            raise HTTPException(status_code=400, detail="No fields to update")
 
         updates.append("updated_at = ?")
         params.append(datetime.now(KST).isoformat())

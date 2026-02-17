@@ -1,27 +1,64 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { formatPnl } from '../utils/format'
 import { useToast } from '../contexts/ToastContext'
+
+const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI']
 
 export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   const { showToast } = useToast()
   const [memo, setMemo] = useState('')
-  const [pnl, setPnl] = useState(0)
+  const [pnl, setPnl] = useState('')
+  const [returnPercent, setReturnPercent] = useState('')
+  const [tradeType, setTradeType] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (trade) {
       setMemo(trade.memo ?? '')
-      const pnlNum = trade.pnl != null ? Number(trade.pnl) : 0
-      setPnl(Number.isFinite(pnlNum) ? pnlNum : 0)
+      const pnlNum = trade.pnl != null ? Number(trade.pnl) : ''
+      setPnl(Number.isFinite(pnlNum) ? String(pnlNum) : '')
+      const ret = trade.return_percent != null ? Number(trade.return_percent) : ''
+      setReturnPercent(Number.isFinite(ret) ? String(ret) : '')
+      setTradeType(trade.trade_type ?? '')
     }
   }, [trade])
+
+  const pnlNum = useMemo(() => (pnl === '' ? null : Number(pnl)), [pnl])
+  const returnNum = useMemo(() => (returnPercent === '' ? null : Number(returnPercent)), [returnPercent])
+
+  const calculatedEntryAmount = useMemo(() => {
+    if (pnlNum == null || returnNum == null || returnNum === 0) return null
+    let norm = returnNum
+    if ((pnlNum > 0 && returnNum < 0) || (pnlNum < 0 && returnNum > 0)) norm = -Math.abs(returnNum)
+    const entry = pnlNum / (norm / 100)
+    return entry > 0 ? entry : null
+  }, [pnlNum, returnNum])
 
   if (!trade) return null
 
   const handleSave = async () => {
+    if (pnl === '' || returnPercent === '') {
+      showToast('Edit PnL ($) and Edit Return (%) are required', 'error')
+      return
+    }
+    const p = Number(pnl)
+    const r = Number(returnPercent)
+    if (!Number.isFinite(p) || !Number.isFinite(r)) {
+      showToast('PnL and Return % must be numbers', 'error')
+      return
+    }
+    if (r === 0) {
+      showToast('Return % cannot be 0', 'error')
+      return
+    }
     setSaving(true)
     try {
-      await onSave({ memo, pnl })
+      await onSave({
+        memo,
+        pnl: p,
+        return_percent: r,
+        trade_type: tradeType || null,
+      })
       showToast('Saved!')
       onClose()
     } catch (err) {
@@ -56,6 +93,10 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
     }
   }
 
+  const displayPnl = pnlNum != null && Number.isFinite(pnlNum) ? pnlNum : trade.pnl
+  const displayReturn = returnNum != null && Number.isFinite(returnNum) ? returnNum : trade.return_percent
+  const displayEntry = calculatedEntryAmount ?? trade.entry_amount
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
@@ -65,45 +106,54 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
         className="w-full max-w-lg rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold text-white mb-4">{trade.ticker}</h2>
-        <div className="flex items-center gap-2 text-sm text-[#a0a0a0] mb-2">
-          <span>{trade.chain}</span>
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-xl font-bold text-white">{trade.ticker}</h2>
+          {trade.chain && (
+            <span className="px-2 py-0.5 rounded bg-[#2a2a2a] text-xs text-[#a0a0a0]">
+              {trade.chain}
+            </span>
+          )}
           {trade.ca && (
-            <>
-              <span>|</span>
-              <span className="truncate">{trade.ca}</span>
-              <button
-                onClick={handleCopyCa}
-                className="shrink-0 px-2 py-0.5 rounded bg-[#2a2a2a] hover:bg-[#333] text-xs"
-              >
-                📋 Copy
-              </button>
-            </>
+            <button
+              onClick={handleCopyCa}
+              type="button"
+              className="shrink-0 px-2 py-0.5 rounded bg-[#2a2a2a] hover:bg-[#333] text-xs text-[#a0a0a0]"
+            >
+              📋 Copy
+            </button>
           )}
         </div>
+
         <div className="space-y-2 mb-4">
-          <div
-            className={`font-bold ${
-              trade.pnl >= 0 ? 'text-profit' : 'text-loss'
-            }`}
-          >
-            PNL: {formatPnl(trade.pnl)}
+          <div className={`font-bold ${displayPnl >= 0 ? 'text-profit' : 'text-loss'}`}>
+            PnL: {formatPnl(displayPnl)}
           </div>
-          {trade.entry_amount && (
+          {displayEntry != null && (
             <div className="text-sm text-[#a0a0a0]">
-              Entry Amount: {formatPnl(trade.entry_amount)}
+              Entry Amount: {formatPnl(displayEntry)}
             </div>
           )}
-          {trade.return_percent !== null && trade.return_percent !== undefined && (
-            <div className={`text-sm ${trade.return_percent >= 0 ? 'text-profit' : 'text-loss'}`}>
-              Return: {trade.return_percent >= 0 ? '+' : ''}{trade.return_percent.toFixed(2)}%
+          {displayReturn != null && displayReturn !== undefined && (
+            <div className={`text-sm ${displayReturn >= 0 ? 'text-profit' : 'text-loss'}`}>
+              Return: {displayReturn >= 0 ? '+' : ''}{Number(displayReturn).toFixed(2)}%
             </div>
           )}
-          {trade.trade_type && (
-            <div className="text-sm text-[#a0a0a0]">
-              Trade Type: <span className="text-white">{trade.trade_type}</span>
-            </div>
-          )}
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm text-[#a0a0a0] mb-2">Trade Type</label>
+          <select
+            value={tradeType}
+            onChange={(e) => setTradeType(e.target.value)}
+            className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="">None</option>
+            {TRADE_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="mb-4">
@@ -112,17 +162,42 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
             placeholder="📝 Add Memo"
-            className="w-full h-40 px-4 py-3 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-[#6B7280] placeholder:text-center placeholder:italic focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+            className="w-full h-32 px-4 py-3 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-[#6B7280] placeholder:text-center placeholder:italic focus:outline-none focus:ring-2 focus:ring-accent resize-none"
           />
         </div>
 
+        <div className="grid grid-cols-2 gap-4 mb-2">
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Edit PnL ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={pnl}
+              onChange={(e) => setPnl(e.target.value)}
+              placeholder="0"
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Edit Return (%)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={returnPercent}
+              onChange={(e) => setReturnPercent(e.target.value)}
+              placeholder="0"
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+        </div>
+
         <div className="mb-4">
-          <label className="block text-sm text-[#a0a0a0] mb-2">Edit PNL</label>
+          <label className="block text-sm text-[#a0a0a0] mb-2">Calculated Entry Amount</label>
           <input
-            type="number"
-            value={pnl}
-            onChange={(e) => setPnl(Number(e.target.value))}
-            className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
+            type="text"
+            readOnly
+            value={calculatedEntryAmount != null ? formatPnl(calculatedEntryAmount) : '—'}
+            className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white opacity-70 cursor-not-allowed"
           />
         </div>
 
