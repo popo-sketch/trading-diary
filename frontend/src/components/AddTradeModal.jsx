@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useToast } from '../contexts/ToastContext'
 
 const CHAINS = ['Solana', 'Base', 'Bnb', 'etc']
@@ -15,6 +15,18 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
   const [returnPercent, setReturnPercent] = useState('')
   const [tradeType, setTradeType] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key !== 'Escape') return
+      const discard = window.confirm(
+        'Discard changes and close? Your edits will not be saved.'
+      )
+      if (discard) onClose()
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [onClose])
 
   // Entry Amount 자동 계산: entry_amount = pnl / (return_percent / 100)
   const calculatedEntryAmount = (() => {
@@ -98,12 +110,10 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
-      <div
-        className="w-full max-w-lg rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="w-full max-w-lg rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-6 shadow-xl">
         <h2 className="text-xl font-bold text-white mb-4">Trading History</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

@@ -23,6 +23,18 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
     }
   }, [trade])
 
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key !== 'Escape') return
+      const discard = window.confirm(
+        'Discard changes and close? Your edits will not be saved.'
+      )
+      if (discard) onClose()
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [onClose])
+
   const pnlNum = useMemo(() => (pnl === '' ? null : Number(pnl)), [pnl])
   const returnNum = useMemo(() => (returnPercent === '' ? null : Number(returnPercent)), [returnPercent])
 
@@ -89,10 +101,38 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   const handleCopyCa = async (e) => {
     e?.stopPropagation?.()
     if (!trade.ca) return
+    
+    // Modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(trade.ca)
+        showToast('Copied!')
+        return
+      } catch (err) {
+        console.warn('Clipboard API failed, trying fallback:', err)
+      }
+    }
+    
+    // Fallback: use textarea method
     try {
-      await navigator.clipboard.writeText(trade.ca)
-      showToast('Copied!')
-    } catch {
+      const textarea = document.createElement('textarea')
+      textarea.value = trade.ca
+      textarea.style.position = 'fixed'
+      textarea.style.left = '-999999px'
+      textarea.style.top = '-999999px'
+      document.body.appendChild(textarea)
+      textarea.focus()
+      textarea.select()
+      const successful = document.execCommand('copy')
+      document.body.removeChild(textarea)
+      
+      if (successful) {
+        showToast('Copied!')
+      } else {
+        showToast('Failed to copy', 'error')
+      }
+    } catch (err) {
+      console.error('Copy failed:', err)
       showToast('Failed to copy', 'error')
     }
   }
@@ -104,11 +144,11 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       <div
         className="w-full max-w-lg rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 mb-4">
           <h2 className="text-xl font-bold text-white">{trade.ticker}</h2>

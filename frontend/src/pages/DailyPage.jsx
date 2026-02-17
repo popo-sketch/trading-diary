@@ -92,12 +92,19 @@ export default function DailyPage() {
         {formatDateEn(date)}
       </h1>
       <div
-        className={`text-lg font-bold mb-6 ${
+        className={`text-lg font-bold mb-4 ${
           dailyPnl >= 0 ? 'text-profit' : 'text-loss'
         }`}
       >
         Daily Summary: {summary}
       </div>
+
+      <button
+        onClick={() => setShowAddModal(true)}
+        className="mb-6 px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 cursor-pointer"
+      >
+        + Add Coin
+      </button>
 
       {error && (
         <div className="mb-4 p-4 rounded-lg bg-loss/20 text-loss border border-loss/50">
@@ -110,7 +117,7 @@ export default function DailyPage() {
           <div className="animate-spin rounded-full h-10 w-10 border-2 border-accent border-t-transparent" />
         </div>
       ) : (
-        <div className="space-y-4 mb-8">
+        <div className="space-y-4">
           {trades.map((trade) => (
             <TradeCard
               key={trade.id}
@@ -120,13 +127,6 @@ export default function DailyPage() {
           ))}
         </div>
       )}
-
-      <button
-        onClick={() => setShowAddModal(true)}
-        className="px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 cursor-pointer"
-      >
-        + Add Coin
-      </button>
 
       {selectedTrade && (
         <TradeMemoModal
