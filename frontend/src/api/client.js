@@ -14,7 +14,7 @@ export function getErrorMessage(err) {
     return detail.map((d) => d.msg || JSON.stringify(d)).join(', ')
   }
   if (typeof detail === 'string') return detail
-  return err?.message || '요청 실패'
+  return err?.message || 'Request failed'
 }
 
 export default apiClient

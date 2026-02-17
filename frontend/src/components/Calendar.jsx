@@ -9,7 +9,6 @@ export default function Calendar({
   onPrevMonth,
   onNextMonth,
   dailyPnl,
-  winStats,
   isLoading,
 }) {
   const navigate = useNavigate()
@@ -52,21 +51,6 @@ export default function Calendar({
       <div className="flex items-center justify-between">
         <h2 className="text-lg text-[#a0a0a0]">{formatMonthKst(year, month)}</h2>
       </div>
-
-      {winStats && (
-        <div className="flex items-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-profit font-medium">
-              {winStats.winDays} / {formatPnl(winStats.winAmount)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-loss font-medium">
-              {winStats.lossDays} / {formatPnl(winStats.lossAmount)}
-            </span>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-7 gap-1">
         {WEEKDAYS.map((w) => (

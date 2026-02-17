@@ -35,6 +35,14 @@ export function getWeekdayKo(dateStr) {
   return WEEKDAY_KO[d.getDay()]
 }
 
+/** 요일 영어 (로컬 기준) */
+const WEEKDAY_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+export function getWeekdayEn(dateStr) {
+  const d = parseDateLocal(dateStr)
+  return WEEKDAY_EN[d.getDay()]
+}
+
 /** 날짜 포맷: 2026년 2월 15일 (토) — 로컬 기준 */
 export function formatDateKo(dateStr) {
   const d = parseDateLocal(dateStr)
@@ -45,8 +53,19 @@ export function formatDateKo(dateStr) {
   return `${year}년 ${month}월 ${day}일 (${weekday})`
 }
 
-/** 월 표시: 2026년 2월 (KST) — 로컬 기준 */
+/** 날짜 포맷: Monday, February 2, 2026 — 로컬 기준 */
+export function formatDateEn(dateStr) {
+  const d = parseDateLocal(dateStr)
+  const weekday = getWeekdayEn(dateStr)
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const month = monthNames[d.getMonth()]
+  const day = d.getDate()
+  const year = d.getFullYear()
+  return `${weekday}, ${month} ${day}, ${year}`
+}
+
+/** 월 표시: February 2026 */
 export function formatMonthKst(year, month) {
-  const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
-  return `${year}년 ${monthNames[month - 1]} (KST)`
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  return `${monthNames[month - 1]} ${year}`
 }

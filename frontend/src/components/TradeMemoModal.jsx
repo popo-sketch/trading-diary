@@ -22,28 +22,28 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
     setSaving(true)
     try {
       await onSave({ memo, pnl })
-      showToast('저장됨!')
+      showToast('Saved!')
       onClose()
     } catch (err) {
       const detail = err?.response?.data?.detail
       const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
-      showToast(msg || err?.message || '저장 실패', 'error')
+      showToast(msg || err?.message || 'Failed to save', 'error')
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('이 거래를 삭제하시겠습니까?')) return
+    if (!confirm('Are you sure you want to delete this trade?')) return
     setSaving(true)
     try {
       await onDelete()
-      showToast('삭제됨!')
+      showToast('Deleted!')
       onClose()
     } catch (err) {
       const detail = err?.response?.data?.detail
       const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
-      showToast(msg || err?.message || '삭제 실패', 'error')
+      showToast(msg || err?.message || 'Failed to delete', 'error')
     } finally {
       setSaving(false)
     }
@@ -52,7 +52,7 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   const handleCopyCa = () => {
     if (trade.ca) {
       navigator.clipboard.writeText(trade.ca)
-      showToast('복사됨!')
+      showToast('Copied!')
     }
   }
 
@@ -107,16 +107,17 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm text-[#a0a0a0] mb-2">메모</label>
+          <label className="block text-sm text-[#a0a0a0] mb-2">Memo</label>
           <textarea
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
-            className="w-full h-40 px-4 py-3 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+            placeholder="📝 Add Memo"
+            className="w-full h-40 px-4 py-3 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-[#6B7280] placeholder:text-center placeholder:italic focus:outline-none focus:ring-2 focus:ring-accent resize-none"
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm text-[#a0a0a0] mb-2">PNL 수정</label>
+          <label className="block text-sm text-[#a0a0a0] mb-2">Edit PNL</label>
           <input
             type="number"
             value={pnl}
@@ -132,7 +133,7 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
               disabled={saving}
               className="px-4 py-2 rounded-lg border border-loss text-loss hover:bg-loss/10 disabled:opacity-50"
             >
-              삭제
+              Delete
             </button>
           ) : (
             <div />
@@ -142,14 +143,14 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
               onClick={onClose}
               className="px-4 py-2 rounded-lg border border-[#2a2a2a] text-[#a0a0a0] hover:bg-[#222]"
             >
-              취소
+              Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
               className="px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
             >
-              {saving ? '저장 중...' : '저장'}
+              {saving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>

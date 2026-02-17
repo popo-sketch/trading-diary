@@ -117,7 +117,7 @@ async def update_trade(trade_id: str, data: TradeUpdate):
         await conn.commit()
 
         if cursor.rowcount == 0:
-            raise HTTPException(status_code=404, detail="거래를 찾을 수 없습니다")
+            raise HTTPException(status_code=404, detail="Trade not found")
 
         cursor = await conn.execute(
             "SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, created_at, updated_at FROM trades WHERE id = ?",
@@ -137,7 +137,7 @@ async def delete_trade(trade_id: str):
         cursor = await conn.execute("DELETE FROM trades WHERE id = ?", (trade_id,))
         await conn.commit()
         if cursor.rowcount == 0:
-            raise HTTPException(status_code=404, detail="거래를 찾을 수 없습니다")
+            raise HTTPException(status_code=404, detail="Trade not found")
     finally:
         await conn.close()
 

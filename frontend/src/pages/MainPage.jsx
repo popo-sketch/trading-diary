@@ -40,7 +40,7 @@ export default function MainPage() {
       .catch((err) => {
         if (!cancelled) {
           const msg = err?.response?.data?.detail
-          setError(typeof msg === 'string' ? msg : (Array.isArray(msg) ? msg.map((d) => d.msg).join(', ') : null) || err?.message || '로딩 실패')
+          setError(typeof msg === 'string' ? msg : (Array.isArray(msg) ? msg.map((d) => d.msg).join(', ') : null) || err?.message || 'Failed to load')
         }
       })
       .finally(() => {
@@ -111,7 +111,7 @@ export default function MainPage() {
           <h1 className="text-2xl font-bold text-white">PNL Calendar</h1>
           
           <div className="flex items-center gap-6 flex-1 justify-center">
-            {/* 중앙 좌: Total PNL / Win Rate% / Trades */}
+            {/* 중앙 좌: Total PNL / Win Rate% / Trades / (W/L) */}
             {stats && (
               <div className="flex items-center gap-4 text-sm">
                 <div>
@@ -129,6 +129,11 @@ export default function MainPage() {
                 <div>
                   <span className="text-[#6B7280] text-xs">Trades: </span>
                   <span className="font-medium text-white">{stats.total_trades}</span>
+                  {winStats && (
+                    <span className="text-[#6B7280] ml-1">
+                      ({winStats.winDays}W / {winStats.lossDays}L)
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -199,7 +204,6 @@ export default function MainPage() {
           onPrevMonth={handlePrevMonth}
           onNextMonth={handleNextMonth}
           dailyPnl={dailyPnl}
-          winStats={winStats}
           isLoading={loading}
         />
 

@@ -1,21 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getTradesByDate, createTrade, updateTrade, deleteTrade } from '../api/trades'
-import { formatPnl, formatDateKo, formatMonthKst } from '../utils/format'
+import { formatPnl, formatDateEn } from '../utils/format'
+import { useToast } from '../contexts/ToastContext'
 import TradeCard from '../components/TradeCard'
 import TradeMemoModal from '../components/TradeMemoModal'
 import AddTradeModal from '../components/AddTradeModal'
 
 export default function DailyPage() {
   const { date } = useParams()
+  const { showToast } = useToast()
   const [trades, setTrades] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedTrade, setSelectedTrade] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
-
-  const year = date ? parseInt(date.slice(0, 4), 10) : 0
-  const month = date ? parseInt(date.slice(5, 7), 10) : 0
 
   useEffect(() => {
     if (!date) return
@@ -26,7 +25,7 @@ export default function DailyPage() {
       .catch((err) => {
         const detail = err?.response?.data?.detail
         const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
-        setError(msg || err?.message || '로딩 실패')
+        setError(msg || err?.message || 'Failed to load')
       })
       .finally(() => setLoading(false))
   }, [date])
@@ -38,24 +37,42 @@ export default function DailyPage() {
 
   const handleSaveMemo = async ({ memo, pnl }) => {
     if (!selectedTrade) return
-    const updated = await updateTrade(selectedTrade.id, { memo, pnl })
-    setTrades((prev) =>
-      prev.map((t) => (t.id === updated.id ? updated : t))
-    )
-    setSelectedTrade(updated)
+    try {
+      const updated = await updateTrade(selectedTrade.id, { memo, pnl })
+      setTrades((prev) =>
+        prev.map((t) => (t.id === updated.id ? updated : t))
+      )
+      setSelectedTrade(updated)
+    } catch (err) {
+      const detail = err?.response?.data?.detail
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
+      showToast(msg || err?.message || 'Failed to save', 'error')
+    }
   }
 
   const handleDeleteTrade = async () => {
     if (!selectedTrade) return
-    await deleteTrade(selectedTrade.id)
-    setTrades((prev) => prev.filter((t) => t.id !== selectedTrade.id))
-    setSelectedTrade(null)
+    try {
+      await deleteTrade(selectedTrade.id)
+      setTrades((prev) => prev.filter((t) => t.id !== selectedTrade.id))
+      setSelectedTrade(null)
+    } catch (err) {
+      const detail = err?.response?.data?.detail
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
+      showToast(msg || err?.message || 'Failed to delete', 'error')
+    }
   }
 
   const handleAddTrade = async (payload) => {
-    const created = await createTrade({ ...payload, date }) // 일별 페이지에서는 해당 날짜로 고정
-    setTrades((prev) => [...prev, created])
-    setShowAddModal(false)
+    try {
+      const created = await createTrade({ ...payload, date })
+      setTrades((prev) => [...prev, created])
+      setShowAddModal(false)
+    } catch (err) {
+      const detail = err?.response?.data?.detail
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
+      showToast(msg || err?.message || 'Failed to add trade', 'error')
+    }
   }
 
   if (!date) {
@@ -66,13 +83,13 @@ export default function DailyPage() {
     <div className="min-h-screen p-8">
       <Link
         to="/"
-        className="text-accent hover:underline mb-4 inline-block cursor-pointer"
+        className="mb-4 inline-block cursor-pointer p-2 rounded-lg hover:bg-[#222] transition-colors"
       >
-        ← Back to {formatMonthKst(year, month)}
+        <span className="text-2xl text-white">←</span>
       </Link>
 
       <h1 className="text-2xl font-bold text-white mb-2">
-        {formatDateKo(date)}
+        {formatDateEn(date)}
       </h1>
       <div
         className={`text-lg font-bold mb-6 ${
@@ -108,7 +125,7 @@ export default function DailyPage() {
         onClick={() => setShowAddModal(true)}
         className="px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 cursor-pointer"
       >
-        + 거래 추가하기
+        + Add Coin
       </button>
 
       {selectedTrade && (

@@ -20,21 +20,21 @@ class TradeCreate(BaseModel):
     @classmethod
     def validate_date_format(cls, v: str) -> str:
         if not re.match(r"^\d{4}-\d{2}-\d{2}$", v):
-            raise ValueError("날짜는 YYYY-MM-DD 형식이어야 합니다")
+            raise ValueError("Date must be in YYYY-MM-DD format")
         return v
 
     @field_validator("trade_type")
     @classmethod
     def validate_trade_type(cls, v: Optional[str]) -> Optional[str]:
         if v and v not in TRADE_TYPES:
-            raise ValueError(f"trade_type은 {TRADE_TYPES} 중 하나여야 합니다")
+            raise ValueError(f"trade_type must be one of {TRADE_TYPES}")
         return v
 
     @field_validator("return_percent")
     @classmethod
     def validate_return_percent(cls, v: float) -> float:
         if v == 0:
-            raise ValueError("return_percent는 0이 될 수 없습니다")
+            raise ValueError("return_percent cannot be 0")
         return v
 
     @model_validator(mode='after')
@@ -53,7 +53,7 @@ class TradeCreate(BaseModel):
         self.entry_amount = self.pnl / (normalized_return / 100)
         
         if self.entry_amount <= 0:
-            raise ValueError("계산된 entry_amount가 0 이하입니다. PnL과 Return %의 부호를 확인하세요.")
+            raise ValueError("Calculated entry_amount is less than or equal to 0. Please check the signs of PnL and Return %.")
         
         return self
 
@@ -70,7 +70,7 @@ class TradeUpdate(BaseModel):
         """pnl과 return_percent가 모두 제공되면 entry_amount 자동 계산"""
         if self.pnl is not None and self.return_percent is not None:
             if self.return_percent == 0:
-                raise ValueError("return_percent는 0이 될 수 없습니다")
+                raise ValueError("return_percent cannot be 0")
             
             # 부호 일치
             normalized_return = self.return_percent
@@ -82,7 +82,7 @@ class TradeUpdate(BaseModel):
             self.entry_amount = self.pnl / (normalized_return / 100)
             
             if self.entry_amount <= 0:
-                raise ValueError("계산된 entry_amount가 0 이하입니다. PnL과 Return %의 부호를 확인하세요.")
+                raise ValueError("Calculated entry_amount is less than or equal to 0. Please check the signs of PnL and Return %.")
         return self
 
 

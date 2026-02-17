@@ -37,13 +37,13 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!date || !ticker) {
-      showToast('날짜, 티커는 필수입니다', 'error')
+      showToast('Date and Ticker are required', 'error')
       return
     }
 
     // PnL과 Return% 모두 필수
     if (!pnl || !returnPercent) {
-      showToast('PnL ($)과 Return (%)는 모두 필수입니다', 'error')
+      showToast('PnL ($) and Return (%) are required', 'error')
       return
     }
 
@@ -51,18 +51,18 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
     const returnNum = Number(returnPercent)
 
     if (isNaN(pnlNum) || !Number.isFinite(pnlNum)) {
-      showToast('PNL은 숫자여야 합니다', 'error')
+      showToast('PNL must be a number', 'error')
       return
     }
 
     if (isNaN(returnNum) || !Number.isFinite(returnNum)) {
-      showToast('Return %는 숫자여야 합니다', 'error')
+      showToast('Return % must be a number', 'error')
       return
     }
 
     // return_percent는 0이 될 수 없음
     if (returnNum === 0) {
-      showToast('Return %는 0이 될 수 없습니다', 'error')
+      showToast('Return % cannot be 0', 'error')
       return
     }
 
@@ -84,12 +84,12 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
         return_percent: normalizedReturn,
         trade_type: tradeType || null,
       })
-      showToast('거래가 추가되었습니다')
+      showToast('Trade added successfully')
       onClose()
     } catch (err) {
       const detail = err?.response?.data?.detail
       const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
-      showToast(msg || err?.message || '추가 실패', 'error')
+      showToast(msg || err?.message || 'Failed to add', 'error')
     } finally {
       setLoading(false)
     }
@@ -104,10 +104,10 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
         className="w-full max-w-lg rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold text-white mb-4">거래 추가</h2>
+        <h2 className="text-xl font-bold text-white mb-4">Trading History</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-[#a0a0a0] mb-2">날짜</label>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Date</label>
             <input
               type="date"
               value={date}
@@ -118,7 +118,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
             />
           </div>
           <div>
-            <label className="block text-sm text-[#a0a0a0] mb-2">티커</label>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Ticker</label>
             <input
               type="text"
               value={ticker}
@@ -129,7 +129,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
             />
           </div>
           <div>
-            <label className="block text-sm text-[#a0a0a0] mb-2">체인</label>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Chain</label>
             <select
               value={chain}
               onChange={(e) => setChain(e.target.value)}
@@ -189,7 +189,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
             <p className="text-xs text-[#6B7280] mt-1">
               {calculatedEntryAmount 
                 ? `Entry = ${pnl} / (${returnPercent}% / 100) = ${calculatedEntryAmount}` 
-                : 'PnL과 Return %를 입력하면 자동 계산됩니다'}
+                : 'Auto-calculated from PnL and Return %'}
             </p>
           </div>
           <div>
@@ -199,7 +199,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
               onChange={(e) => setTradeType(e.target.value)}
               className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
             >
-              <option value="">선택 안 함</option>
+              <option value="">None</option>
               {TRADE_TYPES.map((t) => (
                 <option key={t} value={t}>
                   {t}
@@ -208,7 +208,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
             </select>
           </div>
           <div>
-            <label className="block text-sm text-[#a0a0a0] mb-2">메모</label>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Memo</label>
             <textarea
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
@@ -222,14 +222,14 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
               onClick={onClose}
               className="px-4 py-2 rounded-lg border border-[#2a2a2a] text-[#a0a0a0] hover:bg-[#222]"
             >
-              취소
+              Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
               className="px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
             >
-              {loading ? '생성 중...' : '생성'}
+              {loading ? 'Creating...' : 'Create'}
             </button>
           </div>
         </form>

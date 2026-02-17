@@ -14,13 +14,14 @@ export default function TradeCard({ trade, onClick }) {
     e.stopPropagation()
     if (trade.ca) {
       navigator.clipboard.writeText(trade.ca)
-      showToast('복사됨!')
+      showToast('Copied!')
     }
   }
 
-  const memoPreview = trade.memo
-    ? trade.memo.split('\n')[0].slice(0, 50)
-    : '메모 작성하기'
+  const memoLines = trade.memo ? trade.memo.split('\n').filter(line => line.trim()) : []
+  const memoPreview = memoLines.length > 0
+    ? memoLines.slice(0, 5).join('\n') + (memoLines.length > 5 ? '...' : '')
+    : null
 
   return (
     <div
@@ -29,23 +30,26 @@ export default function TradeCard({ trade, onClick }) {
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <div className="text-xl font-bold text-white mb-2">{trade.ticker}</div>
-          <div className="flex items-center gap-2 text-sm text-[#a0a0a0] mb-2">
-            <span>{trade.chain}</span>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-xl font-bold text-white">{trade.ticker}</div>
+            {trade.chain && (
+              <span className="px-2 py-0.5 rounded bg-[#2a2a2a] text-xs text-[#a0a0a0]">
+                [{trade.chain}]
+              </span>
+            )}
             {trade.ca && (
-              <>
-                <span>|</span>
-                <span className="truncate">{shortenCa(trade.ca)}</span>
-                <button
-                  onClick={handleCopyCa}
-                  className="shrink-0 px-2 py-0.5 rounded bg-[#2a2a2a] hover:bg-[#333] text-xs"
-                >
-                  📋 Copy
-                </button>
-              </>
+              <button
+                onClick={handleCopyCa}
+                className="shrink-0 text-lg hover:opacity-70 transition-opacity"
+                title="Copy CA"
+              >
+                🗐
+              </button>
             )}
           </div>
-          <div className="text-sm text-[#a0a0a0] mb-2">{memoPreview}</div>
+          <div className={`text-sm mb-2 ${memoPreview ? 'text-[#a0a0a0] whitespace-pre-line line-clamp-5' : 'text-[#6B7280] text-center italic'}`}>
+            {memoPreview || '📝 Add Memo'}
+          </div>
           {(trade.entry_amount || trade.return_percent || trade.trade_type) && (
             <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B7280] mt-2">
               {trade.entry_amount && (

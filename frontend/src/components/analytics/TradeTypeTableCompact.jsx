@@ -5,7 +5,7 @@ export default function TradeTypeTableCompact({ stats }) {
     return (
       <div className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] p-4">
         <h3 className="text-sm font-bold text-white mb-3">Trade Type Analysis</h3>
-        <div className="text-neutral text-center py-4 text-xs">데이터 없음</div>
+        <div className="text-neutral text-center py-4 text-xs">No Data</div>
       </div>
     )
   }
