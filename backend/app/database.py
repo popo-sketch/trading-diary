@@ -24,12 +24,31 @@ async def init_db():
                 ca TEXT,
                 pnl REAL NOT NULL,
                 memo TEXT,
+                entry_amount REAL,
+                return_percent REAL,
+                trade_type TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
         await conn.execute("CREATE INDEX IF NOT EXISTS idx_date ON trades(date)")
         await conn.execute("CREATE INDEX IF NOT EXISTS idx_ticker ON trades(ticker)")
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_trade_type ON trades(trade_type)")
+        
+        # 마이그레이션: 기존 테이블에 새 컬럼 추가 (없는 경우만)
+        try:
+            await conn.execute("ALTER TABLE trades ADD COLUMN entry_amount REAL")
+        except:
+            pass
+        try:
+            await conn.execute("ALTER TABLE trades ADD COLUMN return_percent REAL")
+        except:
+            pass
+        try:
+            await conn.execute("ALTER TABLE trades ADD COLUMN trade_type TEXT")
+        except:
+            pass
+        
         await conn.commit()
     finally:
         await conn.close()

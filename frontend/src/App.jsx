@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import MainPage from './pages/MainPage'
 import DailyPage from './pages/DailyPage'
+import StatsPage from './pages/StatsPage'
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/daily/:date" element={<DailyPage />} />
+        <Route path="/stats" element={<StatsPage />} />
       </Routes>
     </div>
   )

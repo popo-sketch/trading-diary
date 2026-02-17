@@ -37,6 +37,16 @@ npm run dev
 **Frontend:** React, Vite, Tailwind CSS, React Router, Axios  
 **Backend:** FastAPI, SQLite, Pydantic, CORS
 
+## 주요 기능
+
+- **월간 PNL 캘린더**: 일별 손익 시각화 및 통계
+- **거래 복기**: 메모 작성 및 관리
+- **고급 분석** (`/stats`):
+  - Position Size Bucket Analysis (EV%, EV$ 계산)
+  - Trade Type Analysis (Viral, Cult, KOL/Cabal, Political, Reversal, AI)
+  - Equity Curve (누적 PNL 차트)
+- **자동 Entry Amount 계산**: PnL과 Return % 입력 시 자동 계산
+
 ## API 엔드포인트
 
 | Method | Path | 설명 |
@@ -47,3 +57,4 @@ npm run dev
 | PUT | /api/trades/{id} | 거래 수정 |
 | DELETE | /api/trades/{id} | 거래 삭제 |
 | GET | /api/stats?year=&month= | 월간 통계 |
+| GET | /api/analytics?year=&month=&bucket_filter= | 고급 분석 (Position Size Buckets, Trade Type Stats, Equity Curve) |

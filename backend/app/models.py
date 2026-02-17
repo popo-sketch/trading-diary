@@ -1,6 +1,8 @@
 import re
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional
+
+TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI']
 
 
 class TradeCreate(BaseModel):
@@ -10,6 +12,9 @@ class TradeCreate(BaseModel):
     ca: Optional[str] = None
     pnl: float = Field(..., description="손익 (달러)")
     memo: Optional[str] = None
+    entry_amount: Optional[float] = None  # 클라이언트에서 무시됨, 서버에서 자동 계산
+    return_percent: float = Field(..., description="수익률 (%)")
+    trade_type: Optional[str] = None
 
     @field_validator("date")
     @classmethod
@@ -18,10 +23,67 @@ class TradeCreate(BaseModel):
             raise ValueError("날짜는 YYYY-MM-DD 형식이어야 합니다")
         return v
 
+    @field_validator("trade_type")
+    @classmethod
+    def validate_trade_type(cls, v: Optional[str]) -> Optional[str]:
+        if v and v not in TRADE_TYPES:
+            raise ValueError(f"trade_type은 {TRADE_TYPES} 중 하나여야 합니다")
+        return v
+
+    @field_validator("return_percent")
+    @classmethod
+    def validate_return_percent(cls, v: float) -> float:
+        if v == 0:
+            raise ValueError("return_percent는 0이 될 수 없습니다")
+        return v
+
+    @model_validator(mode='after')
+    def compute_entry_amount(self):
+        """entry_amount 자동 계산: entry_amount = pnl / (return_percent / 100)"""
+        # 클라이언트에서 보낸 entry_amount는 무시
+        self.entry_amount = None
+        
+        # 부호 일치: pnl과 return_percent의 부호가 다르면 return_percent 부호를 pnl에 맞춤
+        normalized_return = self.return_percent
+        if (self.pnl > 0 and self.return_percent < 0) or (self.pnl < 0 and self.return_percent > 0):
+            normalized_return = -abs(self.return_percent)
+            self.return_percent = normalized_return
+        
+        # entry_amount 계산
+        self.entry_amount = self.pnl / (normalized_return / 100)
+        
+        if self.entry_amount <= 0:
+            raise ValueError("계산된 entry_amount가 0 이하입니다. PnL과 Return %의 부호를 확인하세요.")
+        
+        return self
+
 
 class TradeUpdate(BaseModel):
     memo: Optional[str] = None
     pnl: Optional[float] = None
+    entry_amount: Optional[float] = None  # 클라이언트에서 무시됨, 서버에서 자동 계산
+    return_percent: Optional[float] = None
+    trade_type: Optional[str] = None
+
+    @model_validator(mode='after')
+    def compute_entry_amount_if_needed(self):
+        """pnl과 return_percent가 모두 제공되면 entry_amount 자동 계산"""
+        if self.pnl is not None and self.return_percent is not None:
+            if self.return_percent == 0:
+                raise ValueError("return_percent는 0이 될 수 없습니다")
+            
+            # 부호 일치
+            normalized_return = self.return_percent
+            if (self.pnl > 0 and self.return_percent < 0) or (self.pnl < 0 and self.return_percent > 0):
+                normalized_return = -abs(self.return_percent)
+                self.return_percent = normalized_return
+            
+            # entry_amount 계산
+            self.entry_amount = self.pnl / (normalized_return / 100)
+            
+            if self.entry_amount <= 0:
+                raise ValueError("계산된 entry_amount가 0 이하입니다. PnL과 Return %의 부호를 확인하세요.")
+        return self
 
 
 class TradeResponse(BaseModel):
@@ -32,6 +94,9 @@ class TradeResponse(BaseModel):
     ca: Optional[str] = None
     pnl: float
     memo: Optional[str] = None
+    entry_amount: Optional[float] = None
+    return_percent: Optional[float] = None
+    trade_type: Optional[str] = None
     created_at: str
     updated_at: str
 
@@ -57,3 +122,30 @@ class StatsResponse(BaseModel):
     worst_day: Optional[DaySummary] = None
     top_wins: list[TopTrade]
     top_losses: list[TopTrade]
+
+
+class PositionSizeBucket(BaseModel):
+    bucket: str
+    trades: int
+    win_rate: float
+    avg_win_percent: float
+    avg_loss_percent: float
+    ev_percent: float
+    total_pnl: float
+    avg_win_dollar: float
+    avg_loss_dollar: float
+    ev_dollar: float
+
+
+class TradeTypeStats(BaseModel):
+    trade_type: str
+    trades: int
+    win_rate: float
+    ev_percent: float
+    total_pnl: float
+
+
+class AnalyticsResponse(BaseModel):
+    position_size_buckets: list[PositionSizeBucket]
+    trade_type_stats: list[TradeTypeStats]
+    equity_curve: list[dict]  # [{date: str, cumulative_pnl: float}]

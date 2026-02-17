@@ -20,7 +20,7 @@ async def get_trades_by_month(
     try:
         cursor = await conn.execute(
             """
-            SELECT id, date, ticker, chain, ca, pnl, memo, created_at, updated_at
+            SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, created_at, updated_at
             FROM trades
             WHERE date LIKE ?
             ORDER BY date, created_at
@@ -42,7 +42,7 @@ async def get_trades_by_date(
     try:
         cursor = await conn.execute(
             """
-            SELECT id, date, ticker, chain, ca, pnl, memo, created_at, updated_at
+            SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, created_at, updated_at
             FROM trades
             WHERE date = ?
             ORDER BY created_at
@@ -63,14 +63,14 @@ async def create_trade(data: TradeCreate):
     try:
         await conn.execute(
             """
-            INSERT INTO trades (id, date, ticker, chain, ca, pnl, memo)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO trades (id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (trade_id, data.date, data.ticker, data.chain, data.ca, data.pnl, data.memo)
+            (trade_id, data.date, data.ticker, data.chain, data.ca, data.pnl, data.memo, data.entry_amount, data.return_percent, data.trade_type)
         )
         await conn.commit()
         cursor = await conn.execute(
-            "SELECT id, date, ticker, chain, ca, pnl, memo, created_at, updated_at FROM trades WHERE id = ?",
+            "SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, created_at, updated_at FROM trades WHERE id = ?",
             (trade_id,)
         )
         row = await cursor.fetchone()
@@ -93,6 +93,15 @@ async def update_trade(trade_id: str, data: TradeUpdate):
         if data.pnl is not None:
             updates.append("pnl = ?")
             params.append(data.pnl)
+        if data.entry_amount is not None:
+            updates.append("entry_amount = ?")
+            params.append(data.entry_amount)
+        if data.return_percent is not None:
+            updates.append("return_percent = ?")
+            params.append(data.return_percent)
+        if data.trade_type is not None:
+            updates.append("trade_type = ?")
+            params.append(data.trade_type)
 
         if not updates:
             raise HTTPException(status_code=400, detail="수정할 필드가 없습니다")
@@ -111,7 +120,7 @@ async def update_trade(trade_id: str, data: TradeUpdate):
             raise HTTPException(status_code=404, detail="거래를 찾을 수 없습니다")
 
         cursor = await conn.execute(
-            "SELECT id, date, ticker, chain, ca, pnl, memo, created_at, updated_at FROM trades WHERE id = ?",
+            "SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, created_at, updated_at FROM trades WHERE id = ?",
             (trade_id,)
         )
         row = await cursor.fetchone()
@@ -142,6 +151,9 @@ def _row_to_trade(row) -> TradeResponse:
         ca=row["ca"],
         pnl=row["pnl"],
         memo=row["memo"],
+        entry_amount=row.get("entry_amount"),
+        return_percent=row.get("return_percent"),
+        trade_type=row.get("trade_type"),
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useToast } from '../contexts/ToastContext'
 
 const CHAINS = ['Solana', 'Base', 'Bnb', 'etc']
+const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI']
 
 export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onClose }) {
   const { showToast } = useToast()
@@ -11,19 +12,66 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
   const [ca, setCa] = useState('')
   const [pnl, setPnl] = useState('')
   const [memo, setMemo] = useState('')
+  const [returnPercent, setReturnPercent] = useState('')
+  const [tradeType, setTradeType] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Entry Amount 자동 계산: entry_amount = pnl / (return_percent / 100)
+  const calculatedEntryAmount = (() => {
+    const pnlNum = Number(pnl)
+    const returnNum = Number(returnPercent)
+    
+    if (pnl && returnPercent && !isNaN(pnlNum) && !isNaN(returnNum) && returnNum !== 0) {
+      // 부호 일치: pnl과 return_percent의 부호가 다르면 return_percent 부호를 pnl에 맞춤
+      let normalizedReturn = returnNum
+      if ((pnlNum > 0 && returnNum < 0) || (pnlNum < 0 && returnNum > 0)) {
+        normalizedReturn = -Math.abs(returnNum)
+      }
+      
+      const entry = pnlNum / (normalizedReturn / 100)
+      return entry > 0 ? entry.toFixed(2) : ''
+    }
+    return ''
+  })()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!date || !ticker || pnl === '') {
-      showToast('날짜, 티커, PNL은 필수입니다', 'error')
+    if (!date || !ticker) {
+      showToast('날짜, 티커는 필수입니다', 'error')
       return
     }
+
+    // PnL과 Return% 모두 필수
+    if (!pnl || !returnPercent) {
+      showToast('PnL ($)과 Return (%)는 모두 필수입니다', 'error')
+      return
+    }
+
     const pnlNum = Number(pnl)
-    if (!Number.isFinite(pnlNum)) {
+    const returnNum = Number(returnPercent)
+
+    if (isNaN(pnlNum) || !Number.isFinite(pnlNum)) {
       showToast('PNL은 숫자여야 합니다', 'error')
       return
     }
+
+    if (isNaN(returnNum) || !Number.isFinite(returnNum)) {
+      showToast('Return %는 숫자여야 합니다', 'error')
+      return
+    }
+
+    // return_percent는 0이 될 수 없음
+    if (returnNum === 0) {
+      showToast('Return %는 0이 될 수 없습니다', 'error')
+      return
+    }
+
+    // 부호 일치: pnl과 return_percent의 부호가 다르면 return_percent 부호를 pnl에 맞춤
+    let normalizedReturn = returnNum
+    if ((pnlNum > 0 && returnNum < 0) || (pnlNum < 0 && returnNum > 0)) {
+      normalizedReturn = -Math.abs(returnNum)
+    }
+
     setLoading(true)
     try {
       await onCreated({
@@ -33,6 +81,8 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
         ca: ca || null,
         pnl: pnlNum,
         memo: memo || null,
+        return_percent: normalizedReturn,
+        trade_type: tradeType || null,
       })
       showToast('거래가 추가되었습니다')
       onClose()
@@ -102,17 +152,60 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
               className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[#a0a0a0] mb-2">PnL ($) *</label>
+              <input
+                type="number"
+                step="0.01"
+                value={pnl}
+                onChange={(e) => setPnl(e.target.value)}
+                required
+                placeholder="0"
+                className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[#a0a0a0] mb-2">Return (%) *</label>
+              <input
+                type="number"
+                step="0.01"
+                value={returnPercent}
+                onChange={(e) => setReturnPercent(e.target.value)}
+                required
+                placeholder="0"
+                className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+          </div>
           <div>
-            <label className="block text-sm text-[#a0a0a0] mb-2">PNL ($)</label>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Calculated Entry Amount</label>
             <input
-              type="number"
-              step="0.01"
-              value={pnl}
-              onChange={(e) => setPnl(e.target.value)}
-              required
-              placeholder="0"
-              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
+              type="text"
+              value={calculatedEntryAmount || '—'}
+              readOnly
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white opacity-70 cursor-not-allowed"
             />
+            <p className="text-xs text-[#6B7280] mt-1">
+              {calculatedEntryAmount 
+                ? `Entry = ${pnl} / (${returnPercent}% / 100) = ${calculatedEntryAmount}` 
+                : 'PnL과 Return %를 입력하면 자동 계산됩니다'}
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Trade Type</label>
+            <select
+              value={tradeType}
+              onChange={(e) => setTradeType(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="">선택 안 함</option>
+              {TRADE_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm text-[#a0a0a0] mb-2">메모</label>

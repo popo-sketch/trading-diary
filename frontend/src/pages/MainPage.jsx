@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { getTradesByMonth } from '../api/trades'
 import { getMonthlyStats } from '../api/stats'
 import { formatPnl } from '../utils/format'
@@ -98,7 +99,15 @@ export default function MainPage() {
     <div className="min-h-screen flex flex-col">
       <div className="flex-[7] p-8 pb-4">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-white">PNL Calendar</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-white">PNL Calendar</h1>
+            <Link
+              to="/stats"
+              className="px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 text-sm"
+            >
+              Analytics
+            </Link>
+          </div>
           <div className="flex items-center gap-4">
             <select
               value={year}
