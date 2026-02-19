@@ -101,7 +101,7 @@ function EquityChart({ data, hoveredIndex, setHoveredIndex, height }) {
   const zeroY = paddingTop + chartHeight - ((0 - minPnl) / range) * chartHeight
 
   const points = data.map((d, i) => {
-    const x = paddingLeft + (i / (data.length - 1 || 1)) * chartWidth
+    const x = paddingLeft + (data.length === 1 ? 0 : (i / (data.length - 1)) * chartWidth)
     const y = paddingTop + chartHeight - ((d.cumulative_pnl - minPnl) / range) * chartHeight
     return { x, y, ...d, index: i }
   })
@@ -212,7 +212,7 @@ function EvChart({ data, kellyPercent, hoveredIndex, setHoveredIndex, height }) 
   const zeroY = paddingTop + chartHeight - ((0 - minEv) / range) * chartHeight
 
   const points = data.map((d, i) => {
-    const x = paddingLeft + (i / (data.length - 1 || 1)) * chartWidth
+    const x = paddingLeft + (data.length === 1 ? 0 : (i / (data.length - 1)) * chartWidth)
     const y = paddingTop + chartHeight - ((d.ev_percent - minEv) / range) * chartHeight
     return { x, y, ...d, index: i }
   })
@@ -235,7 +235,9 @@ function EvChart({ data, kellyPercent, hoveredIndex, setHoveredIndex, height }) 
     yAxisValues.push(minEv + range * (i / steps))
   }
 
-  const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+  const pathData = points.length === 1
+    ? `M ${points[0].x} ${zeroY} L ${points[0].x} ${points[0].y}`
+    : points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
 
   return (
     <>

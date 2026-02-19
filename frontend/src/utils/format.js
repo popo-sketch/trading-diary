@@ -36,6 +36,7 @@ export function formatPnlShort(num) {
 export function formatDollarKMB(num) {
   if (num == null || isNaN(num) || num < 0) return '$0'
   const abs = Math.abs(num)
+  if (abs === 0) return '$0'
   if (abs >= 1_000_000_000) return `$${(abs / 1_000_000_000).toFixed(1)}B`
   if (abs >= 1_000_000) return `$${(abs / 1_000_000).toFixed(1)}M`
   if (abs >= 1000) return `$${(abs / 1000).toFixed(1)}K`

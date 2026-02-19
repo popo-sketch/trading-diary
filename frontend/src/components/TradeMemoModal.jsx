@@ -69,12 +69,17 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
       showToast('Return % cannot be 0', 'error')
       return
     }
+    // 부호 일치: pnl과 return_percent의 부호가 다르면 return_percent 부호를 pnl에 맞춤
+    let normalizedReturn = r
+    if ((p > 0 && r < 0) || (p < 0 && r > 0)) {
+      normalizedReturn = -Math.abs(r)
+    }
     setSaving(true)
     try {
       await onSave({
         memo,
         pnl: p,
-        return_percent: r,
+        return_percent: normalizedReturn,
         trade_type: tradeType || null,
         avg_entry_mc: avgEntryMcNum ?? null,
       })

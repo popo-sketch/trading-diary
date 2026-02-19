@@ -107,7 +107,7 @@ export function computeFlowStatus(analytics, trades) {
     if (!analytics && (!trades || trades.length === 0)) {
       return {
         line1: 'No reliable edge read yet',
-        line2: 'Data unavailable. Track consistently and avoid large sizing until signals stabilize. Stabilize.',
+        line2: 'Data unavailable. Avoid large sizing until signals stabilize.',
         color: WHITE,
       }
     }
@@ -154,7 +154,10 @@ export function computeFlowStatus(analytics, trades) {
     kelly: computeKelly(t.win_rate, t.avg_win_percent, t.avg_loss_percent),
   }))
 
-  // Entry MC bucket stats from trades
+  // Entry MC Bucket stats - Currently unused in signals
+  // Reserved for future analysis (e.g., "Avoid high MC entries")
+  // Keep calculation for potential future use
+  // Performance impact is minimal, so keeping the code
   const entryMCGroups = {}
   tradesWithReturn.forEach((t) => {
     const key = getEntryMCBucket(t.avg_entry_mc)
@@ -186,10 +189,10 @@ export function computeFlowStatus(analytics, trades) {
       const byExposure = [...negativeBuckets].sort((a, b) => (a.total_pnl ?? 0) - (b.total_pnl ?? 0))
       const worst = byExposure[0]
       if (worst && worst.bucket && Number.isFinite(worst.ev_percent) && Number.isFinite(worst.trades) && Number.isFinite(worst.total_pnl)) {
-        const bucketLabel = worst.bucket === '> $10K' ? '> $10K bucket' : `${worst.bucket || 'Unknown'} bucket`
+        const bucketLabel = worst.bucket === '> $10K' ? '> $10K' : worst.bucket || 'Unknown'
         return {
           line1: 'Oversizing in negative edge zone',
-          line2: `${bucketLabel} EV ${worst.ev_percent.toFixed(1)}% (n=${worst.trades}) with PnL ${formatPnlShort(worst.total_pnl)}. Cut size in this bucket or move exposure to proven buckets. Reduce.`,
+          line2: `${bucketLabel}: EV ${worst.ev_percent.toFixed(1)}%, n=${worst.trades}, ${formatPnlShort(worst.total_pnl)}. Cut size or shift exposure.`,
           color: RED,
         }
       }
@@ -210,7 +213,7 @@ export function computeFlowStatus(analytics, trades) {
         const typeLabel = worst.trade_type || 'Unknown'
         return {
           line1: `Leaking PnL in ${typeLabel}`,
-          line2: `${typeLabel} EV ${worst.ev_percent.toFixed(1)}% (n=${worst.trades}), PnL ${formatPnlShort(worst.total_pnl)}. Pause this category until edge flips or rules change. Avoid.`,
+          line2: `${typeLabel}: EV ${worst.ev_percent.toFixed(1)}%, n=${worst.trades}, ${formatPnlShort(worst.total_pnl)}. Pause category.`,
           color: RED,
         }
       }
@@ -221,7 +224,7 @@ export function computeFlowStatus(analytics, trades) {
       const ratioPct = Math.round(tailRatio * 100)
       return {
         line1: 'One trade dominated the drawdown',
-        line2: `Worst trade ${formatPnlShort(worstPnL)} is ${ratioPct}% of monthly PnL. Add a hard max-loss and size cap for that setup. Cap.`,
+        line2: `Worst trade ${formatPnlShort(worstPnL)} is ${ratioPct}% of monthly PnL. Add max-loss cap.`,
         color: RED,
       }
     }
@@ -239,7 +242,7 @@ export function computeFlowStatus(analytics, trades) {
       const avgLoss = Number.isFinite(overall?.avgLossPct) ? overall.avgLossPct : 0
       return {
         line1: 'Winrate trap: losses outweigh wins',
-        line2: `Win ${winRate.toFixed(0)}% but EV ${overallEv.toFixed(1)}%. Avg loss ${Math.abs(avgLoss).toFixed(1)}% > avg win ${avgWin.toFixed(1)}%. Tighten stops or downsize. Tighten.`,
+        line2: `Win ${winRate.toFixed(0)}% but EV ${overallEv.toFixed(1)}%. Loss ${Math.abs(avgLoss).toFixed(1)}% > win ${avgWin.toFixed(1)}%. Tighten stops.`,
         color: RED,
       }
     }
@@ -271,7 +274,7 @@ export function computeFlowStatus(analytics, trades) {
     const notWorsening = sliceEv == null || (Number.isFinite(sliceEv) && sliceEv >= -5)
     if ((overallEdge || goodBucket || goodType) && notWorsening) {
       const scope = goodBucket && goodBucket.bucket
-        ? `${goodBucket.bucket} bucket`
+        ? goodBucket.bucket
         : goodType && goodType.trade_type
           ? goodType.trade_type
           : 'Overall'
@@ -298,7 +301,7 @@ export function computeFlowStatus(analytics, trades) {
             : 0
       return {
         line1: 'Edge confirmed — controlled aggression',
-        line2: `${scope} EV ${ev.toFixed(1)}% (n=${n}) and Kelly ${kelly.toFixed(1)}%. Keep sizing consistent and scale only inside this edge. Keep.`,
+        line2: `${scope}: EV ${ev.toFixed(1)}%, n=${n}, Kelly ${kelly.toFixed(1)}%. Keep sizing consistent.`,
         color: BLUE,
       }
     }
@@ -320,7 +323,7 @@ export function computeFlowStatus(analytics, trades) {
       ) {
         return {
           line1: 'Risk tightening detected',
-          line2: 'Last 10 trades show smaller losses / less exposure in weak buckets. Continue pruning negatives. Continue.',
+          line2: 'Last 10 trades show smaller losses. Continue pruning negatives.',
           color: BLUE,
         }
       }
@@ -331,7 +334,7 @@ export function computeFlowStatus(analytics, trades) {
       const safeCount = Number.isFinite(tradesCount) ? tradesCount : 0
       return {
         line1: 'No reliable edge read yet',
-        line2: `Sample too small (n=${safeCount}). Track consistently and avoid large sizing until signals stabilize. Stabilize.`,
+        line2: `Sample too small (n=${safeCount}). Avoid large sizing until signals stabilize.`,
         color: WHITE,
       }
     }
@@ -340,7 +343,7 @@ export function computeFlowStatus(analytics, trades) {
     const safeCount = Number.isFinite(tradesCount) ? tradesCount : 0
     return {
       line1: 'No reliable edge read yet',
-      line2: `Sample too small (n=${safeCount}). Track consistently and avoid large sizing until signals stabilize. Stabilize.`,
+      line2: `Sample too small (n=${safeCount}). Avoid large sizing until signals stabilize.`,
       color: WHITE,
     }
   } catch (error) {
@@ -348,7 +351,7 @@ export function computeFlowStatus(analytics, trades) {
     console.warn('Flow status calculation error:', error)
     return {
       line1: 'No reliable edge read yet',
-      line2: 'Calculation error. Track consistently and avoid large sizing until signals stabilize. Stabilize.',
+      line2: 'Calculation error. Avoid large sizing until signals stabilize.',
       color: WHITE,
     }
   }
