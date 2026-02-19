@@ -106,7 +106,7 @@ export function computeFlowStatus(analytics, trades) {
     // API fail or invalid data → return neutral message
     if (!analytics && (!trades || trades.length === 0)) {
       return {
-        line1: '[FLOW] No reliable edge read yet',
+        line1: 'No reliable edge read yet',
         line2: 'Data unavailable. Track consistently and avoid large sizing until signals stabilize. Stabilize.',
         color: WHITE,
       }
@@ -188,7 +188,7 @@ export function computeFlowStatus(analytics, trades) {
       if (worst && worst.bucket && Number.isFinite(worst.ev_percent) && Number.isFinite(worst.trades) && Number.isFinite(worst.total_pnl)) {
         const bucketLabel = worst.bucket === '> $10K' ? '> $10K bucket' : `${worst.bucket || 'Unknown'} bucket`
         return {
-          line1: '[FLOW] Oversizing in negative edge zone',
+          line1: 'Oversizing in negative edge zone',
           line2: `${bucketLabel} EV ${worst.ev_percent.toFixed(1)}% (n=${worst.trades}) with PnL ${formatPnlShort(worst.total_pnl)}. Cut size in this bucket or move exposure to proven buckets. Reduce.`,
           color: RED,
         }
@@ -209,7 +209,7 @@ export function computeFlowStatus(analytics, trades) {
       if (worst && worst.trade_type && Number.isFinite(worst.ev_percent) && Number.isFinite(worst.trades) && Number.isFinite(worst.total_pnl)) {
         const typeLabel = worst.trade_type || 'Unknown'
         return {
-          line1: `[FLOW] Leaking PnL in ${typeLabel}`,
+          line1: `Leaking PnL in ${typeLabel}`,
           line2: `${typeLabel} EV ${worst.ev_percent.toFixed(1)}% (n=${worst.trades}), PnL ${formatPnlShort(worst.total_pnl)}. Pause this category until edge flips or rules change. Avoid.`,
           color: RED,
         }
@@ -220,7 +220,7 @@ export function computeFlowStatus(analytics, trades) {
     if (Number.isFinite(tailRatio) && tailRatio >= tailRiskRatio && Number.isFinite(worstPnL) && worstPnL < 0) {
       const ratioPct = Math.round(tailRatio * 100)
       return {
-        line1: '[FLOW] One trade dominated the drawdown',
+        line1: 'One trade dominated the drawdown',
         line2: `Worst trade ${formatPnlShort(worstPnL)} is ${ratioPct}% of monthly PnL. Add a hard max-loss and size cap for that setup. Cap.`,
         color: RED,
       }
@@ -238,7 +238,7 @@ export function computeFlowStatus(analytics, trades) {
       const avgWin = Number.isFinite(overall?.avgWinPct) ? overall.avgWinPct : 0
       const avgLoss = Number.isFinite(overall?.avgLossPct) ? overall.avgLossPct : 0
       return {
-        line1: '[FLOW] Winrate trap: losses outweigh wins',
+        line1: 'Winrate trap: losses outweigh wins',
         line2: `Win ${winRate.toFixed(0)}% but EV ${overallEv.toFixed(1)}%. Avg loss ${Math.abs(avgLoss).toFixed(1)}% > avg win ${avgWin.toFixed(1)}%. Tighten stops or downsize. Tighten.`,
         color: RED,
       }
@@ -297,7 +297,7 @@ export function computeFlowStatus(analytics, trades) {
             ? overallKelly
             : 0
       return {
-        line1: '[FLOW] Edge confirmed — controlled aggression',
+        line1: 'Edge confirmed — controlled aggression',
         line2: `${scope} EV ${ev.toFixed(1)}% (n=${n}) and Kelly ${kelly.toFixed(1)}%. Keep sizing consistent and scale only inside this edge. Keep.`,
         color: BLUE,
       }
@@ -319,7 +319,7 @@ export function computeFlowStatus(analytics, trades) {
         avgLossSize <= overallAvgLoss * 1.1
       ) {
         return {
-          line1: '[FLOW] Risk tightening detected',
+          line1: 'Risk tightening detected',
           line2: 'Last 10 trades show smaller losses / less exposure in weak buckets. Continue pruning negatives. Continue.',
           color: BLUE,
         }
@@ -330,7 +330,7 @@ export function computeFlowStatus(analytics, trades) {
     if (!Number.isFinite(tradesCount) || tradesCount < minOverallTrades) {
       const safeCount = Number.isFinite(tradesCount) ? tradesCount : 0
       return {
-        line1: '[FLOW] No reliable edge read yet',
+        line1: 'No reliable edge read yet',
         line2: `Sample too small (n=${safeCount}). Track consistently and avoid large sizing until signals stabilize. Stabilize.`,
         color: WHITE,
       }
@@ -339,7 +339,7 @@ export function computeFlowStatus(analytics, trades) {
     // Default neutral
     const safeCount = Number.isFinite(tradesCount) ? tradesCount : 0
     return {
-      line1: '[FLOW] No reliable edge read yet',
+      line1: 'No reliable edge read yet',
       line2: `Sample too small (n=${safeCount}). Track consistently and avoid large sizing until signals stabilize. Stabilize.`,
       color: WHITE,
     }
@@ -347,7 +347,7 @@ export function computeFlowStatus(analytics, trades) {
     // Calculation error → 'Insufficient Data'
     console.warn('Flow status calculation error:', error)
     return {
-      line1: '[FLOW] No reliable edge read yet',
+      line1: 'No reliable edge read yet',
       line2: 'Calculation error. Track consistently and avoid large sizing until signals stabilize. Stabilize.',
       color: WHITE,
     }

@@ -53,15 +53,14 @@ export default function Calendar({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg text-[#a0a0a0]">{formatMonthKst(year, month)}</h2>
+      <div className="flex items-center justify-center">
+        <h2 className="text-lg text-[#a0a0a0] mr-4">{formatMonthKst(year, month)}</h2>
         {flowStatusContent && (
-          <div className="flex items-center gap-6 flex-1 justify-center">
+          <>
+            <span className="text-[#2a2a2a] mr-4">|</span>
             {flowStatusContent}
-          </div>
+          </>
         )}
-        {/* 오른쪽 빈 공간 (첫 번째 헤더의 연도 드롭다운 + 화살표 너비와 동일하게 맞춤: select ~80px + gap-4 + buttons ~64px) */}
-        <div className="flex items-center gap-4" style={{ width: '180px' }}></div>
       </div>
 
       <div className="grid grid-cols-7 gap-1">

@@ -8,7 +8,7 @@ export default function FlowStatusModule({ analytics, trades, error }) {
     // API fail → neutral message
     if (error) {
       return {
-        line1: '[FLOW] No reliable edge read yet',
+        line1: 'No reliable edge read yet',
         line2: 'Data unavailable. Track consistently and avoid large sizing until signals stabilize. Stabilize.',
         color: WHITE,
       }
@@ -18,7 +18,7 @@ export default function FlowStatusModule({ analytics, trades, error }) {
     } catch (err) {
       console.warn('FlowStatusModule error:', err)
       return {
-        line1: '[FLOW] No reliable edge read yet',
+        line1: 'No reliable edge read yet',
         line2: 'Calculation error. Track consistently and avoid large sizing until signals stabilize. Stabilize.',
         color: WHITE,
       }
@@ -26,7 +26,7 @@ export default function FlowStatusModule({ analytics, trades, error }) {
   }, [analytics, trades, error])
 
   // Ensure no undefined/null values
-  const line1 = flow?.line1 || '[FLOW] No reliable edge read yet'
+  const line1 = flow?.line1 || 'No reliable edge read yet'
   const line2 = flow?.line2 || 'Data unavailable. Track consistently and avoid large sizing until signals stabilize. Stabilize.'
   const color = flow?.color || WHITE
 
