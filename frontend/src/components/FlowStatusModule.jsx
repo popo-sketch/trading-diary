@@ -37,8 +37,8 @@ export default function FlowStatusModule({ analytics, trades, error }) {
       className="text-sm font-medium leading-snug max-w-full break-words"
       style={colorStyle}
     >
-      <div className="mb-0.5">{line1}</div>
-      <div className="text-xs font-normal opacity-95">{line2}</div>
+      <div className="mb-0.5 text-center">{line1}</div>
+      <div className="text-xs font-normal opacity-95 text-center">{line2}</div>
     </div>
   )
 }

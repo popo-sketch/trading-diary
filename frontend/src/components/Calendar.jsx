@@ -53,14 +53,15 @@ export default function Calendar({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-center">
-        <h2 className="text-lg text-[#a0a0a0] mr-4">{formatMonthKst(year, month)}</h2>
+      <div className="relative flex items-center justify-between">
+        <h2 className="text-lg text-[#a0a0a0]">{formatMonthKst(year, month)}</h2>
         {flowStatusContent && (
-          <>
-            <span className="text-[#2a2a2a] mr-4">|</span>
-            {flowStatusContent}
-          </>
+          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-4">
+            <span className="text-[#2a2a2a]">|</span>
+            <div className="text-center">{flowStatusContent}</div>
+          </div>
         )}
+        <div></div>
       </div>
 
       <div className="grid grid-cols-7 gap-1">
