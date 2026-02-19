@@ -232,7 +232,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
                 const cleaned = e.target.value.replace(/[^0-9]/g, '')
                 setAvgEntryMc(cleaned === '' ? '' : formatDollarInput(parseInt(cleaned, 10)))
               }}
-                placeholder="100,000"
+                placeholder="0"
                 className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>

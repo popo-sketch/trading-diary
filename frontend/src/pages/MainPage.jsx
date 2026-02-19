@@ -7,6 +7,7 @@ import Calendar from '../components/Calendar'
 import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
 import PositionSizeTableCompact from '../components/analytics/PositionSizeTableCompact'
 import TradeTypeTableCompact from '../components/analytics/TradeTypeTableCompact'
+import FlowStatusModule from '../components/FlowStatusModule'
 
 const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
@@ -205,6 +206,8 @@ export default function MainPage() {
             </div>
           </div>
         </div>
+
+        <FlowStatusModule analytics={analytics} trades={trades} error={error} />
 
         {error && (
           <div className="p-3 rounded-lg bg-loss/20 text-loss border border-loss/50 text-sm">
