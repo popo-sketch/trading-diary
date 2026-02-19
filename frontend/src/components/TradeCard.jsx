@@ -1,4 +1,4 @@
-import { formatPnl } from '../utils/format'
+import { formatPnl, formatDollarKMB } from '../utils/format'
 import { useToast } from '../contexts/ToastContext'
 
 function shortenCa(ca) {
@@ -95,6 +95,14 @@ export default function TradeCard({ trade, onClick }) {
                 <span className="px-2 py-0.5 rounded bg-[#2a2a2a] text-[#a0a0a0]">
                   {trade.trade_type}
                 </span>
+              )}
+            </div>
+          )}
+          {trade.avg_entry_mc != null && (
+            <div className="text-xs text-[#6B7280] mt-1 space-y-0.5">
+              <div>Avg. Entry: {formatDollarKMB(trade.avg_entry_mc)}</div>
+              {trade.return_percent != null && (
+                <div>Exit Entry: {formatDollarKMB(trade.avg_entry_mc * (1 + trade.return_percent / 100))}</div>
               )}
             </div>
           )}

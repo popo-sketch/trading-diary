@@ -11,7 +11,7 @@ function formatEvPercent(num) {
   return `${sign}${Number(num).toFixed(1)}%`
 }
 
-export default function EquityCurveCompact({ data, evCurve = [] }) {
+export default function EquityCurveCompact({ data, evCurve = [], kellyPercent }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
   const [hoveredEvIndex, setHoveredEvIndex] = useState(null)
 
@@ -51,6 +51,7 @@ export default function EquityCurveCompact({ data, evCurve = [] }) {
           {hasEv ? (
             <EvChart
               data={evCurve}
+              kellyPercent={kellyPercent}
               hoveredIndex={hoveredEvIndex}
               setHoveredIndex={setHoveredEvIndex}
               height={CHART_HEIGHT}
@@ -193,12 +194,13 @@ function EquityChart({ data, hoveredIndex, setHoveredIndex, height }) {
   )
 }
 
-function EvChart({ data, hoveredIndex, setHoveredIndex, height }) {
+function EvChart({ data, kellyPercent, hoveredIndex, setHoveredIndex, height }) {
   const values = data.map((d) => d.ev_percent)
   const minEv = Math.min(...values, 0)
   const maxEv = Math.max(...values, 0)
   const range = maxEv - minEv || 1
   const currentEv = data[data.length - 1]?.ev_percent ?? 0
+  const kellyDisplay = kellyPercent != null && !isNaN(kellyPercent) ? Math.round(kellyPercent) : 0
 
   const width = 500
   const paddingRight = 20
@@ -239,7 +241,10 @@ function EvChart({ data, hoveredIndex, setHoveredIndex, height }) {
     <>
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-bold text-white">Expected Value Curve</h3>
-        <span className={`text-xs ${currentEv >= 0 ? 'text-profit' : 'text-loss'}`}>Current EV: {formatEvPercent(currentEv)}</span>
+        <div className="flex items-center gap-3 text-xs">
+          <span className={currentEv >= 0 ? 'text-profit' : 'text-loss'}>Current EV: {formatEvPercent(currentEv)}</span>
+          <span className="text-[#3B82F6]">Kelly: {kellyDisplay}%</span>
+        </div>
       </div>
       <div className="overflow-x-auto relative flex-1 min-h-0">
         <svg

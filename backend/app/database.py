@@ -27,6 +27,7 @@ async def init_db():
                 entry_amount REAL,
                 return_percent REAL,
                 trade_type TEXT,
+                avg_entry_mc REAL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -48,7 +49,11 @@ async def init_db():
             await conn.execute("ALTER TABLE trades ADD COLUMN trade_type TEXT")
         except:
             pass
-        
+        try:
+            await conn.execute("ALTER TABLE trades ADD COLUMN avg_entry_mc REAL")
+        except:
+            pass
+
         await conn.commit()
     finally:
         await conn.close()

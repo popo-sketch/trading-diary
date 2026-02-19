@@ -226,7 +226,7 @@ export default function MainPage() {
 
         {/* Equity Curve + Expected Value Curve */}
         {analytics && (
-          <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} />
+          <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} kellyPercent={analytics.kelly_percent} />
         )}
 
         {/* 좌우 50:50 테이블 */}

@@ -15,6 +15,7 @@ class TradeCreate(BaseModel):
     entry_amount: Optional[float] = None  # 클라이언트에서 무시됨, 서버에서 자동 계산
     return_percent: float = Field(..., description="수익률 (%)")
     trade_type: Optional[str] = None
+    avg_entry_mc: Optional[float] = None  # 평균 진입 시총 ($)
 
     @field_validator("date")
     @classmethod
@@ -64,6 +65,7 @@ class TradeUpdate(BaseModel):
     entry_amount: Optional[float] = None  # 클라이언트에서 무시됨, 서버에서 자동 계산
     return_percent: Optional[float] = None
     trade_type: Optional[str] = None
+    avg_entry_mc: Optional[float] = None
 
     @model_validator(mode='after')
     def compute_entry_amount_if_needed(self):
@@ -97,6 +99,7 @@ class TradeResponse(BaseModel):
     entry_amount: Optional[float] = None
     return_percent: Optional[float] = None
     trade_type: Optional[str] = None
+    avg_entry_mc: Optional[float] = None
     created_at: str
     updated_at: str
 
@@ -152,3 +155,4 @@ class AnalyticsResponse(BaseModel):
     trade_type_stats: list[TradeTypeStats]
     equity_curve: list[dict]  # [{date: str, cumulative_pnl: float}]
     ev_curve: list[dict]  # [{date: str, ev_percent: float}] 월 시작~해당 날짜 누적 평균 EV%
+    kelly_percent: float | None = None  # 월 전체 (Win%×AvgWin% - Loss%×AvgLoss%) / AvgWin%, 양수만

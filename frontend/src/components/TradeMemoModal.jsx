@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { formatPnl } from '../utils/format'
+import { formatPnl, formatDollarKMB, parseDollarInput, formatDollarInput } from '../utils/format'
 import { useToast } from '../contexts/ToastContext'
 
 const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'ETC']
@@ -10,6 +10,7 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   const [pnl, setPnl] = useState('')
   const [returnPercent, setReturnPercent] = useState('')
   const [tradeType, setTradeType] = useState('')
+  const [avgEntryMc, setAvgEntryMc] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -20,6 +21,8 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
       const ret = trade.return_percent != null ? Number(trade.return_percent) : ''
       setReturnPercent(Number.isFinite(ret) ? String(ret) : '')
       setTradeType(trade.trade_type ?? '')
+      const mc = trade.avg_entry_mc
+      setAvgEntryMc(mc != null && Number.isFinite(mc) ? formatDollarInput(mc) : '')
     }
   }, [trade])
 
@@ -42,6 +45,12 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
     const entry = pnlNum / (norm / 100)
     return entry > 0 ? entry : null
   }, [pnlNum, returnNum])
+
+  const avgEntryMcNum = parseDollarInput(avgEntryMc)
+  const exitEntryMc =
+    avgEntryMcNum != null && returnNum != null && Number.isFinite(returnNum)
+      ? avgEntryMcNum * (1 + returnNum / 100)
+      : null
 
   if (!trade) return null
 
@@ -67,6 +76,7 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
         pnl: p,
         return_percent: r,
         trade_type: tradeType || null,
+        avg_entry_mc: avgEntryMcNum ?? null,
       })
       showToast('Saved!')
       onClose()
@@ -240,6 +250,32 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
             value={calculatedEntryAmount != null ? formatPnl(calculatedEntryAmount) : '—'}
             className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white opacity-70 cursor-not-allowed"
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Edit Avg. Entry MC ($)</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={avgEntryMc}
+              onChange={(e) => {
+                const cleaned = e.target.value.replace(/[^0-9]/g, '')
+                setAvgEntryMc(cleaned === '' ? '' : formatDollarInput(parseInt(cleaned, 10)))
+              }}
+              placeholder="100,000"
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Exit Entry MC</label>
+            <input
+              type="text"
+              readOnly
+              value={exitEntryMc != null ? formatDollarKMB(exitEntryMc) : '—'}
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white opacity-70 cursor-not-allowed"
+            />
+          </div>
         </div>
 
         <div className="flex gap-3 justify-between">

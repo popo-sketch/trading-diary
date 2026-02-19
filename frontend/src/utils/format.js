@@ -32,6 +32,33 @@ export function formatPnlShort(num) {
   return `${sign}$${formatNumber(abs)}`
 }
 
+/** MC/금액 표시: $100.0K, $1.5M, $1.2B — 소수점 1자리 (양수만, 부호 없음) */
+export function formatDollarKMB(num) {
+  if (num == null || isNaN(num) || num < 0) return '$0'
+  const abs = Math.abs(num)
+  if (abs >= 1_000_000_000) return `$${(abs / 1_000_000_000).toFixed(1)}B`
+  if (abs >= 1_000_000) return `$${(abs / 1_000_000).toFixed(1)}M`
+  if (abs >= 1000) return `$${(abs / 1000).toFixed(1)}K`
+  return `$${abs.toFixed(1)}`
+}
+
+/** 입력 필드용: 숫자만 추출 후 파싱 (콤마 제거) */
+export function parseDollarInput(str) {
+  if (str == null || typeof str !== 'string') return null
+  const cleaned = str.replace(/,/g, '').trim()
+  if (cleaned === '') return null
+  const num = Number(cleaned)
+  return Number.isFinite(num) ? num : null
+}
+
+/** 입력 필드용: 숫자를 천 단위 콤마 문자열로 표시 */
+export function formatDollarInput(num) {
+  if (num == null || isNaN(num) || !Number.isFinite(num)) return ''
+  const s = Math.abs(num).toString().split('.')
+  s[0] = s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return s.join('.')
+}
+
 /**
  * YYYY-MM-DD를 로컬 기준 날짜로만 파싱 (자정 = 로컬 0시).
  * toISOString() 사용 금지 — UTC 변환 시 KST에서 날짜가 하루 밀림.

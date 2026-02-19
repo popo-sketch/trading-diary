@@ -128,6 +128,20 @@ async def get_analytics(
                     ev_percent = 0.0
                 ev_curve.append({"date": date, "ev_percent": round(ev_percent, 2)})
 
+        # Kelly%: 월 전체 (Win%×AvgWin% - Loss%×AvgLoss%) / AvgWin%, 양수만
+        kelly_percent = None
+        if bucket_trades_for_ev:
+            wins_k = [t for t in bucket_trades_for_ev if t["pnl"] > 0]
+            losses_k = [t for t in bucket_trades_for_ev if t["pnl"] <= 0]
+            n_k = len(bucket_trades_for_ev)
+            win_rate_k = len(wins_k) / n_k if n_k else 0
+            loss_rate_k = 1 - win_rate_k
+            avg_win_pct_k = sum(t["return_percent"] for t in wins_k) / len(wins_k) if wins_k else 0
+            avg_loss_pct_k = sum(t["return_percent"] for t in losses_k) / len(losses_k) if losses_k else 0
+            if avg_win_pct_k > 0:
+                kelly_raw = (win_rate_k * avg_win_pct_k - loss_rate_k * abs(avg_loss_pct_k)) / avg_win_pct_k
+                kelly_percent = round(max(0.0, kelly_raw * 100), 1)
+
         # 포지션 크기 버킷 통계 계산
         position_buckets = []
         for bucket_name, trades in buckets.items():
@@ -210,7 +224,8 @@ async def get_analytics(
             position_size_buckets=position_buckets,
             trade_type_stats=trade_type_stats_list,
             equity_curve=equity_curve,
-            ev_curve=ev_curve
+            ev_curve=ev_curve,
+            kelly_percent=kelly_percent
         )
     finally:
         await conn.close()

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useToast } from '../contexts/ToastContext'
+import { formatDollarKMB, parseDollarInput, formatDollarInput } from '../utils/format'
 
 const CHAINS = ['Solana', 'Base', 'Bnb', 'etc']
 const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'ETC']
@@ -14,6 +15,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
   const [memo, setMemo] = useState('')
   const [returnPercent, setReturnPercent] = useState('')
   const [tradeType, setTradeType] = useState('')
+  const [avgEntryMc, setAvgEntryMc] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -26,6 +28,11 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
   }, [onClose])
 
   // Entry Amount 자동 계산: entry_amount = pnl / (return_percent / 100)
+  const avgEntryMcNum = parseDollarInput(avgEntryMc)
+  const exitEntryMc = (avgEntryMcNum != null && returnPercent !== '' && !isNaN(Number(returnPercent)))
+    ? avgEntryMcNum * (1 + Number(returnPercent) / 100)
+    : null
+
   const calculatedEntryAmount = (() => {
     const pnlNum = Number(pnl)
     const returnNum = Number(returnPercent)
@@ -92,6 +99,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
         memo: memo || null,
         return_percent: normalizedReturn,
         trade_type: tradeType || null,
+        avg_entry_mc: avgEntryMcNum ?? null,
       })
       showToast('Trade added successfully')
       onClose()
@@ -212,6 +220,32 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
                 ? `Entry = ${pnl} / (${returnPercent}% / 100) = ${calculatedEntryAmount}` 
                 : 'Auto-calculated from PnL and Return %'}
             </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[#a0a0a0] mb-2">Avg. Entry MC ($)</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={avgEntryMc}
+                onChange={(e) => {
+                const cleaned = e.target.value.replace(/[^0-9]/g, '')
+                setAvgEntryMc(cleaned === '' ? '' : formatDollarInput(parseInt(cleaned, 10)))
+              }}
+                placeholder="100,000"
+                className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[#a0a0a0] mb-2">Exit Entry MC</label>
+              <input
+                type="text"
+                readOnly
+                value={exitEntryMc != null ? formatDollarKMB(exitEntryMc) : '—'}
+                className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white opacity-70 cursor-not-allowed"
+              />
+              <p className="text-xs text-[#6B7280] mt-1">Avg. Entry MC × (1 + Return% / 100)</p>
+            </div>
           </div>
           <div>
             <label className="block text-sm text-[#a0a0a0] mb-2">Memo</label>
