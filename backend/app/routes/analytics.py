@@ -60,6 +60,8 @@ async def get_analytics(
 
         cumulative_pnl = 0
         equity_curve = []
+        ev_curve = []
+        bucket_trades_for_ev = []  # bucket 포함 + return_percent 있는 거래만 (누적)
 
         for row in rows:
             row = dict(row)
@@ -111,6 +113,20 @@ async def get_analytics(
             if include_in_bucket:
                 cumulative_pnl += pnl
                 equity_curve.append({"date": date, "cumulative_pnl": cumulative_pnl})
+                # EV curve: 해당 시점까지 누적 거래로 EV% 계산 (Win Rate × Avg Win% - Loss Rate × Avg Loss%)
+                bucket_trades_for_ev.append({"pnl": pnl, "return_percent": return_percent})
+                wins_ev = [t for t in bucket_trades_for_ev if t["pnl"] > 0]
+                losses_ev = [t for t in bucket_trades_for_ev if t["pnl"] <= 0]
+                n = len(bucket_trades_for_ev)
+                if n > 0:
+                    win_rate = len(wins_ev) / n
+                    loss_rate = 1 - win_rate
+                    avg_win_pct = sum(t["return_percent"] for t in wins_ev) / len(wins_ev) if wins_ev else 0
+                    avg_loss_pct = sum(t["return_percent"] for t in losses_ev) / len(losses_ev) if losses_ev else 0
+                    ev_percent = (win_rate * avg_win_pct) - (loss_rate * abs(avg_loss_pct))
+                else:
+                    ev_percent = 0.0
+                ev_curve.append({"date": date, "ev_percent": round(ev_percent, 2)})
 
         # 포지션 크기 버킷 통계 계산
         position_buckets = []
@@ -184,6 +200,8 @@ async def get_analytics(
                 trade_type=trade_type,
                 trades=total_trades,
                 win_rate=win_rate,
+                avg_win_percent=avg_win_percent,
+                avg_loss_percent=avg_loss_percent,
                 ev_percent=ev_percent,
                 total_pnl=total_pnl
             ))
@@ -191,7 +209,8 @@ async def get_analytics(
         return AnalyticsResponse(
             position_size_buckets=position_buckets,
             trade_type_stats=trade_type_stats_list,
-            equity_curve=equity_curve
+            equity_curve=equity_curve,
+            ev_curve=ev_curve
         )
     finally:
         await conn.close()

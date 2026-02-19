@@ -2,7 +2,7 @@ import re
 from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional
 
-TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'ETC']
+TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'ETC']
 
 
 class TradeCreate(BaseModel):
@@ -141,6 +141,8 @@ class TradeTypeStats(BaseModel):
     trade_type: str
     trades: int
     win_rate: float
+    avg_win_percent: float
+    avg_loss_percent: float
     ev_percent: float
     total_pnl: float
 
@@ -149,3 +151,4 @@ class AnalyticsResponse(BaseModel):
     position_size_buckets: list[PositionSizeBucket]
     trade_type_stats: list[TradeTypeStats]
     equity_curve: list[dict]  # [{date: str, cumulative_pnl: float}]
+    ev_curve: list[dict]  # [{date: str, ev_percent: float}] 월 시작~해당 날짜 누적 평균 EV%

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useToast } from '../contexts/ToastContext'
 
 const CHAINS = ['Solana', 'Base', 'Bnb', 'etc']
-const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'ETC']
+const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'ETC']
 
 export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onClose }) {
   const { showToast } = useToast()
