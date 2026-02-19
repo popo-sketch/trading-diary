@@ -33,14 +33,12 @@ export default function FlowStatusModule({ analytics, trades, error }) {
   const colorStyle = { color }
 
   return (
-    <div className="my-3 py-2 border-t border-b border-[#2a2a2a]">
-      <div
-        className="text-sm font-medium leading-snug max-w-full break-words"
-        style={colorStyle}
-      >
-        <div className="mb-0.5">{line1}</div>
-        <div className="text-xs font-normal opacity-95">{line2}</div>
-      </div>
+    <div
+      className="text-sm font-medium leading-snug max-w-full break-words"
+      style={colorStyle}
+    >
+      <div className="mb-0.5">{line1}</div>
+      <div className="text-xs font-normal opacity-95">{line2}</div>
     </div>
   )
 }

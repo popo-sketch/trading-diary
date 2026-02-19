@@ -207,8 +207,6 @@ export default function MainPage() {
           </div>
         </div>
 
-        <FlowStatusModule analytics={analytics} trades={trades} error={error} />
-
         {error && (
           <div className="p-3 rounded-lg bg-loss/20 text-loss border border-loss/50 text-sm">
             {error}
@@ -225,6 +223,7 @@ export default function MainPage() {
           dailyTradeCount={dailyTradeCount}
           dailyTrades={dailyTrades}
           isLoading={loading}
+          flowStatusContent={<FlowStatusModule analytics={analytics} trades={trades} error={error} />}
         />
 
         {/* Equity Curve + Expected Value Curve */}

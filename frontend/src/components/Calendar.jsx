@@ -12,6 +12,7 @@ export default function Calendar({
   dailyTradeCount = {},
   dailyTrades = {},
   isLoading,
+  flowStatusContent,
 }) {
   const navigate = useNavigate()
 
@@ -52,8 +53,14 @@ export default function Calendar({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <h2 className="text-lg text-[#a0a0a0]">{formatMonthKst(year, month)}</h2>
+        {flowStatusContent && (
+          <>
+            <span className="text-[#2a2a2a]">|</span>
+            <div className="flex-1 min-w-0">{flowStatusContent}</div>
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-7 gap-1">
