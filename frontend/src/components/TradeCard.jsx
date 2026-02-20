@@ -102,7 +102,7 @@ export default function TradeCard({ trade, onClick }) {
             <div className="flex flex-wrap items-center gap-x-3 gap-y-0 text-xs text-[#6B7280] mt-1">
               <span>Avg. Entry: {formatDollarKMB(trade.avg_entry_mc)}</span>
               {trade.return_percent != null && (
-                <span>Exit Entry: {formatDollarKMB(trade.avg_entry_mc * (1 + trade.return_percent / 100))}</span>
+                <span>Avg. Exit: {formatDollarKMB(trade.avg_entry_mc * (1 + trade.return_percent / 100))}</span>
               )}
             </div>
           )}

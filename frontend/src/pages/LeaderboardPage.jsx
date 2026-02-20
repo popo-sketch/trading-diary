@@ -34,11 +34,16 @@ function LeaderboardTable({ title, trades, showMedals, year, month }) {
   }
 
   const medal = (rank) => {
-    if (!showMedals) return `#${rank}`
+    if (!showMedals) return `${rank}`
     if (rank === 1) return '🥇'
     if (rank === 2) return '🥈'
     if (rank === 3) return '🥉'
-    return `#${rank}`
+    return `${rank}`
+  }
+
+  const displayTicker = (t) => {
+    if (t == null || t === '') return '—'
+    return String(t).startsWith('$') ? t : `$${t}`
   }
 
   return (
@@ -52,7 +57,7 @@ function LeaderboardTable({ title, trades, showMedals, year, month }) {
               <th className="py-2 px-3">Ticker</th>
               <th className="py-2 px-3">Date</th>
               <th className="py-2 px-3">Avg. Entry</th>
-              <th className="py-2 px-3">Exit Entry</th>
+              <th className="py-2 px-3">Avg. Exit</th>
               <th className="py-2 px-3">PnL%</th>
               <th className="py-2 px-3">PnL$</th>
             </tr>
@@ -77,7 +82,7 @@ function LeaderboardTable({ title, trades, showMedals, year, month }) {
                       onClick={() => navigate(`/daily/${trade.date}`, { state: { year, month } })}
                       className="text-left text-white hover:underline focus:outline-none"
                     >
-                      ${trade.ticker ?? '—'}
+                      {displayTicker(trade.ticker)}
                     </button>
                     {(trade.chain || trade.trade_type) && (
                       <div className="text-[10px] text-[#6B7280] mt-0.5">
@@ -153,8 +158,9 @@ export default function LeaderboardPage() {
           <span className="text-2xl">←</span>
         </button>
 
-        <h1 className="text-2xl font-bold text-white">
-          Trading Leaderboard - {formatMonthKst(year, month)}
+        <h1 className="text-2xl font-bold">
+          <span className="text-white">Trading Leaderboard </span>
+          <span className="text-white/60">{formatMonthKst(year, month)}</span>
         </h1>
 
         {error && (

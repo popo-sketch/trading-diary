@@ -237,7 +237,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
               />
             </div>
             <div>
-              <label className="block text-sm text-[#a0a0a0] mb-2">Exit Entry MC</label>
+              <label className="block text-sm text-[#a0a0a0] mb-2">Avg. Exit MC</label>
               <input
                 type="text"
                 readOnly
