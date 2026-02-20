@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
 import { getTradesByMonth } from '../api/trades'
 import { getMonthlyStats } from '../api/stats'
 import { getAnalytics } from '../api/analytics'
@@ -13,6 +14,7 @@ const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
 
 export default function MainPage() {
+  const location = useLocation()
   const [year, setYear] = useState(currentYear)
   const [month, setMonth] = useState(currentMonth)
   const [trades, setTrades] = useState([])
@@ -20,6 +22,14 @@ export default function MainPage() {
   const [analytics, setAnalytics] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // 일별 상세에서 뒤로가기 시 전달된 year/month로 복귀
+  useEffect(() => {
+    if (location.state?.year != null && location.state?.month != null) {
+      setYear(location.state.year)
+      setMonth(location.state.month)
+    }
+  }, [location.state?.year, location.state?.month])
 
   useEffect(() => {
     let cancelled = false

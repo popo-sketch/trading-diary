@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { formatPnl, formatMonthKst } from '../utils/format'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -40,7 +40,7 @@ export default function Calendar({
   }
 
   const handleDateClick = (dateStr) => {
-    if (dateStr) navigate(`/daily/${dateStr}`)
+    if (dateStr) navigate(`/daily/${dateStr}`, { state: { year, month } })
   }
 
   if (isLoading) {
@@ -56,13 +56,19 @@ export default function Calendar({
       <div className="flex items-center justify-between gap-4 min-h-[60px]">
         <h2 className="text-lg text-[#a0a0a0] shrink-0">{formatMonthKst(year, month)}</h2>
         {flowStatusContent && (
-          <div className="flex-1 flex items-center justify-center gap-4 min-w-0 px-4">
-            <span className="text-[#2a2a2a] shrink-0">|</span>
+          <div className="flex-1 flex items-center justify-center min-w-0 pl-6">
             <div className="text-center min-w-0">{flowStatusContent}</div>
           </div>
         )}
-        {/* 오른쪽 빈 공간 (첫 번째 헤더의 연도 드롭다운 + 화살표 너비와 동일하게 맞춤) */}
-        <div className="flex items-center gap-4 shrink-0" style={{ width: '180px' }}></div>
+        {/* 우측: Leaderboard 버튼 (헤더 통계와 동일 폰트/색상, 가시성) */}
+        <div className="flex items-center gap-4 shrink-0" style={{ width: '180px' }}>
+          <Link
+            to={`/leaderboard?year=${year}&month=${month}`}
+            className="text-sm font-medium text-white border border-[#4a4a4a] bg-[#252525] hover:bg-[#2a2a2a] px-3 py-2 rounded-lg transition-colors"
+          >
+            Leaderboard
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-7 gap-1">

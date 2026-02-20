@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getTradesByDate, createTrade, updateTrade, deleteTrade } from '../api/trades'
 import { formatPnl, formatDateEn } from '../utils/format'
 import { useToast } from '../contexts/ToastContext'
@@ -9,7 +9,21 @@ import AddTradeModal from '../components/AddTradeModal'
 
 export default function DailyPage() {
   const { date } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
   const { showToast } = useToast()
+
+  // 진입 시 전달된 year/month 또는 date에서 파싱 (뒤로가기 시 해당 월로 복귀용)
+  const [backYear, backMonth] = (() => {
+    if (location.state?.year != null && location.state?.month != null) {
+      return [location.state.year, location.state.month]
+    }
+    if (date) {
+      const [y, m] = date.split('-').map(Number)
+      return [y, m]
+    }
+    return [null, null]
+  })()
   const [trades, setTrades] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -81,12 +95,13 @@ export default function DailyPage() {
 
   return (
     <div className="min-h-screen p-8">
-      <Link
-        to="/"
+      <button
+        type="button"
+        onClick={() => navigate('/', { state: backYear != null && backMonth != null ? { year: backYear, month: backMonth } : undefined })}
         className="mb-4 inline-block cursor-pointer p-2 rounded-lg hover:bg-[#222] transition-colors"
       >
         <span className="text-2xl text-white">←</span>
-      </Link>
+      </button>
 
       <h1 className="text-2xl font-bold text-white mb-2">
         {formatDateEn(date)}

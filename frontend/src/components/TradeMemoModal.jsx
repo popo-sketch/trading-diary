@@ -56,17 +56,17 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
 
   const handleSave = async () => {
     if (pnl === '' || returnPercent === '') {
-      showToast('Edit PnL ($) and Edit Return (%) are required', 'error')
+      showToast('Edit PnL ($) and Edit PnL (%) are required', 'error')
       return
     }
     const p = Number(pnl)
     const r = Number(returnPercent)
     if (!Number.isFinite(p) || !Number.isFinite(r)) {
-      showToast('PnL and Return % must be numbers', 'error')
+      showToast('PnL and PnL % must be numbers', 'error')
       return
     }
     if (r === 0) {
-      showToast('Return % cannot be 0', 'error')
+      showToast('PnL % cannot be 0', 'error')
       return
     }
     // 부호 일치: pnl과 return_percent의 부호가 다르면 return_percent 부호를 pnl에 맞춤
@@ -192,7 +192,7 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
           )}
           {displayReturn != null && displayReturn !== undefined && (
             <div className={`text-sm ${displayReturn >= 0 ? 'text-profit' : 'text-loss'}`}>
-              Return: {displayReturn >= 0 ? '+' : ''}{Number(displayReturn).toFixed(2)}%
+              PnL(%): {displayReturn >= 0 ? '+' : ''}{Number(displayReturn).toFixed(2)}%
             </div>
           )}
         </div>
@@ -235,7 +235,7 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
             />
           </div>
           <div>
-            <label className="block text-sm text-[#a0a0a0] mb-2">Edit Return (%)</label>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Edit PnL (%)</label>
             <input
               type="number"
               step="0.01"

@@ -88,7 +88,7 @@ export default function TradeCard({ trade, onClick }) {
               )}
               {trade.return_percent !== null && trade.return_percent !== undefined && (
                 <span className={trade.return_percent >= 0 ? 'text-profit' : 'text-loss'}>
-                  Return: {trade.return_percent >= 0 ? '+' : ''}{trade.return_percent.toFixed(2)}%
+                  PnL(%): {trade.return_percent >= 0 ? '+' : ''}{trade.return_percent.toFixed(2)}%
                 </span>
               )}
               {trade.trade_type && (

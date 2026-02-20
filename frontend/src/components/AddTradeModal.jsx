@@ -59,7 +59,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
 
     // PnL과 Return% 모두 필수
     if (!pnl || !returnPercent) {
-      showToast('PnL ($) and Return (%) are required', 'error')
+      showToast('PnL ($) and PnL (%) are required', 'error')
       return
     }
 
@@ -72,13 +72,13 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
     }
 
     if (isNaN(returnNum) || !Number.isFinite(returnNum)) {
-      showToast('Return % must be a number', 'error')
+      showToast('PnL % must be a number', 'error')
       return
     }
 
     // return_percent는 0이 될 수 없음
     if (returnNum === 0) {
-      showToast('Return % cannot be 0', 'error')
+      showToast('PnL % cannot be 0', 'error')
       return
     }
 
@@ -195,7 +195,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
               />
             </div>
             <div>
-              <label className="block text-sm text-[#a0a0a0] mb-2">Return (%) *</label>
+              <label className="block text-sm text-[#a0a0a0] mb-2">PnL (%) *</label>
               <input
                 type="number"
                 step="0.01"
@@ -218,7 +218,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
             <p className="text-xs text-[#6B7280] mt-1">
               {calculatedEntryAmount 
                 ? `Entry = ${pnl} / (${returnPercent}% / 100) = ${calculatedEntryAmount}` 
-                : 'Auto-calculated from PnL and Return %'}
+                : 'Auto-calculated from PnL and PnL %'}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -244,7 +244,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
                 value={exitEntryMc != null ? formatDollarKMB(exitEntryMc) : '—'}
                 className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white opacity-70 cursor-not-allowed"
               />
-              <p className="text-xs text-[#6B7280] mt-1">Avg. Entry MC × (1 + Return% / 100)</p>
+              <p className="text-xs text-[#6B7280] mt-1">Avg. Entry MC × (1 + PnL% / 100)</p>
             </div>
           </div>
           <div>
