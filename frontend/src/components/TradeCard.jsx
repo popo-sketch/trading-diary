@@ -108,11 +108,10 @@ export default function TradeCard({ trade, onClick }) {
           )}
         </div>
         <div
-          className={`flex items-center gap-2 font-bold shrink-0 ${
+          className={`flex items-center justify-end font-bold shrink-0 text-xl min-w-[5rem] ${
             trade.pnl >= 0 ? 'text-profit' : 'text-loss'
           }`}
         >
-          {trade.pnl >= 0 ? '✓' : '✗'}{' '}
           {formatPnl(trade.pnl)}
         </div>
       </div>
