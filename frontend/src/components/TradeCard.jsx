@@ -79,7 +79,7 @@ export default function TradeCard({ trade, onClick }) {
             )}
           </div>
           <div className={`text-sm mb-2 ${memoPreview ? 'text-[#a0a0a0] whitespace-pre-line line-clamp-5' : 'text-[#6B7280] text-center italic'}`}>
-            {memoPreview || '📝 Add Memo'}
+            {memoPreview || 'Add Memo'}
           </div>
           {(trade.entry_amount || trade.return_percent || trade.trade_type) && (
             <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B7280] mt-2">

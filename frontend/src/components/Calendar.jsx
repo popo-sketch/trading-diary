@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { formatPnl, formatMonthKst } from '../utils/format'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -60,15 +60,8 @@ export default function Calendar({
             <div className="text-center min-w-0">{flowStatusContent}</div>
           </div>
         )}
-        {/* 우측: Leaderboard 버튼 (헤더 통계와 동일 폰트/색상, 가시성) */}
-        <div className="flex items-center gap-4 shrink-0" style={{ width: '180px' }}>
-          <Link
-            to={`/leaderboard?year=${year}&month=${month}`}
-            className="text-sm font-medium text-white border border-[#4a4a4a] bg-[#252525] hover:bg-[#2a2a2a] px-3 py-2 rounded-lg transition-colors"
-          >
-            Leaderboard
-          </Link>
-        </div>
+        {/* 오른쪽 빈 공간 (첫 번째 헤더의 연도 드롭다운 + 화살표 + Leaderboard 너비와 맞춤) */}
+        <div className="flex items-center justify-end shrink-0" style={{ width: '180px' }}></div>
       </div>
 
       <div className="grid grid-cols-7 gap-1">

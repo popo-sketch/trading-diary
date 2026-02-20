@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { getTradesByMonth } from '../api/trades'
 import { getMonthlyStats } from '../api/stats'
 import { getAnalytics } from '../api/analytics'
@@ -187,8 +187,8 @@ export default function MainPage() {
             )}
           </div>
 
-          {/* 우: 연도 드롭다운 + 화살표 */}
-          <div className="flex items-center gap-4">
+          {/* 우: 연도 드롭다운 + 화살표 + Leaderboard (맨 오른쪽 끝) */}
+          <div className="flex items-center gap-4 justify-end shrink-0">
             <select
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
@@ -214,6 +214,12 @@ export default function MainPage() {
                 →
               </button>
             </div>
+            <Link
+              to={`/leaderboard?year=${year}&month=${month}`}
+              className="text-sm font-medium text-white border border-[#4a4a4a] bg-[#252525] hover:bg-[#2a2a2a] px-3 py-2 rounded-lg transition-colors shrink-0"
+            >
+              Leaderboard
+            </Link>
           </div>
         </div>
 

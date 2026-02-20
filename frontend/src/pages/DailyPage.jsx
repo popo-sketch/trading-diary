@@ -116,7 +116,7 @@ export default function DailyPage() {
 
       <button
         onClick={() => setShowAddModal(true)}
-        className="mb-6 px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent/90 cursor-pointer"
+        className="mb-6 px-4 py-2 rounded border border-white bg-black text-white hover:bg-[#222] cursor-pointer transition-colors"
       >
         + Add Coin
       </button>

@@ -217,7 +217,7 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
           <textarea
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
-            placeholder="📝 Add Memo"
+            placeholder="Add Memo"
             className="w-full h-32 px-4 py-3 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-[#6B7280] placeholder:text-center placeholder:italic focus:outline-none focus:ring-2 focus:ring-accent resize-none"
           />
         </div>
