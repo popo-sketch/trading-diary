@@ -27,6 +27,20 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
     return () => window.removeEventListener('keydown', handleEscape)
   }, [onClose])
 
+  /** PnL 입력 핸들러: 실시간 천단위 콤마 포맷, 음수 지원 */
+  const handlePnlChange = (e) => {
+    const raw = e.target.value
+    const isNeg = raw.startsWith('-')
+    const stripped = raw.replace(/[^0-9.]/g, '')
+    if (stripped === '') { setPnl(isNeg ? '-' : ''); return }
+    const parts = stripped.split('.')
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    setPnl(isNeg ? '-' + parts.join('.') : parts.join('.'))
+  }
+
+  /** 콤마 제거 후 숫자 파싱 */
+  const parsePnl = (v) => Number(String(v).replace(/,/g, ''))
+
   // Entry Amount 자동 계산: entry_amount = pnl / (return_percent / 100)
   const avgEntryMcNum = parseDollarInput(avgEntryMc)
   const exitEntryMc = (avgEntryMcNum != null && returnPercent !== '' && !isNaN(Number(returnPercent)))
@@ -34,7 +48,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
     : null
 
   const calculatedEntryAmount = (() => {
-    const pnlNum = Number(pnl)
+    const pnlNum = parsePnl(pnl)
     const returnNum = Number(returnPercent)
     
     if (pnl && returnPercent && !isNaN(pnlNum) && !isNaN(returnNum) && returnNum !== 0) {
@@ -58,12 +72,12 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
     }
 
     // PnL과 Return% 모두 필수
-    if (!pnl || !returnPercent) {
+    if (!pnl || pnl === '-' || !returnPercent) {
       showToast('PnL ($) and PnL (%) are required', 'error')
       return
     }
 
-    const pnlNum = Number(pnl)
+    const pnlNum = parsePnl(pnl)
     const returnNum = Number(returnPercent)
 
     if (isNaN(pnlNum) || !Number.isFinite(pnlNum)) {
@@ -150,6 +164,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
               onChange={(e) => setTradeType(e.target.value)}
               className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
             >
+              <option value="">— None —</option>
               {TRADE_TYPES.map((t) => (
                 <option key={t} value={t}>
                   {t}
@@ -185,10 +200,10 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
             <div>
               <label className="block text-sm text-[#a0a0a0] mb-2">PnL ($) *</label>
               <input
-                type="number"
-                step="0.01"
+                type="text"
+                inputMode="numeric"
                 value={pnl}
-                onChange={(e) => setPnl(e.target.value)}
+                onChange={handlePnlChange}
                 required
                 placeholder="0"
                 className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
@@ -216,8 +231,8 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
               className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white opacity-70 cursor-not-allowed"
             />
             <p className="text-xs text-[#6B7280] mt-1">
-              {calculatedEntryAmount 
-                ? `Entry = ${pnl} / (${returnPercent}% / 100) = ${calculatedEntryAmount}` 
+              {calculatedEntryAmount
+                ? `Entry = ${pnl} / (${returnPercent}% / 100) = ${calculatedEntryAmount}`
                 : 'Auto-calculated from PnL and PnL %'}
             </p>
           </div>
