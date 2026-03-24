@@ -11,6 +11,7 @@ export default function Calendar({
   dailyPnl,
   dailyTradeCount = {},
   dailyTrades = {},
+  dailyGiveback = {},
   isLoading,
   flowStatusContent,
 }) {
@@ -33,7 +34,8 @@ export default function Calendar({
     const pnl = dailyPnl[dateStr] ?? null
     const tradeCount = dailyTradeCount[dateStr] ?? 0
     const trades = dailyTrades[dateStr] ?? []
-    cells.push({ date: dateStr, day: d, pnl, tradeCount, trades })
+    const giveback = dailyGiveback[dateStr] ?? null
+    cells.push({ date: dateStr, day: d, pnl, tradeCount, trades, giveback })
   }
   while (cells.length < totalCells) {
     cells.push({ empty: true })
@@ -119,6 +121,14 @@ export default function Calendar({
                     {cell.tradeCount > 5 && (
                       <span className="text-neutral">+{cell.tradeCount}</span>
                     )}
+                  </div>
+                )}
+                {cell.giveback && (
+                  <div className={`text-[10px] mt-1 font-medium ${
+                    cell.giveback.givebackRate >= 50 ? 'text-loss' :
+                    cell.giveback.givebackRate >= 20 ? 'text-yellow-400' : 'text-[#a0a0a0]'
+                  }`}>
+                    ↓{cell.giveback.givebackRate.toFixed(0)}% 반납
                   </div>
                 )}
               </>

@@ -106,6 +106,34 @@ export function formatDateEn(dateStr) {
   return `${weekday}, ${month} ${day}, ${year}`
 }
 
+/**
+ * 당일 반납률 계산
+ * trades: TradeResponse[] — created_at 순으로 정렬 후 누적 PnL 계산
+ * 반환: { peak, closing, givebackRate } 또는 null (수익 구간이 없으면 의미 없음)
+ */
+export function calcGiveback(trades) {
+  if (!trades || trades.length === 0) return null
+
+  const sorted = [...trades].sort(
+    (a, b) => new Date(a.created_at) - new Date(b.created_at)
+  )
+
+  let cumulative = 0
+  let peak = 0
+
+  for (const trade of sorted) {
+    cumulative += Number(trade.pnl || 0)
+    if (cumulative > peak) peak = cumulative
+  }
+
+  if (peak <= 0) return null
+
+  const closing = cumulative
+  const givebackRate = ((peak - closing) / peak) * 100
+
+  return { peak, closing, givebackRate: Math.max(0, givebackRate) }
+}
+
 /** 월 표시: February 2026 */
 export function formatMonthKst(year, month) {
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']

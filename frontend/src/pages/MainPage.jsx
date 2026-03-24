@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { getTradesByMonth } from '../api/trades'
 import { getMonthlyStats } from '../api/stats'
 import { getAnalytics } from '../api/analytics'
-import { formatPnl } from '../utils/format'
+import { formatPnl, calcGiveback } from '../utils/format'
 import Calendar from '../components/Calendar'
 import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
 import PositionSizeTableCompact from '../components/analytics/PositionSizeTableCompact'
@@ -85,6 +85,15 @@ export default function MainPage() {
     })
     return map
   }, [trades])
+
+  const dailyGiveback = useMemo(() => {
+    const map = {}
+    Object.entries(dailyTrades).forEach(([date, ts]) => {
+      const result = calcGiveback(ts)
+      if (result && result.givebackRate > 0) map[date] = result
+    })
+    return map
+  }, [dailyTrades])
 
   const winStats = useMemo(() => {
     if (!stats) return null
@@ -223,18 +232,61 @@ export default function MainPage() {
           </div>
         )}
 
-        {/* 캘린더 */}
-        <Calendar
-          year={year}
-          month={month}
-          onPrevMonth={handlePrevMonth}
-          onNextMonth={handleNextMonth}
-          dailyPnl={dailyPnl}
-          dailyTradeCount={dailyTradeCount}
-          dailyTrades={dailyTrades}
-          isLoading={loading}
-          flowStatusContent={<FlowStatusModule analytics={analytics} trades={trades} error={error} />}
-        />
+        {/* 캘린더 + 트레이딩 규칙 */}
+        <div className="grid grid-cols-[1fr_280px] gap-4 items-start">
+          <Calendar
+            year={year}
+            month={month}
+            onPrevMonth={handlePrevMonth}
+            onNextMonth={handleNextMonth}
+            dailyPnl={dailyPnl}
+            dailyTradeCount={dailyTradeCount}
+            dailyTrades={dailyTrades}
+            dailyGiveback={dailyGiveback}
+            isLoading={loading}
+            flowStatusContent={<FlowStatusModule analytics={analytics} trades={trades} error={error} />}
+          />
+
+          {/* 트레이딩 규칙 */}
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 space-y-4">
+            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-widest">Trading Rules</h3>
+            {[
+              {
+                num: '1',
+                title: '좋은 판에만 앉는다',
+                desc: '모든 급등이 나의 게임은 아니다.',
+              },
+              {
+                num: '2',
+                title: '맞히는 능력보다, 잃지 않는 구조가 먼저다',
+                desc: '큰돈을 번 사람은 촉이 좋은 사람이 아니라, 잘못된 판에서 크게 안 죽는 사람이다.',
+              },
+              {
+                num: '3',
+                title: '흥분은 신호가 아니라 잡음이다',
+                desc: '심장이 뛰는 진입은 대체로 늦은 진입일 가능성이 높다.',
+              },
+              {
+                num: '4',
+                title: '현금은 패배가 아니라 옵션이다',
+                desc: '안 들어간 돈은 죽은 돈이 아니라 다음 좋은 판을 살 수 있는 탄약이다.',
+              },
+              {
+                num: '5',
+                title: '복구 욕망은 가장 비싼 감정이다',
+                desc: '"한 번에 복구"가 계좌를 망친다.',
+              },
+            ].map((rule) => (
+              <div key={rule.num} className="space-y-1">
+                <div className="flex items-start gap-2">
+                  <span className="text-[#4a4a4a] text-xs font-bold mt-0.5">{rule.num}.</span>
+                  <p className="text-white text-xs font-semibold leading-snug">{rule.title}</p>
+                </div>
+                <p className="text-[#6B7280] text-[11px] leading-relaxed pl-4">{rule.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Equity Curve + Expected Value Curve */}
         {analytics && (

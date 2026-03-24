@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getTradesByDate, createTrade, updateTrade, deleteTrade } from '../api/trades'
-import { formatPnl, formatDateEn } from '../utils/format'
+import { formatPnl, formatDateEn, calcGiveback } from '../utils/format'
 import { useToast } from '../contexts/ToastContext'
 import TradeCard from '../components/TradeCard'
 import TradeMemoModal from '../components/TradeMemoModal'
@@ -48,6 +48,7 @@ export default function DailyPage() {
   const wins = trades.filter((t) => t.pnl > 0).length
   const losses = trades.filter((t) => t.pnl < 0).length
   const summary = `${formatPnl(dailyPnl)} (${wins}W - ${losses}L)`
+  const giveback = calcGiveback(trades)
 
   const handleSaveMemo = async (payload) => {
     if (!selectedTrade) return
@@ -113,6 +114,35 @@ export default function DailyPage() {
       >
         Daily Summary: {summary}
       </div>
+
+      {giveback && giveback.givebackRate > 0 && (
+        <div className="mb-4 p-3 rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] text-sm flex items-center gap-6">
+          <div>
+            <span className="text-[#6B7280] text-xs">최고 실현손익 </span>
+            <span className="text-profit font-medium">{formatPnl(giveback.peak)}</span>
+          </div>
+          <div>
+            <span className="text-[#6B7280] text-xs">마감손익 </span>
+            <span className={`font-medium ${giveback.closing >= 0 ? 'text-profit' : 'text-loss'}`}>
+              {formatPnl(giveback.closing)}
+            </span>
+          </div>
+          <div>
+            <span className="text-[#6B7280] text-xs">반납률 </span>
+            <span
+              className={`font-bold ${
+                giveback.givebackRate >= 50
+                  ? 'text-loss'
+                  : giveback.givebackRate >= 20
+                  ? 'text-yellow-400'
+                  : 'text-[#a0a0a0]'
+              }`}
+            >
+              ↓{giveback.givebackRate.toFixed(1)}%
+            </span>
+          </div>
+        </div>
+      )}
 
       <button
         onClick={() => setShowAddModal(true)}
