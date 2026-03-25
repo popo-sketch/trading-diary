@@ -10,7 +10,7 @@ import { createTrade, updateTrade, deleteTrade } from '../api/trades'
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토']
 const CHAINS = ['Solana', 'Base', 'Bnb', 'etc']
-const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'Elon', 'CZ', 'HeYi', 'Trump', 'Binance', 'ETC']
+const TRADE_TYPES = ['Viral', 'Cult', 'AI', 'Tech', 'Animals', 'Elon', 'CZ', 'Heyi', 'Trump', 'BNB', 'Meta', 'Meme']
 
 function formatDateKr(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')

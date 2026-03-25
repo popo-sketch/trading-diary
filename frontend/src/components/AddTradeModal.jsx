@@ -3,7 +3,7 @@ import { useToast } from '../contexts/ToastContext'
 import { formatDollarKMB, parseDollarInput, formatDollarInput } from '../utils/format'
 
 const CHAINS = ['Solana', 'Base', 'Bnb', 'etc']
-const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'Elon', 'CZ', 'HeYi', 'Trump', 'Binance', 'ETC']
+const TRADE_TYPES = ['Viral', 'Cult', 'AI', 'Tech', 'Animals', 'Elon', 'CZ', 'Heyi', 'Trump', 'BNB', 'Meta', 'Meme']
 
 export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onClose }) {
   const { showToast } = useToast()
