@@ -9,6 +9,10 @@ import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
 import PositionSizeTableCompact from '../components/analytics/PositionSizeTableCompact'
 import TradeTypeTableCompact from '../components/analytics/TradeTypeTableCompact'
 import FlowStatusModule from '../components/FlowStatusModule'
+import SeohuBriefing from '../components/SeohuBriefing'
+import JourneyRoad from '../components/JourneyRoad'
+import RiskWeatherCard from '../components/RiskWeatherCard'
+import MonthlyReplay from '../components/MonthlyReplay'
 
 const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
@@ -20,6 +24,7 @@ export default function MainPage() {
   const [trades, setTrades] = useState([])
   const [stats, setStats] = useState(null)
   const [analytics, setAnalytics] = useState(null)
+  const [allTimeAnalytics, setAllTimeAnalytics] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -59,7 +64,14 @@ export default function MainPage() {
       })
 
     return () => { cancelled = true }
-  }, [year, month])
+  }, [year, month, location.key])
+
+  // All-time analytics for Journey Road (refresh on navigation back)
+  useEffect(() => {
+    getAnalytics(null, null, null)
+      .then(setAllTimeAnalytics)
+      .catch(() => {})
+  }, [location.key])
 
   const dailyPnl = useMemo(() => {
     const map = {}
@@ -232,6 +244,14 @@ export default function MainPage() {
           </div>
         )}
 
+        {/* Journey Road — 20만불 여정 */}
+        {allTimeAnalytics && (
+          <JourneyRoad allTimeAnalytics={allTimeAnalytics} />
+        )}
+
+        {/* 이서후 브리핑 — 항상 최상단 */}
+        <SeohuBriefing analytics={analytics} trades={trades} error={error} />
+
         {/* 캘린더 + 트레이딩 규칙 */}
         <div className="grid grid-cols-[1fr_280px] gap-4 items-start">
           <Calendar
@@ -288,16 +308,20 @@ export default function MainPage() {
           </div>
         </div>
 
-        {/* Equity Curve + Expected Value Curve */}
+        {/* 리스크 날씨 + Equity Curve + EV Curve */}
         {analytics && (
-          <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} kellyPercent={analytics.kelly_percent} />
+          <div className="grid grid-cols-[280px_1fr] gap-4 items-start">
+            <RiskWeatherCard analytics={analytics} trades={trades} />
+            <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} kellyPercent={analytics.kelly_percent} />
+          </div>
         )}
 
-        {/* 좌우 50:50 테이블 */}
+        {/* 포지션 사이즈 / 트레이드 타입 + 월간 리플레이 */}
         {analytics && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-[1fr_1fr_300px] gap-4 items-start">
             <PositionSizeTableCompact buckets={analytics.position_size_buckets} />
             <TradeTypeTableCompact stats={analytics.trade_type_stats} />
+            <MonthlyReplay trades={trades} analytics={analytics} />
           </div>
         )}
       </div>
