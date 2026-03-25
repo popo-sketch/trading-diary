@@ -13,6 +13,7 @@ export default function Calendar({
   dailyTrades = {},
   dailyGiveback = {},
   isLoading,
+  onDateClick,
 }) {
   const navigate = useNavigate()
 
@@ -41,7 +42,12 @@ export default function Calendar({
   }
 
   const handleDateClick = (dateStr) => {
-    if (dateStr) navigate(`/daily/${dateStr}`, { state: { year, month } })
+    if (!dateStr) return
+    if (onDateClick) {
+      onDateClick(dateStr)
+    } else {
+      navigate(`/daily/${dateStr}`, { state: { year, month } })
+    }
   }
 
   if (isLoading) {

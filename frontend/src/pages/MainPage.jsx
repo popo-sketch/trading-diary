@@ -5,6 +5,7 @@ import { getMonthlyStats } from '../api/stats'
 import { getAnalytics } from '../api/analytics'
 import { formatPnl, calcGiveback } from '../utils/format'
 import Calendar from '../components/Calendar'
+import TradeSidePanel from '../components/TradeSidePanel'
 import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
 import PositionSizeTableCompact from '../components/analytics/PositionSizeTableCompact'
 import TradeTypeTableCompact from '../components/analytics/TradeTypeTableCompact'
@@ -48,6 +49,7 @@ export default function MainPage() {
   const [allTimeAnalytics, setAllTimeAnalytics] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [selectedDate, setSelectedDate] = useState(null)
 
   useEffect(() => {
     if (location.state?.year != null && location.state?.month != null) {
@@ -284,6 +286,7 @@ export default function MainPage() {
                 dailyTrades={dailyTrades}
                 dailyGiveback={dailyGiveback}
                 isLoading={loading}
+                onDateClick={(dateStr) => setSelectedDate(dateStr)}
               />
             </div>
           </div>
@@ -355,6 +358,27 @@ export default function MainPage() {
           </div>
         )}
       </div>
+
+      {/* 트레이드 상세 사이드 패널 */}
+      {selectedDate && (
+        <TradeSidePanel
+          dateStr={selectedDate}
+          trades={dailyTrades[selectedDate] ?? []}
+          onClose={() => setSelectedDate(null)}
+          onMemoUpdate={async (tradeId, memo) => {
+            try {
+              const API = import.meta.env.VITE_API_URL || 'http://168.144.42.254:8001'
+              await fetch(`${API}/trades/${tradeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ memo }),
+              })
+            } catch (e) {
+              console.error('Memo update failed:', e)
+            }
+          }}
+        />
+      )}
     </div>
   )
 }
