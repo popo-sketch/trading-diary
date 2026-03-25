@@ -20,7 +20,7 @@ export default function EquityCurveCompact({ data, evCurve = [], kellyPercent })
 
   if (!hasEquity && !hasEv) {
     return (
-      <div className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] p-4">
+      <div className="rounded-lg border border-white/[0.06] bg-dark-card p-4 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
         <h3 className="text-sm font-bold text-white mb-3">Equity Curve</h3>
         <div className="text-neutral text-center py-8 text-xs">No Data</div>
       </div>
@@ -28,7 +28,7 @@ export default function EquityCurveCompact({ data, evCurve = [], kellyPercent })
   }
 
   return (
-    <div className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] p-4">
+    <div className="rounded-lg border border-white/[0.06] bg-dark-card p-4 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
       <div className="flex w-full" style={{ minHeight: CHART_HEIGHT + 56 }}>
         {/* 좌측 50%: Equity Curve */}
         <div className="flex-1 min-w-0 flex flex-col border-r border-[#2a2a2a] pr-2">

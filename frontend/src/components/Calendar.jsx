@@ -13,7 +13,6 @@ export default function Calendar({
   dailyTrades = {},
   dailyGiveback = {},
   isLoading,
-  flowStatusContent,
 }) {
   const navigate = useNavigate()
 
@@ -57,20 +56,12 @@ export default function Calendar({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4 min-h-[60px]">
         <h2 className="text-lg text-[#a0a0a0] shrink-0">{formatMonthKst(year, month)}</h2>
-        {flowStatusContent && (
-          <div className="flex-1 flex items-center justify-center min-w-0 pl-6">
-            <div className="text-center min-w-0">{flowStatusContent}</div>
-          </div>
-        )}
-        {/* 두 번째 헤더 맨 오른쪽: Leaderboard (Flow Status와 간격 유지, 우측 끝 정렬) */}
-        <div className="flex items-center justify-end shrink-0 pl-6" style={{ width: '180px' }}>
-          <Link
-            to={`/leaderboard?year=${year}&month=${month}`}
-            className="text-sm font-medium text-white border border-[#4a4a4a] bg-[#252525] hover:bg-[#2a2a2a] px-3 py-2 rounded-lg transition-colors"
-          >
-            Leaderboard
-          </Link>
-        </div>
+        <Link
+          to={`/leaderboard?year=${year}&month=${month}`}
+          className="text-sm font-medium text-[#e8e8e8] border border-white/[0.06] bg-dark-card hover:bg-[#282838] px-3 py-2 rounded-lg transition-colors"
+        >
+          Leaderboard
+        </Link>
       </div>
 
       <div className="grid grid-cols-7 gap-1">
@@ -88,7 +79,7 @@ export default function Calendar({
             onClick={() => !cell.empty && handleDateClick(cell.date)}
             className={`
               min-h-[80px] p-2 rounded-lg border transition-colors
-              ${cell.empty ? 'bg-transparent border-transparent' : 'border-[#2a2a2a] bg-[#1a1a1a] hover:bg-[#222] cursor-pointer'}
+              ${cell.empty ? 'bg-transparent border-transparent' : 'border-white/[0.06] bg-dark-card hover:bg-[#282838] cursor-pointer'}
               ${cell.pnl != null && cell.pnl > 0 ? 'border-l-4 border-l-profit' : ''}
               ${cell.pnl != null && cell.pnl < 0 ? 'border-l-4 border-l-loss' : ''}
               ${cell.pnl != null && cell.pnl === 0 ? 'border-l-4 border-l-neutral' : ''}
@@ -97,7 +88,7 @@ export default function Calendar({
           >
             {!cell.empty && (
               <>
-                <div className="text-sm font-medium text-white">{cell.day}</div>
+                <div className="text-sm font-medium text-[#e8e8e8]">{cell.day}</div>
                 <div
                   className={`text-xs mt-1 font-medium truncate ${
                     cell.pnl != null

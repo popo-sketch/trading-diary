@@ -8,8 +8,8 @@ export default {
     extend: {
       colors: {
         dark: {
-          bg: '#0f0f0f',
-          card: '#1a1a1a',
+          bg: '#121212',
+          card: '#1e1e2e',
         },
         profit: '#10B981',
         loss: '#EF4444',

@@ -91,7 +91,7 @@ export default function RiskWeatherCard({ analytics, trades = [] }) {
 
   return (
     <div style={{
-      background: '#0d0d0d',
+      background: '#1e1e2e',
       border: `1px solid ${w.borderColor}44`,
       borderRadius: '12px',
       padding: '16px',

@@ -8,7 +8,6 @@ import Calendar from '../components/Calendar'
 import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
 import PositionSizeTableCompact from '../components/analytics/PositionSizeTableCompact'
 import TradeTypeTableCompact from '../components/analytics/TradeTypeTableCompact'
-import FlowStatusModule from '../components/FlowStatusModule'
 import SeohuBriefing from '../components/SeohuBriefing'
 import JourneyRoad from '../components/JourneyRoad'
 import RiskWeatherCard from '../components/RiskWeatherCard'
@@ -153,11 +152,11 @@ export default function MainPage() {
   const worstTrade = stats?.top_losses?.[0]
 
   return (
-    <div className="min-h-screen p-6 bg-dark-bg">
+    <div className="min-h-screen p-6 bg-dark-bg text-[#e8e8e8]">
       <div className="max-w-7xl mx-auto space-y-4">
         {/* 헤더 한 줄 */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">PNL Calendar</h1>
+          <h1 className="text-2xl font-bold text-[#f0f0f0]">PNL Calendar</h1>
           
           <div className="flex items-center gap-6 flex-1 justify-center">
             {/* 중앙 좌: Total PNL / Win Rate% / Trades / (W/L) */}
@@ -171,13 +170,13 @@ export default function MainPage() {
                 </div>
                 <div>
                   <span className="text-[#6B7280] text-xs">Win Rate: </span>
-                  <span className="font-medium text-white">
+                  <span className="font-medium text-[#e8e8e8]">
                     {(stats.win_rate * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div>
                   <span className="text-[#6B7280] text-xs">Trades: </span>
-                  <span className="font-medium text-white">{stats.total_trades}</span>
+                  <span className="font-medium text-[#e8e8e8]">{stats.total_trades}</span>
                   <span className="text-[#6B7280] ml-1">
                     ({stats.wins}W / {stats.losses}L)
                   </span>
@@ -213,7 +212,7 @@ export default function MainPage() {
             <select
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="bg-dark-card border border-white/[0.06] rounded-lg px-3 py-2 text-[#e8e8e8] text-sm focus:outline-none focus:ring-2 focus:ring-accent"
             >
               {years.map((y) => (
                 <option key={y} value={y}>
@@ -224,13 +223,13 @@ export default function MainPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePrevMonth}
-                className="p-2 rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] text-white hover:bg-[#222] cursor-pointer"
+                className="p-2 rounded-lg bg-dark-card border border-white/[0.06] text-[#e8e8e8] hover:bg-[#282838] cursor-pointer"
               >
                 ←
               </button>
               <button
                 onClick={handleNextMonth}
-                className="p-2 rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] text-white hover:bg-[#222] cursor-pointer"
+                className="p-2 rounded-lg bg-dark-card border border-white/[0.06] text-[#e8e8e8] hover:bg-[#282838] cursor-pointer"
               >
                 →
               </button>
@@ -253,7 +252,7 @@ export default function MainPage() {
         <SeohuBriefing analytics={analytics} trades={trades} error={error} />
 
         {/* 캘린더 + 트레이딩 규칙 */}
-        <div className="grid grid-cols-[1fr_280px] gap-4 items-start">
+        <div className="grid grid-cols-[1fr_280px] gap-4 items-stretch">
           <Calendar
             year={year}
             month={month}
@@ -264,11 +263,10 @@ export default function MainPage() {
             dailyTrades={dailyTrades}
             dailyGiveback={dailyGiveback}
             isLoading={loading}
-            flowStatusContent={<FlowStatusModule analytics={analytics} trades={trades} error={error} />}
           />
 
           {/* 트레이딩 규칙 */}
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 space-y-4">
+          <div className="bg-dark-card border border-white/[0.06] rounded-xl p-4 space-y-4 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
             <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-widest">Trading Rules</h3>
             {[
               {
@@ -300,7 +298,7 @@ export default function MainPage() {
               <div key={rule.num} className="space-y-1">
                 <div className="flex items-start gap-2">
                   <span className="text-[#4a4a4a] text-xs font-bold mt-0.5">{rule.num}.</span>
-                  <p className="text-white text-xs font-semibold leading-snug">{rule.title}</p>
+                  <p className="text-[#e8e8e8] text-xs font-semibold leading-snug">{rule.title}</p>
                 </div>
                 <p className="text-[#6B7280] text-[11px] leading-relaxed pl-4">{rule.desc}</p>
               </div>
@@ -310,7 +308,7 @@ export default function MainPage() {
 
         {/* 리스크 날씨 + Equity Curve + EV Curve */}
         {analytics && (
-          <div className="grid grid-cols-[280px_1fr] gap-4 items-start">
+          <div className="grid grid-cols-[280px_1fr] gap-4 items-stretch">
             <RiskWeatherCard analytics={analytics} trades={trades} />
             <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} kellyPercent={analytics.kelly_percent} />
           </div>
@@ -318,7 +316,7 @@ export default function MainPage() {
 
         {/* 포지션 사이즈 / 트레이드 타입 + 월간 리플레이 */}
         {analytics && (
-          <div className="grid grid-cols-[1fr_1fr_300px] gap-4 items-start">
+          <div className="grid grid-cols-[1fr_1fr_300px] gap-4 items-stretch">
             <PositionSizeTableCompact buckets={analytics.position_size_buckets} />
             <TradeTypeTableCompact stats={analytics.trade_type_stats} />
             <MonthlyReplay trades={trades} analytics={analytics} />

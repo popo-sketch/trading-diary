@@ -164,10 +164,11 @@ export default function MonthlyReplay({ trades = [], analytics }) {
   if (events.length === 0) {
     return (
       <div style={{
-        background: '#0d0d0d',
-        border: '1px solid #1f293744',
+        background: '#1e1e2e',
+        border: '1px solid rgba(255,255,255,0.06)',
         borderRadius: '12px',
         padding: '16px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
       }}>
         <div style={{
           fontSize: 9, fontWeight: 700, color: '#6b7280',
@@ -185,10 +186,11 @@ export default function MonthlyReplay({ trades = [], analytics }) {
 
   return (
     <div style={{
-      background: '#0d0d0d',
-      border: '1px solid #1f293744',
+      background: '#1e1e2e',
+      border: '1px solid rgba(255,255,255,0.06)',
       borderRadius: '12px',
       padding: '16px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
     }}>
       <div style={{
         fontSize: 9, fontWeight: 700, color: '#6b7280',

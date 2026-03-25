@@ -11,7 +11,7 @@ function kellyPercent(winRatePct, avgWinPct, avgLossPct) {
 export default function PositionSizeTableCompact({ buckets }) {
   if (buckets.length === 0) {
     return (
-      <div className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] p-4">
+      <div className="rounded-lg border border-white/[0.06] bg-dark-card p-4 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
         <h3 className="text-sm font-bold text-white mb-3">Position Size Analysis</h3>
         <div className="text-neutral text-center py-4 text-xs">No Data</div>
       </div>
@@ -19,7 +19,7 @@ export default function PositionSizeTableCompact({ buckets }) {
   }
 
   return (
-    <div className="rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] p-4">
+    <div className="rounded-lg border border-white/[0.06] bg-dark-card p-4 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
       <h3 className="text-sm font-bold text-white mb-3">Position Size Analysis</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-xs min-w-[520px]">
