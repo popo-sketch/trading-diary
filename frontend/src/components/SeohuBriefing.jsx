@@ -198,14 +198,15 @@ export default function SeohuBriefing({ analytics, trades, error }) {
               <p className="text-xs text-[#a0a0a0] leading-relaxed">{briefing.sizeStrategy}</p>
             </div>
 
-            {/* 지뢰 분석 (severity >= 1일 때만 표시) */}
+            {/* 지뢰 분석 */}
             {briefing.mineAnalysis && (
               <div>
                 <SectionLabel>
                   지뢰플레이 분석
                   {briefing.mineAnalysis.severity <= 1 && <span className="text-[#6B7280] ml-1">(정상)</span>}
                   {briefing.mineAnalysis.severity === 2 && <span className="text-yellow-400 ml-1">(주의)</span>}
-                  {briefing.mineAnalysis.severity >= 3 && <span className="text-loss ml-1">(위험)</span>}
+                  {briefing.mineAnalysis.severity === 3 && <span className="text-loss ml-1">(위험)</span>}
+                  {briefing.mineAnalysis.severity >= 4 && <span className="text-loss ml-1">(고위험)</span>}
                 </SectionLabel>
                 <p className={`text-xs leading-relaxed ${
                   briefing.mineAnalysis.severity <= 1 ? 'text-[#6B7280]' :
@@ -213,6 +214,44 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                 }`}>
                   {briefing.mineAnalysis.detail}
                 </p>
+              </div>
+            )}
+
+            {/* 뇌동매매 분석 */}
+            {briefing.tradeStyleAnalysis?.severity >= 1 && (
+              <div>
+                <SectionLabel>
+                  매매 스타일 분석
+                  {briefing.tradeStyleAnalysis.severity === 1 && <span className="text-[#6B7280] ml-1">(주시)</span>}
+                  {briefing.tradeStyleAnalysis.severity === 2 && <span className="text-yellow-400 ml-1">(주의)</span>}
+                  {briefing.tradeStyleAnalysis.severity >= 3 && <span className="text-loss ml-1">(위험)</span>}
+                </SectionLabel>
+                <p className={`text-xs leading-relaxed ${
+                  briefing.tradeStyleAnalysis.severity <= 1 ? 'text-[#6B7280]' :
+                  briefing.tradeStyleAnalysis.severity === 2 ? 'text-yellow-400/80' : 'text-loss/80'
+                }`}>
+                  {briefing.tradeStyleAnalysis.detail}
+                </p>
+              </div>
+            )}
+
+            {/* 최근 흐름 */}
+            {briefing.recentFlow && briefing.recentFlow.type !== 'idle' && (
+              <div>
+                <SectionLabel>최근 흐름</SectionLabel>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-medium ${
+                    briefing.recentFlow.type === 'hot_streak' ? 'text-profit' :
+                    briefing.recentFlow.type === 'cold_streak' ? 'text-loss' :
+                    briefing.recentFlow.type === 'winning' ? 'text-profit/70' :
+                    briefing.recentFlow.type === 'losing' ? 'text-loss/70' : 'text-[#6B7280]'
+                  }`}>
+                    {briefing.recentFlow.detail}
+                  </span>
+                  <span className="text-[10px] text-[#4b5563]">
+                    최근 승률 {(briefing.recentFlow.recentWinRate * 100).toFixed(0)}%
+                  </span>
+                </div>
               </div>
             )}
 

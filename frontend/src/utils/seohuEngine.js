@@ -1,18 +1,17 @@
 /**
- * 이서후 전략 엔진 v2
- * — 이서후의 플레이 철학을 규칙 엔진으로 번역한 실전형 코칭 시스템
+ * 이서후 전략 엔진 v3
  *
  * 핵심 원칙:
  * 1. 작은 흐름에서는 오래 살아남으며 조금씩 쌓는다
  * 2. 유리한 흐름이 확인될 때만 과감하게 들어간다
  * 3. 수익이 나도 먼저 지킨다
  * 4. 큰 손실 후에는 감정 없이 다시 처음부터 쌓는다
- * 5. 목표는 한 번의 대승이 아니라 계속 살아남는 것
  *
- * v2 추가:
- * - 지뢰플레이 감지 (저확률 전략 = 정상 실패 vs 과잉 반복 vs 오버사이징)
- * - 비거래일 브리핑 (2일 단위 로테이션)
- * - oneLiner 메시지 풀 확장 (반복 방지)
+ * v3 변경:
+ * - is_mine 필드 기반 지뢰플레이 감지 (유저가 직접 마킹)
+ * - trade_style (계획매매/뇌동매매) 분석
+ * - 뇌동매매 패턴 경고 시스템
+ * - 데이터 변경 시 자동 재계산 구조
  */
 
 const TARGET_GOAL = 200_000
@@ -54,6 +53,214 @@ function sortedByRecent(trades) {
   })
 }
 
+// ─── calculateRecentFlow — 최근 흐름 계산 ────────────────────────────────────
+
+export function calculateRecentFlow(trades, n = 10) {
+  const sorted = sortedByRecent(trades).slice(0, n)
+  if (!sorted.length) return { type: 'idle', streak: 0, streakType: null, recentWinRate: 0, recentPnl: 0, detail: '거래 없음' }
+
+  // 연승/연패
+  let streak = 0, streakType = null
+  for (const t of sorted) {
+    if (!Number.isFinite(t.pnl)) continue
+    const dir = t.pnl > 0 ? 'win' : t.pnl < 0 ? 'loss' : null
+    if (!dir) continue
+    if (!streakType) { streakType = dir; streak = 1 }
+    else if (dir === streakType) streak++
+    else break
+  }
+
+  const wins = sorted.filter(t => Number.isFinite(t.pnl) && t.pnl > 0).length
+  const valid = sorted.filter(t => Number.isFinite(t.pnl)).length
+  const recentWinRate = valid > 0 ? wins / valid : 0
+  const recentPnl = sorted.reduce((s, t) => s + (Number.isFinite(t.pnl) ? t.pnl : 0), 0)
+
+  let type = 'sideways'
+  if (streak >= 3 && streakType === 'win') type = 'hot_streak'
+  else if (streak >= 3 && streakType === 'loss') type = 'cold_streak'
+  else if (streak >= 2 && streakType === 'win') type = 'winning'
+  else if (streak >= 2 && streakType === 'loss') type = 'losing'
+
+  const detail =
+    type === 'hot_streak'  ? `${streak}연승 — 뜨거운 흐름` :
+    type === 'cold_streak' ? `${streak}연패 — 차가운 흐름` :
+    type === 'winning'     ? `${streak}연승 중` :
+    type === 'losing'      ? `${streak}연패 중` :
+    '횡보 구간'
+
+  return { type, streak, streakType, recentWinRate, recentPnl, detail }
+}
+
+// ─── calculateWinRate — 카테고리별 승률 ──────────────────────────────────────
+
+export function calculateWinRate(trades) {
+  const map = {}
+  for (const t of (trades ?? [])) {
+    if (!Number.isFinite(t.pnl)) continue
+    const cat = t.trade_type || 'unknown'
+    if (!map[cat]) map[cat] = { wins: 0, losses: 0, total: 0, totalPnl: 0 }
+    map[cat].total++
+    map[cat].totalPnl += t.pnl
+    if (t.pnl > 0) map[cat].wins++
+    else if (t.pnl < 0) map[cat].losses++
+  }
+  return Object.entries(map).map(([cat, s]) => ({
+    trade_type: cat,
+    winRate: s.total > 0 ? s.wins / s.total : 0,
+    wins: s.wins,
+    losses: s.losses,
+    total: s.total,
+    totalPnl: s.totalPnl,
+  }))
+}
+
+// ─── 지뢰플레이 감지 (is_mine 필드 기반) ──────────────────────────────────────
+//
+// 4단계 판단:
+// 1. 단발성 지뢰플레이 실패 → 정상 (비난 X)
+// 2. 반복 지뢰플레이 (최근 5거래 중 3+ 지뢰) → 경고
+// 3. 지뢰 + 오버사이즈 (평소 대비 50%+ 큰 사이즈) → 위험
+// 4. 지뢰 + 연패 중 진입 → 고위험
+
+export function detectMinePlay(trades) {
+  const result = {
+    detected: false,
+    type: null,       // 'normal_fail' | 'repeat' | 'oversize' | 'losing_entry' | 'execution_error'
+    category: null,
+    detail: '',
+    severity: 0,      // 0=없음, 1=정상실패, 2=경고, 3=위험, 4=고위험
+    mineCount: 0,
+    mineWins: 0,
+    mineLosses: 0,
+  }
+
+  const sorted = sortedByRecent(trades)
+  if (!sorted.length) return result
+
+  // is_mine 플래그 기반 지뢰 거래 추출
+  const mineTrades = sorted.filter(t => t.is_mine)
+  const recentMines = sorted.slice(0, 10).filter(t => t.is_mine)
+
+  result.mineCount = mineTrades.length
+  result.mineWins = mineTrades.filter(t => Number.isFinite(t.pnl) && t.pnl > 0).length
+  result.mineLosses = mineTrades.filter(t => Number.isFinite(t.pnl) && t.pnl < 0).length
+
+  if (recentMines.length === 0) return result
+
+  result.detected = true
+
+  // 최근 10거래 중 지뢰 비율
+  const recentMineLosses = recentMines.filter(t => Number.isFinite(t.pnl) && t.pnl < 0)
+
+  // (4) 지뢰 + 연패 중 진입
+  // 최근 거래 흐름에서 연패 중에 지뢰를 넣었는지 확인
+  const flow = calculateRecentFlow(trades, 10)
+  if (flow.streak >= 2 && flow.streakType === 'loss') {
+    // 연패 중인데 최근 지뢰 거래가 있다
+    const lossStreakTrades = sorted.slice(0, flow.streak)
+    const minesInLossStreak = lossStreakTrades.filter(t => t.is_mine)
+    if (minesInLossStreak.length > 0) {
+      result.type = 'losing_entry'
+      result.category = minesInLossStreak[0].trade_type || '지뢰'
+      result.detail = `${flow.streak}연패 중에 지뢰플레이 진입. 흐름이 꺾인 상태에서 저확률 베팅은 자본 소모를 가속시킨다.`
+      result.severity = 4
+      return result
+    }
+  }
+
+  // (3) 지뢰 + 오버사이즈
+  const minesWithSize = recentMines.filter(t => (t.entry_amount ?? 0) > 0)
+  const nonMinesWithSize = sorted.filter(t => !t.is_mine && (t.entry_amount ?? 0) > 0).slice(0, 15)
+  if (minesWithSize.length > 0 && nonMinesWithSize.length > 0) {
+    const mineAvg = minesWithSize.reduce((s, t) => s + t.entry_amount, 0) / minesWithSize.length
+    const normalAvg = nonMinesWithSize.reduce((s, t) => s + t.entry_amount, 0) / nonMinesWithSize.length
+    if (normalAvg > 0 && mineAvg / normalAvg > 1.5) {
+      result.type = 'oversize'
+      result.category = minesWithSize[0].trade_type || '지뢰'
+      result.detail = `지뢰플레이 사이즈가 평소 대비 ${Math.round((mineAvg / normalAvg - 1) * 100)}% 크다. 지뢰는 소액으로 터뜨리는 구조다.`
+      result.severity = 3
+      return result
+    }
+  }
+
+  // (2) 반복 지뢰플레이 — 최근 5거래 중 3개 이상이 지뢰
+  const recent5 = sorted.slice(0, 5)
+  const minesIn5 = recent5.filter(t => t.is_mine)
+  if (minesIn5.length >= 3) {
+    result.type = 'repeat'
+    result.detail = `최근 5거래 중 ${minesIn5.length}건이 지뢰. 저확률 전략에 집착하고 있다. 한두 번이면 충분하다.`
+    result.severity = 2
+    return result
+  }
+
+  // 연속 지뢰 손실 3회 이상
+  let consecutiveMineLoss = 0
+  for (const t of sorted) {
+    if (t.is_mine && Number.isFinite(t.pnl) && t.pnl < 0) consecutiveMineLoss++
+    else break
+  }
+  if (consecutiveMineLoss >= 3) {
+    result.type = 'repeat'
+    result.detail = `지뢰플레이 ${consecutiveMineLoss}연패. 같은 패턴을 반복하고 있다. 다른 접근이 필요하다.`
+    result.severity = 2
+    return result
+  }
+
+  // (1) 단발성 — 정상 실패, 비난하지 않음
+  if (recentMineLosses.length > 0) {
+    result.type = 'normal_fail'
+    result.detail = `지뢰플레이 ${recentMineLosses.length}회 실패. 저확률은 원래 이렇다. 사이즈만 관리하면 된다.`
+    result.severity = 1
+  } else {
+    // 지뢰 거래가 있지만 최근 손실은 아님 (수익 or BEP)
+    result.type = 'normal_fail'
+    result.detail = `지뢰플레이 ${recentMines.length}건 실행. 현재 정상 운영 중.`
+    result.severity = 0
+  }
+
+  return result
+}
+
+// ─── 뇌동매매 분석 ───────────────────────────────────────────────────────────
+
+function analyzeTradeStyle(sorted) {
+  const recent = sorted.slice(0, 15)
+  if (!recent.length) return { impulsiveRate: 0, impulsiveCount: 0, plannedCount: 0, detail: null, severity: 0 }
+
+  const impulsive = recent.filter(t => t.trade_style === '뇌동매매')
+  const planned = recent.filter(t => t.trade_style === '계획매매')
+  const impulsiveRate = recent.length > 0 ? impulsive.length / recent.length : 0
+
+  // 뇌동매매 손실 분석
+  const impulsiveLosses = impulsive.filter(t => Number.isFinite(t.pnl) && t.pnl < 0)
+  const impulsiveLossTotal = impulsiveLosses.reduce((s, t) => s + Math.abs(t.pnl), 0)
+
+  let detail = null
+  let severity = 0
+
+  if (impulsive.length >= 5 && impulsiveRate > 0.5) {
+    detail = `최근 ${recent.length}거래 중 ${impulsive.length}건이 뇌동매매(${Math.round(impulsiveRate * 100)}%). 충동적 진입이 습관화되고 있다.`
+    severity = 3
+  } else if (impulsive.length >= 3 && impulsiveLossTotal > 0) {
+    detail = `뇌동매매 ${impulsive.length}건 중 ${impulsiveLosses.length}건 손실(-$${Math.round(impulsiveLossTotal).toLocaleString()}). 계획 없는 진입이 자본을 갉아먹고 있다.`
+    severity = 2
+  } else if (impulsive.length >= 2) {
+    detail = `뇌동매매 ${impulsive.length}건 감지. 아직 통제 범위지만 주의가 필요하다.`
+    severity = 1
+  }
+
+  return {
+    impulsiveRate,
+    impulsiveCount: impulsive.length,
+    plannedCount: planned.length,
+    impulsiveLossTotal,
+    detail,
+    severity,
+  }
+}
+
+// ─── Emotion State Detection ──────────────────────────────────────────────────
+
 function getStreak(sorted) {
   let losses = 0, wins = 0, done = false
   for (const t of sorted) {
@@ -83,113 +290,17 @@ function getFreqTrendRatio(sorted) {
   return (5 / rDays) / (5 / pDays)
 }
 
-// ─── 지뢰플레이 감지 ─────────────────────────────────────────────────────────
-//
-// 지뢰플레이: 원래 저확률 전략 (승률 30% 이하 카테고리)
-// - 한두 번 실패 = 정상. 구조 자체가 그렇다. 비난하지 않는다.
-// - 같은 카테고리에서 3회 이상 연속 손실 = 과잉 반복 경고
-// - 지뢰플레이에서 사이즈가 평소 대비 50% 이상 증가 = 오버사이징 경고
-// - 고확률 셋업에서 실행 미스로 손실 = 실행 오류 (별도 분류)
-
-function detectMinePlays(sorted, tradeTypeStats) {
-  const result = {
-    detected: false,
-    type: null,      // 'normal_fail' | 'repeat' | 'oversize' | 'execution_error'
-    category: null,
-    detail: '',
-    severity: 0,     // 0=없음, 1=정상실패(무시), 2=경고, 3=위험
-  }
-
-  if (!sorted.length || !tradeTypeStats?.length) return result
-
-  // 카테고리별 승률 맵
-  const winRateMap = {}
-  for (const s of tradeTypeStats) {
-    if (s.trade_type && Number.isFinite(s.win_rate)) {
-      winRateMap[s.trade_type] = s.win_rate
-    }
-  }
-
-  // 최근 손실 거래 분석
-  const recentLosses = sorted.filter(t => Number.isFinite(t.pnl) && t.pnl < 0).slice(0, 10)
-  if (recentLosses.length === 0) return result
-
-  // 카테고리별 연속 손실 카운트
-  const catLossCount = {}
-  for (const t of recentLosses) {
-    const cat = t.trade_type || t.category || 'unknown'
-    catLossCount[cat] = (catLossCount[cat] || 0) + 1
-  }
-
-  // 저확률 카테고리에서의 손실 분석
-  for (const [cat, count] of Object.entries(catLossCount)) {
-    const wr = winRateMap[cat]
-    const isLowProb = wr != null && wr <= 0.35  // 승률 35% 이하 = 지뢰플레이
-
-    if (!isLowProb) {
-      // 고확률 카테고리에서 연속 손실 = 실행 오류
-      if (wr != null && wr > 0.5 && count >= 2) {
-        result.detected = true
-        result.type = 'execution_error'
-        result.category = cat
-        result.detail = `${cat} 승률 ${(wr * 100).toFixed(0)}%인데 최근 ${count}연패. 실행에 문제가 있다.`
-        result.severity = 2
-        return result
-      }
-      continue
-    }
-
-    // 지뢰플레이 카테고리 확인
-    result.detected = true
-    result.category = cat
-
-    if (count >= 3) {
-      // 3회 이상 연속 → 과잉 반복
-      result.type = 'repeat'
-      result.detail = `${cat}에서 ${count}연패. 저확률 플레이를 반복하고 있다.`
-      result.severity = 2
-      return result
-    }
-
-    // 사이즈 체크: 지뢰플레이에서 오버사이징?
-    const mineTrades = recentLosses.filter(t => (t.trade_type || t.category) === cat && (t.entry_amount ?? 0) > 0)
-    const otherTrades = sorted.filter(t => (t.trade_type || t.category) !== cat && (t.entry_amount ?? 0) > 0).slice(0, 10)
-    if (mineTrades.length > 0 && otherTrades.length > 0) {
-      const mineAvgSize = mineTrades.reduce((s, t) => s + t.entry_amount, 0) / mineTrades.length
-      const otherAvgSize = otherTrades.reduce((s, t) => s + t.entry_amount, 0) / otherTrades.length
-      if (otherAvgSize > 0 && mineAvgSize / otherAvgSize > 1.5) {
-        result.type = 'oversize'
-        result.detail = `${cat} 지뢰플레이에 사이즈가 평소 대비 ${Math.round((mineAvgSize / otherAvgSize - 1) * 100)}% 크다.`
-        result.severity = 3
-        return result
-      }
-    }
-
-    // 정상 실패 — 지뢰플레이는 원래 이렇다
-    result.type = 'normal_fail'
-    result.detail = `${cat} 저확률 플레이 ${count}회 실패. 구조적으로 정상 범위.`
-    result.severity = 1
-  }
-
-  return result
-}
-
-// ─── Emotion State Detection ──────────────────────────────────────────────────
-
 function detectEmotion(sorted) {
   const { consecutiveLosses, consecutiveWins } = getStreak(sorted)
   const sizeTrend = getSizeTrendRatio(sorted)
   const freqTrend = getFreqTrendRatio(sorted)
 
-  // 3연패 이상 → 틸트
   if (consecutiveLosses >= 3)
     return { state: 'TILT', detail: `${consecutiveLosses}연패`, consecutiveLosses, consecutiveWins, sizeTrend, freqTrend }
 
-  // 2연패 + 사이즈 30% 이상 증가 → 복구 욕망
   if (consecutiveLosses >= 2 && sizeTrend > 1.3)
     return { state: 'REVENGE', detail: `${consecutiveLosses}연패 + 사이즈 ${Math.round((sizeTrend - 1) * 100)}% 증가`, consecutiveLosses, consecutiveWins, sizeTrend, freqTrend }
 
-  // 3연승 + 진입 빈도 50% 이상 증가 → 과신
   if (consecutiveWins >= 3 && freqTrend > 1.5)
     return { state: 'OVERCONFIDENCE', detail: `${consecutiveWins}연승 + 빈도 ${Math.round((freqTrend - 1) * 100)}% 증가`, consecutiveLosses, consecutiveWins, sizeTrend, freqTrend }
 
@@ -198,25 +309,22 @@ function detectEmotion(sorted) {
 
 // ─── Phase Classification ─────────────────────────────────────────────────────
 
-function computePhase({ emotion, equity, ev, totalTrades }) {
+export function calculatePhase({ emotion, equity, ev, totalTrades }) {
   const { consecutiveLosses, consecutiveWins } = emotion
   const { drawdownFromHwm, maxDdPct, current: currentEquity } = equity
   const { current: currentEv, trend: evTrend } = ev
 
-  // RESET
   if (emotion.state === 'REVENGE') return 'RESET'
   if (emotion.state === 'TILT')    return 'RESET'
   if (consecutiveLosses >= 3)      return 'RESET'
   if (maxDdPct > 0.25)             return 'RESET'
 
-  // DEFENSE
   if (emotion.state === 'OVERCONFIDENCE')                         return 'DEFENSE'
   if (currentEquity > 0 && drawdownFromHwm > 0.15)               return 'DEFENSE'
   if (consecutiveLosses >= 2)                                     return 'DEFENSE'
   if (currentEv !== null && totalTrades >= 5 && currentEv < 3)   return 'DEFENSE'
   if (evTrend === 'DECLINING' && currentEquity > 0)              return 'DEFENSE'
 
-  // ATTACK
   if (
     currentEv !== null && currentEv > 15 &&
     drawdownFromHwm < 0.05 &&
@@ -263,13 +371,12 @@ function categoryPermission(grade, phase) {
   return { permission: '선택적 허용', reason: '약한 엣지지만 ATTACK 구간. 사이즈 줄여서 가능.' }
 }
 
-// ─── 2일 단위 로테이션 시드 ──────────────────────────────────────────────────
-// 같은 메시지가 계속 반복되지 않도록, 2일마다 시드가 바뀐다
+// ─── 2일 단위 로테이션 시드 (반복 방지) ──────────────────────────────────────
 
 function getRotationIndex(poolSize) {
   const today = new Date()
   const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000)
-  const seed = Math.floor(dayOfYear / 2)  // 2일마다 변경
+  const seed = Math.floor(dayOfYear / 2)
   return seed % Math.max(poolSize, 1)
 }
 
@@ -283,7 +390,7 @@ function pickFromPool(pool) {
 function fmt(n, d = 1) { return Number.isFinite(n) ? n.toFixed(d) : '—' }
 
 function buildBriefingText(ctx) {
-  const { phase, emotion, equity, ev, totalTrades, categories, minePlay } = ctx
+  const { phase, emotion, equity, ev, totalTrades, categories, minePlay, tradeStyleAnalysis } = ctx
   const { consecutiveLosses, consecutiveWins, sizeTrend } = emotion
   const { current: currentEquity, drawdownFromHwm, maxDdPct } = equity
   const { current: currentEv, trend: evTrend } = ev
@@ -295,111 +402,104 @@ function buildBriefingText(ctx) {
   // ── 이서후 판단 ──────────────────────────────────────────────────────────────
   let judgment = ''
 
-  // 지뢰플레이 관련 판단 (우선순위 높음 — 다른 판단에 삽입)
+  // 지뢰플레이 판단
   let mineJudgment = ''
   if (minePlay.detected) {
     switch (minePlay.type) {
       case 'normal_fail':
-        // 정상 실패 — 비난하지 않음
-        mineJudgment = `${minePlay.category} 지뢰플레이 실패는 구조적으로 정상이다. 저확률은 원래 이렇다. 사이즈만 관리하면 된다.`
+        mineJudgment = `지뢰플레이 실패는 구조적으로 정상이다. 저확률은 원래 이렇다. 사이즈만 관리하면 된다.`
         break
       case 'repeat':
-        mineJudgment = `${minePlay.category}에서 반복 진입하고 있다. 지뢰는 한두 번이면 충분하다. 같은 구간에서 계속 파지 마라.`
+        mineJudgment = `지뢰에 집착하고 있다. 저확률 전략은 한두 번이면 충분하다. 같은 구간에서 계속 파지 마라.`
         break
       case 'oversize':
-        mineJudgment = `${minePlay.detail} 지뢰플레이는 소액으로 터뜨리는 구조다. 큰 돈을 넣으면 지뢰가 아니라 자폭이다.`
+        mineJudgment = `${minePlay.detail} 큰 돈을 넣으면 지뢰가 아니라 자폭이다.`
         break
-      case 'execution_error':
-        mineJudgment = `${minePlay.detail} 높은 승률에서 연속 손실은 실행에 구멍이 있다는 뜻이다. 셋업이 아니라 진입/청산 타이밍을 점검해라.`
+      case 'losing_entry':
+        mineJudgment = `${minePlay.detail}`
         break
     }
+  }
+
+  // 뇌동매매 판단
+  let styleJudgment = ''
+  if (tradeStyleAnalysis.severity >= 2) {
+    styleJudgment = tradeStyleAnalysis.detail
   }
 
   if (phase === 'RESET') {
     if (emotion.state === 'REVENGE') {
-      judgment = `${consecutiveLosses}연패 후 사이즈가 ${Math.round((sizeTrend - 1) * 100)}% 커졌다. 복구 욕망이다. 지금 당장 멈춰라. 이 패턴이 계속되면 목표는 멀어진다.`
+      judgment = `포포, ${consecutiveLosses}연패 후 사이즈가 ${Math.round((sizeTrend - 1) * 100)}% 커졌다. 복구 욕망이다. 지금 당장 멈춰라. 이 패턴이 계속되면 목표는 멀어진다.`
     } else if (emotion.state === 'TILT' || consecutiveLosses >= 3) {
-      judgment = `${consecutiveLosses}연패다. 흐름이 완전히 꺾였다. 지금은 들어가는 게 아니라 살아남는 게 목표다. 시장은 내일도 있다.`
+      judgment = `포포, ${consecutiveLosses}연패다. 흐름이 완전히 꺾였다. 지금은 들어가는 게 아니라 살아남는 게 목표다. 시장은 내일도 있다.`
     } else {
-      judgment = `최대 낙폭 ${fmt(maxDdPct * 100)}%. 더 이상 소모하지 마라. 포지션을 최소화하고 상황을 냉정하게 재점검해라.`
+      judgment = `포포, 최대 낙폭 ${fmt(maxDdPct * 100)}%. 더 이상 소모하지 마라. 포지션을 최소화하고 상황을 냉정하게 재점검해라.`
     }
   } else if (phase === 'DEFENSE') {
     if (evTrend === 'DECLINING') {
-      judgment = `EV가 꺾이고 있다. 흐름이 나쁘지 않아도 지금은 공격이 아니다. 있는 것을 지키는 게 먼저다.`
+      judgment = `포포, EV가 꺾이고 있다. 지금은 벌 때가 아니라 있는 것을 지킬 때다.`
     } else if (drawdownFromHwm > 0.15) {
-      judgment = `고점에서 ${fmt(drawdownFromHwm * 100)}% 빠졌다. 더 빠지면 심리가 흔들린다. 지금은 방어 모드다. 공격은 흐름이 회복된 다음이다.`
+      judgment = `포포, 고점에서 ${fmt(drawdownFromHwm * 100)}% 빠졌다. 더 빠지면 심리가 흔들린다. 방어 모드다.`
     } else if (emotion.state === 'OVERCONFIDENCE') {
-      judgment = `${consecutiveWins}연승이지만 진입 빈도가 올라가고 있다. 과신이다. 지금 사이즈를 유지하거나 줄여라. 탐욕은 이 구간에서 가장 비싼 감정이다.`
+      judgment = `포포, ${consecutiveWins}연승이지만 빈도가 올라가고 있다. 과신이다. 사이즈를 유지하거나 줄여라.`
     } else {
-      judgment = `${consecutiveLosses}연패다. 신규 진입은 최소화하고 흐름이 바뀔 때까지 기다려라. 확신이 없을 땐 현금이 포지션이다.`
+      judgment = `포포, ${consecutiveLosses}연패다. 신규 진입은 최소화하고 흐름이 바뀔 때까지 기다려라.`
     }
   } else if (phase === 'ATTACK') {
     const topStr = topCats.length ? topCats.join(', ') : '확인된 카테고리'
-    judgment = `EV ${fmt(currentEv)}%, 흐름도 좋다. ${topStr}에 엣지가 있다. 공격은 허용된다. 단, 탐욕으로 기준을 낮추지 마라. 확실한 자리에서만 들어가라.`
+    judgment = `포포, EV ${fmt(currentEv)}%, 흐름이 좋다. ${topStr}에 엣지가 있다. 확실한 자리에서만 들어가라.`
   } else {
     // BUILD
     if (totalTrades < 5) {
-      judgment = `아직 데이터가 충분하지 않다. 성급한 판단은 금물이다. 작은 사이즈로 패턴을 먼저 확인해라.`
+      judgment = `포포, 아직 데이터가 충분하지 않다. 작은 사이즈로 패턴을 먼저 확인해라.`
     } else if (currentEquity < 0) {
-      judgment = `마이너스 구간이다. 복구하려 들지 마라. 다시 처음부터, 작게, 확실하게 쌓아야 한다. 이게 맞는 길이다.`
+      judgment = `포포, 마이너스 구간이다. 복구하려 들지 마라. 다시 처음부터, 작게, 확실하게 쌓아라.`
     } else {
-      judgment = `아직은 축적 단계다. 목표 $${(TARGET_GOAL / 1000).toFixed(0)}K까지 가는 길은 길다. 지금은 잃지 않는 게 버는 것이다.`
+      judgment = `포포, 아직은 축적 단계다. 잃지 않는 게 버는 것이다.`
     }
   }
 
-  // 지뢰 판단이 있고 severity >= 2면 judgment에 추가
+  // 지뢰/뇌동 판단 추가 (severity 높은 것만)
   if (mineJudgment && minePlay.severity >= 2) {
-    judgment += ` [지뢰분석] ${mineJudgment}`
+    judgment += ` [지뢰] ${mineJudgment}`
+  }
+  if (styleJudgment) {
+    judgment += ` [뇌동] ${styleJudgment}`
   }
 
-  // ── 20만 달러 관점 ───────────────────────────────────────────────────────────
+  // ── 나머지 텍스트 생성 ─────────────────────────────────────────────────────
   const targetView = {
-    RESET:   `지금 패턴으로는 목표와 멀어진다. RESET하고 냉정하게 다시 쌓는 것만이 $${(TARGET_GOAL / 1000).toFixed(0)}K로 가는 길이다.`,
-    BUILD:   `$${(TARGET_GOAL / 1000).toFixed(0)}K는 한 번의 대승이 아니라 잃지 않는 플레이가 쌓여서 만들어진다. 지금 구간이 그 기반이다.`,
+    RESET:   `지금 패턴으로는 목표와 멀어진다. 냉정하게 RESET하고 다시 쌓는 것만이 $${(TARGET_GOAL / 1000).toFixed(0)}K로 가는 길이다.`,
+    BUILD:   `$${(TARGET_GOAL / 1000).toFixed(0)}K는 잃지 않는 플레이가 쌓여서 만들어진다. 지금 구간이 그 기반이다.`,
     DEFENSE: `손실을 줄이는 것은 수익을 내는 것만큼 목표에 중요하다. 지금 지키는 것이 목표에 맞는 행동이다.`,
-    ATTACK:  `EV가 확인된 카테고리에 집중하는 지금의 접근이 목표를 향한 올바른 방향이다. 단, 탐욕으로 흔들리지 마라.`,
+    ATTACK:  `EV가 확인된 카테고리에 집중하는 지금의 접근이 올바른 방향이다. 탐욕으로 흔들리지 마라.`,
   }[phase]
 
-  // ── 지금 해야 할 플레이 ──────────────────────────────────────────────────────
   const playNow = {
-    RESET:   `모든 신규 진입 중단${emotion.state === 'REVENGE' ? '. 사이즈 즉시 원복' : ''}. 흐름이 안정될 때까지 관망.`,
-    BUILD:   `작은 사이즈로${topCats.length ? ` ${topCats.join(', ')} 카테고리에서만` : ' EV 있는 자리에서만'} 진입. 실수 없이 쌓아라.`,
-    DEFENSE: `신규 진입 최소화. 기존 플레이 유지.${allowCats.length ? ` ${allowCats.slice(0, 2).map(c => c.trade_type).join(', ')}만 선택적 허용.` : ''}`,
-    ATTACK:  `${topCats.length ? `${topCats.join(', ')} 카테고리` : 'EV 높은 자리'}에 집중. 확실한 자리에서만, 확실한 카테고리에서만.`,
+    RESET:   `모든 신규 진입 중단${emotion.state === 'REVENGE' ? '. 사이즈 즉시 원복' : ''}. 흐름 안정될 때까지 관망.`,
+    BUILD:   `작은 사이즈로${topCats.length ? ` ${topCats.join(', ')}에서만` : ' EV 있는 자리에서만'} 진입.`,
+    DEFENSE: `신규 진입 최소화.${allowCats.length ? ` ${allowCats.slice(0, 2).map(c => c.trade_type).join(', ')}만 선택적 허용.` : ''}`,
+    ATTACK:  `${topCats.length ? `${topCats.join(', ')}` : 'EV 높은 자리'}에 집중. 확실한 자리에서만.`,
   }[phase]
 
-  // ── 금지 행동 ────────────────────────────────────────────────────────────────
   const forbidden = {
     RESET:   `신규 진입. 사이즈 확대. 손절 미루기. 감정적 복구 시도.`,
     BUILD:   `무분별한 카테고리 탐색. 사이즈 확대. 검증 안 된 자리 진입.`,
     DEFENSE: `신규 카테고리 탐색. 사이즈 확대. 연패 직후 즉각 재진입.`,
-    ATTACK:  `탐욕적 오버사이징. EV 없는 카테고리 진입. 흐름에 취해 기준 낮추기.`,
+    ATTACK:  `탐욕적 오버사이징. EV 없는 카테고리 진입. 기준 낮추기.`,
   }[phase]
 
-  // ── 사이즈 전략 ──────────────────────────────────────────────────────────────
   const sizeStrategy = {
     RESET:   `최소 사이즈 또는 거래 중단 — 지금은 지키는 게 먼저다`,
     BUILD:   `보수적 사이즈 유지 — 실수 없이 쌓는 게 목표다`,
     DEFENSE: `기존 사이즈 유지 또는 축소 — 공격이 아닌 방어다`,
-    ATTACK:  `확인된 카테고리에 집중 — 분산 말고 엣지 있는 자리에 모아라`,
+    ATTACK:  `확인된 카테고리에 집중 — 엣지 있는 자리에 모아라`,
   }[phase]
 
-  // ── 현재 상태 한 줄 ──────────────────────────────────────────────────────────
-  const currentStatus = (() => {
-    const parts = []
-    if (currentEv !== null) parts.push(`EV ${currentEv >= 0 ? '+' : ''}${fmt(currentEv)}%${evTrend === 'DECLINING' ? ' ↓' : evTrend === 'RISING' ? ' ↑' : ''}`)
-    if (drawdownFromHwm > 0.01) parts.push(`낙폭 ${fmt(drawdownFromHwm * 100)}%`)
-    if (consecutiveLosses >= 2) parts.push(`${consecutiveLosses}연패`)
-    else if (consecutiveWins >= 2) parts.push(`${consecutiveWins}연승`)
-    if (emotion.state !== 'CALM') parts.push(emotion.detail)
-    if (minePlay.detected && minePlay.severity >= 2) parts.push(`지뢰: ${minePlay.category}`)
-    return parts.join(' | ') || '데이터 분석 중'
-  })()
+  // ── oneLiner (2일 로테이션) ─────────────────────────────────────────────────
+  const oneLiner = buildOneLiner({ phase, emotion, ev, equity, consecutiveLosses, consecutiveWins, totalTrades, currentEquity, drawdownFromHwm, evTrend, minePlay, tradeStyleAnalysis })
 
-  // ── 포포에게 한 줄 브리핑 (메시지 풀 + 2일 로테이션) ───────────────────────────
-  const oneLiner = buildOneLiner({ phase, emotion, ev, equity, consecutiveLosses, consecutiveWins, totalTrades, currentEquity, drawdownFromHwm, evTrend, minePlay })
-
-  // ── 지뢰 분석 요약 (UI용) ──────────────────────────────────────────────────
+  // ── 지뢰 분석 UI용 ─────────────────────────────────────────────────────────
   const mineAnalysis = minePlay.detected ? {
     type: minePlay.type,
     category: minePlay.category,
@@ -407,15 +507,21 @@ function buildBriefingText(ctx) {
     severity: minePlay.severity,
   } : null
 
-  return { judgment, targetView, playNow, forbidden, sizeStrategy, currentStatus, oneLiner, mineAnalysis }
+  return { judgment, targetView, playNow, forbidden, sizeStrategy, oneLiner, mineAnalysis }
 }
 
-// ─── oneLiner 메시지 풀 (반복 방지를 위한 2일 로테이션) ──────────────────────
+// ─── oneLiner 메시지 풀 ──────────────────────────────────────────────────────
 
-function buildOneLiner({ phase, emotion, ev, equity, consecutiveLosses, consecutiveWins, totalTrades, currentEquity, drawdownFromHwm, evTrend, minePlay }) {
-  // 지뢰 오버사이징은 최우선
-  if (minePlay.detected && minePlay.type === 'oversize') {
-    return `포포, ${minePlay.category} 지뢰플레이에 큰 돈 넣지 마라. 지뢰는 소액으로 터뜨리는 거다.`
+function buildOneLiner({ phase, emotion, ev, equity, consecutiveLosses, consecutiveWins, totalTrades, currentEquity, drawdownFromHwm, evTrend, minePlay, tradeStyleAnalysis }) {
+  // 고위험 지뢰 상황 최우선
+  if (minePlay.detected && minePlay.severity >= 3) {
+    if (minePlay.type === 'oversize') return `포포, 지뢰에 큰 돈 넣지 마라. 지뢰는 소액으로 터뜨리는 거다.`
+    if (minePlay.type === 'losing_entry') return `포포, 연패 중에 지뢰를 꽂지 마라. 지금은 쉬어야 할 때다.`
+  }
+
+  // 뇌동매매 과다
+  if (tradeStyleAnalysis.severity >= 3) {
+    return `포포, 뇌동매매가 너무 많다. 계획 없이 들어가면 시장이 가르친다.`
   }
 
   if (phase === 'RESET') {
@@ -448,8 +554,8 @@ function buildOneLiner({ phase, emotion, ev, equity, consecutiveLosses, consecut
 
   if (phase === 'ATTACK') {
     const pool = [
-      `포포, 공격은 허용된다. 하지만 확실한 자리에서만 들어가라.`,
-      `포포, 흐름이 좋다. 엣지 있는 곳에만 집중해라. 나머지는 잡음이다.`,
+      `포포, 공격은 허용된다. 확실한 자리에서만 들어가라.`,
+      `포포, 흐름이 좋다. 엣지 있는 곳에만 집중해라.`,
       `포포, 좋은 흐름에서도 탐욕은 금물이다. 기준을 지켜라.`,
       `포포, 지금이 벌 때다. 단, 기준 밖의 자리에는 들어가지 마라.`,
     ]
@@ -475,12 +581,10 @@ function buildOneLiner({ phase, emotion, ev, equity, consecutiveLosses, consecut
 // ─── 비거래일 브리핑 ─────────────────────────────────────────────────────────
 
 function buildNoTradeBriefing(ctx) {
-  const { equity, ev, phase, minePlay } = ctx
-  const { current: currentEquity } = equity
+  const { equity, ev, phase, minePlay, tradeStyleAnalysis } = ctx
   const { current: currentEv } = ev
 
   const pool = [
-    // 일반 휴식
     `포포, 오늘은 거래가 없다. 쉬는 것도 전략이다. 내일의 좋은 판을 위해 에너지를 아껴라.`,
     `포포, 거래 없는 날이다. 복기할 건 복기하고, 나머지는 내려놓아라.`,
     `포포, 시장을 안 보는 날도 성장하는 날이다. 다음 기회는 반드시 온다.`,
@@ -488,23 +592,28 @@ function buildNoTradeBriefing(ctx) {
     `포포, 안 들어간 날은 진 날이 아니다. 다음 좋은 자리를 위한 준비다.`,
   ]
 
-  // 상황에 따라 추가 메시지
   if (phase === 'RESET') {
     pool.push(
       `포포, 지금은 쉬는 게 맞다. RESET 구간에서 가장 좋은 선택은 안 하는 것이다.`,
-      `포포, 거래 안 한 것 자체가 오늘의 승리다. 흐름이 올 때까지 기다려라.`,
+      `포포, 거래 안 한 것 자체가 오늘의 승리다.`,
     )
   }
 
   if (phase === 'ATTACK' && currentEv > 0) {
     pool.push(
-      `포포, EV가 양수인 구간이다. 좋은 셋업이 오면 그때 들어가면 된다. 서두르지 마라.`,
+      `포포, EV가 양수인 구간이다. 좋은 셋업이 오면 그때 들어가면 된다.`,
     )
   }
 
   if (minePlay.detected && minePlay.type === 'repeat') {
     pool.push(
-      `포포, ${minePlay.category} 지뢰에서 쉬고 있는 건 좋은 선택이다. 같은 구간을 반복하지 마라.`,
+      `포포, 지뢰에서 쉬고 있는 건 좋은 선택이다. 같은 구간을 반복하지 마라.`,
+    )
+  }
+
+  if (tradeStyleAnalysis.severity >= 2) {
+    pool.push(
+      `포포, 뇌동매매가 많았다. 오늘 쉬면서 다음 플레이를 계획으로 정리해봐라.`,
     )
   }
 
@@ -515,9 +624,12 @@ function buildNoTradeBriefing(ctx) {
 
 /**
  * 이서후 전략 브리핑 생성
+ *
+ * 데이터 변경 시 React useMemo가 이 함수를 재호출 → 자동 갱신
+ *
  * @param {object} analytics  - /api/analytics 응답
  * @param {array}  trades     - /api/trades 응답 (월별)
- * @returns {object|null}     - 브리핑 결과, 에러 시 null
+ * @returns {object|null}     - 브리핑 결과
  */
 export function generateSeohuBriefing(analytics, trades) {
   try {
@@ -533,10 +645,16 @@ export function generateSeohuBriefing(analytics, trades) {
     const total    = (trades ?? []).filter(t => Number.isFinite(t.pnl)).length
     const targetProgress = TARGET_GOAL > 0 ? (equity.current / TARGET_GOAL) * 100 : 0
 
-    const phase = computePhase({ emotion, equity, ev, totalTrades: total })
+    const phase = calculatePhase({ emotion, equity, ev, totalTrades: total })
 
-    // 지뢰플레이 감지
-    const minePlay = detectMinePlays(sorted, tradeTypeStats)
+    // 지뢰플레이 감지 (is_mine 기반)
+    const minePlay = detectMinePlay(trades)
+
+    // 뇌동매매 분석 (trade_style 기반)
+    const tradeStyleAnalysis = analyzeTradeStyle(sorted)
+
+    // 최근 흐름
+    const recentFlow = calculateRecentFlow(trades, 10)
 
     const categories = tradeTypeStats
       .filter(t => Number.isFinite(t.ev_percent))
@@ -555,13 +673,13 @@ export function generateSeohuBriefing(analytics, trades) {
       })
       .sort((a, b) => b.ev_percent - a.ev_percent)
 
-    const text = buildBriefingText({ phase, emotion, equity, ev, totalTrades: total, categories, minePlay })
+    const text = buildBriefingText({ phase, emotion, equity, ev, totalTrades: total, categories, minePlay, tradeStyleAnalysis })
 
-    // 비거래일 체크: 오늘 날짜에 거래가 없으면 비거래 브리핑 추가
+    // 비거래일 체크
     const today = new Date().toISOString().slice(0, 10)
     const hasTradesToday = (trades ?? []).some(t => t.date === today)
     const noTradeBriefing = !hasTradesToday
-      ? buildNoTradeBriefing({ equity, ev, phase, minePlay })
+      ? buildNoTradeBriefing({ equity, ev, phase, minePlay, tradeStyleAnalysis })
       : null
 
     return {
@@ -574,6 +692,8 @@ export function generateSeohuBriefing(analytics, trades) {
       targetProgress,
       categories,
       minePlay,
+      tradeStyleAnalysis,
+      recentFlow,
       noTradeBriefing,
       ...text,
     }
