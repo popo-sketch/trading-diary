@@ -1,92 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useToast } from '../contexts/ToastContext'
 import { formatDollarKMB, parseDollarInput, formatDollarInput } from '../utils/format'
-import {
-  STATUS, GRADES, DECISION,
-  computeSystemStatus, getTypeGrade, getCoachingDecision, getPositionSizeMultiplier,
-} from '../utils/coaching'
 
 const CHAINS = ['Solana', 'Base', 'Bnb', 'etc']
 const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'Elon', 'CZ', 'HeYi', 'Trump', 'Binance', 'ETC']
 
-const DECISION_STYLE = {
-  [DECISION.ALLOWED]:         { bg: 'bg-profit/10',      border: 'border-profit/30',      text: 'text-profit',    label: '✓ 진입 허용' },
-  [DECISION.REDUCE]:          { bg: 'bg-yellow-500/10',   border: 'border-yellow-500/30',  text: 'text-yellow-400', label: '↓ 사이즈 축소 후 진입' },
-  [DECISION.NOT_RECOMMENDED]: { bg: 'bg-orange-500/10',   border: 'border-orange-500/30',  text: 'text-orange-400', label: '△ 진입 비추천' },
-  [DECISION.FORBIDDEN]:       { bg: 'bg-loss/10',         border: 'border-loss/30',        text: 'text-loss',       label: '✕ 진입 금지' },
-}
-
-const GRADE_COLOR = {
-  [GRADES.S]: 'text-yellow-400', [GRADES.A]: 'text-profit',
-  [GRADES.B]: 'text-accent',     [GRADES.C]: 'text-loss',
-}
-
-const STATUS_LABEL = { [STATUS.NORMAL]: 'NORMAL', [STATUS.DEFENSIVE]: 'DEFENSIVE', [STATUS.STOP]: 'STOP' }
-const STATUS_COLOR = { [STATUS.NORMAL]: 'text-profit', [STATUS.DEFENSIVE]: 'text-yellow-400', [STATUS.STOP]: 'text-loss' }
-
-function PreTradeCoachWidget({ tradeType, analytics, trades }) {
-  const coaching = useMemo(() => {
-    if (!analytics || !tradeType) return null
-    try {
-      const tradeTypeStats = analytics?.trade_type_stats ?? []
-      const sysStatus = computeSystemStatus(analytics, trades ?? [])
-      const typeStat  = tradeTypeStats.find((t) => t.trade_type === tradeType)
-      const grade     = typeStat ? getTypeGrade(typeStat.ev_percent) : GRADES.C
-      const { decision, reason } = getCoachingDecision(grade, sysStatus.status)
-      const multiplier = getPositionSizeMultiplier(grade, sysStatus.status)
-      return { sysStatus, typeStat, grade, decision, reason, multiplier }
-    } catch {
-      return null
-    }
-  }, [tradeType, analytics, trades])
-
-  if (!coaching) return null
-
-  const d = DECISION_STYLE[coaching.decision]
-  const ev = coaching.typeStat?.ev_percent
-
-  return (
-    <div className={`rounded-lg border p-3 ${d.bg} ${d.border}`}>
-      {/* 상단: grade + type + decision */}
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <span className={`text-xs font-bold ${GRADE_COLOR[coaching.grade]}`}>[{coaching.grade}]</span>
-          <span className="text-white text-xs font-medium">{tradeType}</span>
-          {ev !== null && ev !== undefined && (
-            <span className={`text-xs ${ev >= 0 ? 'text-profit' : 'text-loss'}`}>
-              EV {ev > 0 ? '+' : ''}{ev.toFixed(1)}%
-            </span>
-          )}
-          {coaching.typeStat && (
-            <span className="text-[#6B7280] text-xs">n={coaching.typeStat.trades}</span>
-          )}
-        </div>
-        <span className={`text-xs font-bold ${d.text}`}>{d.label}</span>
-      </div>
-
-      {/* 하단: reason + status + size */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-[#6B7280]">{coaching.reason}</span>
-        <div className="flex items-center gap-3 text-xs">
-          <span>
-            <span className="text-[#6B7280]">상태 </span>
-            <span className={`font-medium ${STATUS_COLOR[coaching.sysStatus.status]}`}>
-              {STATUS_LABEL[coaching.sysStatus.status]}
-            </span>
-          </span>
-          <span>
-            <span className="text-[#6B7280]">Size </span>
-            <span className={`font-bold ${coaching.multiplier === 0 ? 'text-loss' : coaching.multiplier >= 0.8 ? 'text-profit' : 'text-yellow-400'}`}>
-              {Math.round(coaching.multiplier * 100)}%
-            </span>
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onClose, analytics, trades }) {
+export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onClose }) {
   const { showToast } = useToast()
   const [date, setDate] = useState(defaultDate ?? '')
   const [ticker, setTicker] = useState('')
@@ -256,11 +175,6 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
                 </option>
               ))}
             </select>
-            {tradeType && (
-              <div className="mt-2">
-                <PreTradeCoachWidget tradeType={tradeType} analytics={analytics} trades={trades} />
-              </div>
-            )}
           </div>
           {/* 지뢰플레이 + 매매스타일 */}
           <div className="grid grid-cols-2 gap-4">
