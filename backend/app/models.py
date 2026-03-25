@@ -12,7 +12,7 @@ class TradeCreate(BaseModel):
     ca: Optional[str] = None
     pnl: float = Field(..., description="손익 (달러)")
     memo: Optional[str] = None
-    entry_amount: Optional[float] = None  # 클라이언트에서 무시됨, 서버에서 자동 계산
+    entry_amount: Optional[float] = None  # 수동 입력 우선, 없으면 자동 계산
     return_percent: float = Field(..., description="수익률 (%)")
     trade_type: Optional[str] = None
     avg_entry_mc: Optional[float] = None  # 평균 진입 시총 ($)
@@ -49,29 +49,31 @@ class TradeCreate(BaseModel):
 
     @model_validator(mode='after')
     def compute_entry_amount(self):
-        """entry_amount 자동 계산: entry_amount = pnl / (return_percent / 100)"""
-        # 클라이언트에서 보낸 entry_amount는 무시
-        self.entry_amount = None
-        
+        """수동 입력값이 있으면 그대로 사용, 없으면 자동 계산"""
         # 부호 일치: pnl과 return_percent의 부호가 다르면 return_percent 부호를 pnl에 맞춤
         normalized_return = self.return_percent
         if (self.pnl > 0 and self.return_percent < 0) or (self.pnl < 0 and self.return_percent > 0):
             normalized_return = -abs(self.return_percent)
             self.return_percent = normalized_return
-        
-        # entry_amount 계산
+
+        # 수동 입력값이 있으면 그대로 사용
+        manual = self.entry_amount
+        if manual is not None and manual > 0:
+            return self
+
+        # 자동 계산 fallback
         self.entry_amount = self.pnl / (normalized_return / 100)
-        
+
         if self.entry_amount <= 0:
             raise ValueError("Calculated entry_amount is less than or equal to 0. Please check the signs of PnL and Return %.")
-        
+
         return self
 
 
 class TradeUpdate(BaseModel):
     memo: Optional[str] = None
     pnl: Optional[float] = None
-    entry_amount: Optional[float] = None  # 클라이언트에서 무시됨, 서버에서 자동 계산
+    entry_amount: Optional[float] = None  # 수동 입력 우선, 없으면 자동 계산
     return_percent: Optional[float] = None
     trade_type: Optional[str] = None
     avg_entry_mc: Optional[float] = None
@@ -80,20 +82,25 @@ class TradeUpdate(BaseModel):
 
     @model_validator(mode='after')
     def compute_entry_amount_if_needed(self):
-        """pnl과 return_percent가 모두 제공되면 entry_amount 자동 계산"""
-        if self.pnl is not None and self.return_percent is not None:
-            if self.return_percent == 0:
+        """수동 입력값이 있으면 그대로 사용, 없으면 pnl+return_percent로 자동 계산"""
+        pnl_val = self.pnl
+        ret_val = self.return_percent
+        # 부호 일치
+        if pnl_val is not None and ret_val is not None:
+            if ret_val == 0:
                 raise ValueError("return_percent cannot be 0")
-            
-            # 부호 일치
-            normalized_return = self.return_percent
-            if (self.pnl > 0 and self.return_percent < 0) or (self.pnl < 0 and self.return_percent > 0):
-                normalized_return = -abs(self.return_percent)
+            normalized_return: float = ret_val
+            if (pnl_val > 0 and ret_val < 0) or (pnl_val < 0 and ret_val > 0):
+                normalized_return = -abs(ret_val)
                 self.return_percent = normalized_return
-            
-            # entry_amount 계산
-            self.entry_amount = self.pnl / (normalized_return / 100)
-            
+
+            # 수동 입력값이 있으면 그대로 사용
+            manual = self.entry_amount
+            if manual is not None and manual > 0:
+                return self
+
+            # 자동 계산 fallback
+            self.entry_amount = pnl_val / (normalized_return / 100)
             if self.entry_amount <= 0:
                 raise ValueError("Calculated entry_amount is less than or equal to 0. Please check the signs of PnL and Return %.")
         return self

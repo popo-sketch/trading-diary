@@ -18,6 +18,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
   const [avgEntryMc, setAvgEntryMc] = useState('')
   const [isMine, setIsMine] = useState(false)
   const [tradeStyle, setTradeStyle] = useState('')
+  const [entryAmount, setEntryAmount] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -43,28 +44,10 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
   /** 콤마 제거 후 숫자 파싱 */
   const parsePnl = (v) => Number(String(v).replace(/,/g, ''))
 
-  // Entry Amount 자동 계산: entry_amount = pnl / (return_percent / 100)
   const avgEntryMcNum = parseDollarInput(avgEntryMc)
   const exitEntryMc = (avgEntryMcNum != null && returnPercent !== '' && !isNaN(Number(returnPercent)))
     ? avgEntryMcNum * (1 + Number(returnPercent) / 100)
     : null
-
-  const calculatedEntryAmount = (() => {
-    const pnlNum = parsePnl(pnl)
-    const returnNum = Number(returnPercent)
-    
-    if (pnl && returnPercent && !isNaN(pnlNum) && !isNaN(returnNum) && returnNum !== 0) {
-      // 부호 일치: pnl과 return_percent의 부호가 다르면 return_percent 부호를 pnl에 맞춤
-      let normalizedReturn = returnNum
-      if ((pnlNum > 0 && returnNum < 0) || (pnlNum < 0 && returnNum > 0)) {
-        normalizedReturn = -Math.abs(returnNum)
-      }
-      
-      const entry = pnlNum / (normalizedReturn / 100)
-      return entry > 0 ? entry.toFixed(2) : ''
-    }
-    return ''
-  })()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -106,6 +89,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
 
     setLoading(true)
     try {
+      const entryAmtNum = parsePnl(entryAmount)
       await onCreated({
         date,
         ticker: ticker.startsWith('$') ? ticker : `$${ticker}`,
@@ -118,6 +102,7 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
         avg_entry_mc: avgEntryMcNum ?? null,
         is_mine: isMine,
         trade_style: tradeStyle || null,
+        entry_amount: (entryAmount && !isNaN(entryAmtNum) && entryAmtNum > 0) ? entryAmtNum : null,
       })
       showToast('Trade added successfully')
       onClose()
@@ -256,18 +241,22 @@ export default function AddTradeModal({ defaultDate, dateLocked, onCreated, onCl
             </div>
           </div>
           <div>
-            <label className="block text-sm text-[#a0a0a0] mb-2">Calculated Entry Amount</label>
+            <label className="block text-sm text-[#a0a0a0] mb-2">Entry Amount ($)</label>
             <input
               type="text"
-              value={calculatedEntryAmount || '—'}
-              readOnly
-              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white opacity-70 cursor-not-allowed"
+              inputMode="numeric"
+              value={entryAmount}
+              onChange={(e) => {
+                const raw = e.target.value
+                const stripped = raw.replace(/[^0-9.]/g, '')
+                if (stripped === '') { setEntryAmount(''); return }
+                const parts = stripped.split('.')
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                setEntryAmount(parts.join('.'))
+              }}
+              placeholder="0"
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white placeholder:text-neutral focus:outline-none focus:ring-2 focus:ring-accent"
             />
-            <p className="text-xs text-[#6B7280] mt-1">
-              {calculatedEntryAmount
-                ? `Entry = ${pnl} / (${returnPercent}% / 100) = ${calculatedEntryAmount}`
-                : 'Auto-calculated from PnL and PnL %'}
-            </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

@@ -109,20 +109,13 @@ function AddTradeForm({ dateStr, onCreated, onCancel }) {
   const [avgEntryMc, setAvgEntryMc] = useState('')
   const [isMine, setIsMine] = useState(false)
   const [tradeStyle, setTradeStyle] = useState('')
+  const [entryAmount, setEntryAmount] = useState('')
   const [memo, setMemo] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const pnlNum = parsePnlNum(pnl)
   const returnNum = Number(returnPercent)
-  const calculatedEntry = (pnl && returnPercent && !isNaN(pnlNum) && !isNaN(returnNum) && returnNum !== 0)
-    ? (() => {
-        let nr = returnNum
-        if ((pnlNum > 0 && returnNum < 0) || (pnlNum < 0 && returnNum > 0)) nr = -Math.abs(returnNum)
-        const e = pnlNum / (nr / 100)
-        return e > 0 ? e.toFixed(2) : ''
-      })()
-    : ''
 
   const handleSubmit = async () => {
     if (!ticker) { setError('종목명을 입력하세요'); return }
@@ -136,6 +129,7 @@ function AddTradeForm({ dateStr, onCreated, onCancel }) {
     setLoading(true)
     setError(null)
     try {
+      const entryAmtNum = parsePnlNum(entryAmount)
       await onCreated({
         date: dateStr,
         ticker: ticker.startsWith('$') ? ticker : `$${ticker}`,
@@ -148,6 +142,7 @@ function AddTradeForm({ dateStr, onCreated, onCancel }) {
         avg_entry_mc: parseDollarInput(avgEntryMc) ?? null,
         is_mine: isMine,
         trade_style: tradeStyle || null,
+        entry_amount: (entryAmount && !isNaN(entryAmtNum) && entryAmtNum > 0) ? entryAmtNum : null,
       })
     } catch (e) {
       setError(e?.message || '저장 실패')
@@ -237,10 +232,17 @@ function AddTradeForm({ dateStr, onCreated, onCancel }) {
           </div>
         </div>
 
-        {/* Entry Amount (자동계산) */}
+        {/* Entry Amount */}
         <div>
-          <div style={LABEL}>Entry Amount (자동계산)</div>
-          <input value={calculatedEntry || '—'} readOnly style={{ ...INP, opacity: 0.6, cursor: 'not-allowed' }} />
+          <div style={LABEL}>Entry Amount ($)</div>
+          <input value={entryAmount} onChange={e => {
+            const raw = e.target.value
+            const stripped = raw.replace(/[^0-9.]/g, '')
+            if (stripped === '') { setEntryAmount(''); return }
+            const parts = stripped.split('.')
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+            setEntryAmount(parts.join('.'))
+          }} placeholder="0" style={INP} />
         </div>
 
         {/* Avg Entry MC */}
@@ -334,6 +336,7 @@ function TradeCard({ trade, onUpdate, onDelete }) {
   const [avgEntryMc, setAvgEntryMc] = useState(trade.avg_entry_mc ? formatDollarInput(trade.avg_entry_mc) : '')
   const [isMine, setIsMine] = useState(trade.is_mine || false)
   const [tradeStyle, setTradeStyle] = useState(trade.trade_style || '')
+  const [entryAmount, setEntryAmount] = useState(trade.entry_amount ? String(Math.round(trade.entry_amount)) : '')
   const [memo, setMemo] = useState(trade.memo || '')
 
   const resetEdit = () => {
@@ -346,6 +349,7 @@ function TradeCard({ trade, onUpdate, onDelete }) {
     setAvgEntryMc(trade.avg_entry_mc ? formatDollarInput(trade.avg_entry_mc) : '')
     setIsMine(trade.is_mine || false)
     setTradeStyle(trade.trade_style || '')
+    setEntryAmount(trade.entry_amount ? String(Math.round(trade.entry_amount)) : '')
     setMemo(trade.memo || '')
     setEditing(false)
   }
@@ -358,6 +362,7 @@ function TradeCard({ trade, onUpdate, onDelete }) {
 
     setSaving(true)
     try {
+      const entryAmtNum = parsePnlNum(entryAmount)
       await onUpdate(trade.id, {
         ticker: ticker.startsWith('$') ? ticker : `$${ticker}`,
         chain,
@@ -369,6 +374,7 @@ function TradeCard({ trade, onUpdate, onDelete }) {
         avg_entry_mc: parseDollarInput(avgEntryMc) ?? null,
         is_mine: isMine,
         trade_style: tradeStyle || null,
+        entry_amount: (entryAmount && !isNaN(entryAmtNum) && entryAmtNum > 0) ? entryAmtNum : null,
       })
       setEditing(false)
     } catch (e) {
@@ -438,6 +444,19 @@ function TradeCard({ trade, onUpdate, onDelete }) {
                 <div style={LABEL}>PnL (%)</div>
                 <input type="number" step="0.01" value={returnPercent} onChange={e => setReturnPercent(e.target.value)} style={INP} />
               </div>
+            </div>
+
+            {/* Entry Amount */}
+            <div>
+              <div style={LABEL}>Entry Amount ($)</div>
+              <input value={entryAmount} onChange={e => {
+                const raw = e.target.value
+                const stripped = raw.replace(/[^0-9.]/g, '')
+                if (stripped === '') { setEntryAmount(''); return }
+                const parts = stripped.split('.')
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                setEntryAmount(parts.join('.'))
+              }} placeholder="0" style={INP} />
             </div>
 
             {/* 카테고리 + 스타일 */}
