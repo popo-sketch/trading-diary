@@ -1088,9 +1088,6 @@ export function generateSeohuBriefing(analytics, trades) {
     // 최근 흐름
     const recentFlow = calculateRecentFlow(trades, 10)
 
-    // 상황 분류 (A~E)
-    const situation = detectSituation({ emotion, equity, recentFlow, tradeStyleAnalysis, overallMetrics })
-
     // 트레이드별 PF 계산 (카테고리별)
     const catWinRateData = calculateWinRate(trades)
     const catPfMap = {}
@@ -1100,6 +1097,9 @@ export function generateSeohuBriefing(analytics, trades) {
 
     // 전체 PF/Expectancy/R:R
     const overallMetrics = calculateOverallMetrics(trades)
+
+    // 상황 분류 (A~E) — overallMetrics 선언 이후에 호출해야 함
+    const situation = detectSituation({ emotion, equity, recentFlow, tradeStyleAnalysis, overallMetrics })
 
     const categories = tradeTypeStats
       .filter(t => Number.isFinite(t.ev_percent))
