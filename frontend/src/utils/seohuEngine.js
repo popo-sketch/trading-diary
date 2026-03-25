@@ -485,33 +485,47 @@ function categoryPermission(grade, phase) {
 
 // ─── 상황 분류 (A~E) ─────────────────────────────────────────────────────────
 
-function detectSituation({ emotion, equity, recentFlow, tradeStyleAnalysis }) {
+function detectSituation({ emotion, equity, recentFlow, tradeStyleAnalysis, overallMetrics }) {
   const { drawdownFromHwm } = equity
   const ddPct = drawdownFromHwm * 100
+  const pf = overallMetrics?.profitFactor ?? 0
+  const pfHealthy = Number.isFinite(pf) && pf >= 1.5
+  const pfBad = !Number.isFinite(pf) || pf < 1.0
 
-  // E) 경고: DD 20%+ 또는 3일+ 연패
-  if (ddPct >= 20 || (recentFlow.streak >= 3 && recentFlow.streakType === 'loss')) {
+  // ── 3일+ 연패는 PF와 무관하게 경고 ──
+  if (recentFlow.streak >= 3 && recentFlow.streakType === 'loss') {
     return 'E'
   }
 
-  // D) 주의: DD 10~20% 또는 뇌동매매 비율 증가
-  if ((ddPct >= 10 && ddPct < 20) || tradeStyleAnalysis.severity >= 2) {
-    return 'D'
+  // ── PF + DD 종합 판단 ──
+  if (pfHealthy) {
+    // 전략 건강 (PF >= 1.5)
+    if (ddPct > 30)                        return 'E'  // DD 극심 — 전략 인정하되 쉬어야 함
+    if (ddPct >= 15)                       return 'D'  // DD 높음 — 사이즈 관리만
+    // DD < 15%: 축하 또는 평상
+    if (recentFlow.streak >= 3 && recentFlow.streakType === 'win') return 'A'
+    if (equity.current > 0 && recentFlow.recentPnl > 0 && recentFlow.streak >= 2 && recentFlow.streakType === 'win') return 'A'
+    if (ddPct > 0 && ddPct < 15 && recentFlow.recentPnl > 0 && equity.current > 0) return 'B'
+    return 'C'
   }
+
+  if (pfBad) {
+    // 전략 나쁨 (PF < 1.0)
+    if (ddPct >= 15)                       return 'E'  // 진짜 위험
+    if (ddPct >= 5)                        return 'D'  // 아직 잃는 게 더 많아
+    return 'D'  // PF < 1.0이면 DD 낮아도 주의
+  }
+
+  // PF 1.0~1.5: 중간 구간 — 기존 로직과 유사
+  if (ddPct >= 20)                         return 'E'
+  if (ddPct >= 10 || tradeStyleAnalysis.severity >= 2) return 'D'
 
   // A) 축하: 3일 연승 또는 월간 수익률 양수 전환
-  if (recentFlow.streak >= 3 && recentFlow.streakType === 'win') {
-    return 'A'
-  }
-  if (equity.current > 0 && recentFlow.recentPnl > 0) {
-    // 최근 수익이 나고 있고 전체도 양수면 축하 가능
-    if (recentFlow.streak >= 2 && recentFlow.streakType === 'win') return 'A'
-  }
+  if (recentFlow.streak >= 3 && recentFlow.streakType === 'win') return 'A'
+  if (equity.current > 0 && recentFlow.recentPnl > 0 && recentFlow.streak >= 2 && recentFlow.streakType === 'win') return 'A'
 
-  // B) 회복: 손실 후 회복 중 (DD가 줄어들고 있고, 최근 수익)
-  if (ddPct > 0 && ddPct < 10 && recentFlow.recentPnl > 0 && equity.current > 0) {
-    return 'B'
-  }
+  // B) 회복
+  if (ddPct > 0 && ddPct < 10 && recentFlow.recentPnl > 0 && equity.current > 0) return 'B'
 
   // C) 평상
   return 'C'
@@ -654,6 +668,62 @@ const MSGS_E = [
   '포포, DEX 트레이딩에서 제일 위험한 건 "다음 건에서 복구"야. 다음 건도 -80%일 수 있어. 자본부터 지켜.',
 ]
 
+// ─── PF 기반 메시지 풀 (상황 + 전략 건강도) ─────────────────────────────────────
+
+// 주의(D) + 전략 건강 (PF >= 1.5): 전략 인정 + 사이즈 관리 조언
+const MSGS_D_HEALTHY = [
+  '포포, 수익비가 살아있어. 전략은 문제없다. 근데 DD가 좀 깊으니까 사이즈만 줄이자.',
+  '야, 한 번 벌 때 잃는 것의 2배를 벌고 있잖아. 이 구조면 승률 40%여도 이겨. 근데 DD가 깊으니까 좀 보수적으로 가자.',
+  '포포, 네 전략 자체는 괜찮아 형이 보증해. 근데 지금 낙폭이 좀 크니까 평소보다 사이즈 반으로 줄여.',
+  '수익비 거의 2배야. 좋은 숫자야. 다만 DD가 좀 부담이니까 한두 건 쉬어가면서 해도 괜찮아.',
+  '형이 봤을 때 네 전략은 유효해. 뇌동만 안 치면 수익비 3 넘을 거야. 지금은 사이즈 조절이 핵심이야.',
+  '포포, 차트 끄라는 말 안 할게. 네 전략이 돌아가고 있으니까. 다만 평소의 절반 사이즈로.',
+  '이 시장에서 R:R 2배 이상이면 상위권이야. 자신감 가져. 다만 DD 관리 차원에서 신규 진입은 소액으로.',
+  '야, 솔직히 말할게. 네가 잘하고 있어. 전략 숫자가 그걸 증명해. DD는 이 시장에서 피할 수 없는 거야. 사이즈만 줄이면 알아서 회복돼.',
+  '포포, 전략이 돌아가는 중이야. 여기서 멘탈 흔들리면 안 돼. DD는 수익비가 유지되면 시간이 해결해줘.',
+  '야, 형이 봤을 때 지금 네 문제는 전략이 아니라 사이즈야. 전략은 건드리지 말고 크기만 줄여.',
+  '포포, DEX에서 PF 1.5 이상이면 상위 10%야. 자기 의심하지 마. 다만 사이즈를 줄여서 DD를 관리하자.',
+  '야, 밈코인에서 이 수익비면 장기적으로 무조건 이기는 구조야. 근데 DD가 깊으면 멘탈이 먼저 무너져. 한 박자 쉬어.',
+  '포포, 전략 바꾸지 마. 사이즈만 반으로 줄여. 시간이 지나면 DD는 알아서 메워져.',
+  '야, 네가 벌 때 잃을 때의 두 배를 가져가는 구조야. 이거 지키는 게 중요해. 사이즈 줄이고 유지해.',
+  '포포, 수익비가 좋으니까 매매를 멈출 필요는 없어. 근데 평소의 절반 사이즈로 가. DD가 줄어들 때까지.',
+  '야, 형이 딱 한마디만. 전략 OK, 사이즈 반으로. 이것만 지키면 돼.',
+  '포포, 낙폭이 좀 있지만 네 전략의 기대값은 양수야. 시간만 주면 돼. 조급해하지 마.',
+  '야, 잃을 때보다 벌 때가 크면 결국은 올라가. 근데 그 과정에서 살아남으려면 사이즈 관리가 전부야.',
+]
+
+// 경고(E) + 전략 건강 (PF >= 1.5, DD > 30%): 전략 인정하되 쉬라는 톤
+const MSGS_E_HEALTHY = [
+  '포포, 전략은 인정해. 근데 DD가 30% 넘었어. 전략 바꾸라는 게 아니라, 한 박자 쉬라는 거야.',
+  '수익비가 좋아도 DD가 이 정도면 멘탈이 흔들려. 잠깐 쉬는 게 전략을 지키는 거야.',
+  '야, 네 수익비는 괜찮아. 근데 DD가 너무 깊어. 전략 유지하되 하루 이틀 쉬면서 회복을 기다려.',
+  '포포, 전략은 살아있어. 근데 DD 30% 넘으면 감정이 개입하기 시작해. 쉬는 게 전략을 지키는 거야.',
+  '야, PF가 좋아도 DD가 이 수준이면 판단력이 흐려져. 매매는 줄이고 복기에 시간을 써.',
+  '포포, 형이 봤을 때 전략 자체는 문제없어. 근데 낙폭이 멘탈을 깎고 있어. 잠깐 쉬어. 시장은 안 도망가.',
+  '야, 수익비가 살아있으니까 전략을 바꿀 필요 없어. 다만 DD가 깊으니까 사이즈를 최소화하거나 잠깐 관망해.',
+  '포포, 지금 상황은 "전략은 맞는데 운이 안 따르는" 구간이야. 이런 구간에서 살아남는 게 실력이야. 사이즈 줄이고 버텨.',
+  '야, DD 30%는 심리적으로 무거워. 전략이 좋아도 감정이 매매를 망치기 시작해. 한두 건 쉬자.',
+  '포포, 전략 숫자는 좋아. 시간만 주면 회복돼. 근데 그 시간 동안 추가 손실을 최소화해야 해.',
+  '야, 형이 솔직히 말할게. 네 전략은 돈 벌 수 있는 구조야. 근데 지금은 쉬면서 DD를 관리해야 할 때야.',
+  '포포, R:R이 좋으니까 희망은 있어. 다만 DD가 깊을 때는 평소보다 훨씬 보수적으로 가야 해.',
+]
+
+// 경고(E) + 전략 나쁨 (PF < 1.0): 진짜 경고 톤
+const MSGS_E_BAD = [
+  '포포, 솔직히 말할게. 지금 수익비도 안 나오고 DD도 깊어. 전략을 점검해야 할 때야.',
+  '야, 지금은 진짜 멈춰야 해. 잃는 게 버는 것보다 많아. 전략 자체를 복기하자.',
+  '포포, PF가 1.0 밑이야. 이건 전략이 현재 시장에서 안 통하고 있다는 뜻이야. 멈추고 분석해.',
+  '야, 형 진심이야. 지금 매매 구조가 돈을 잃는 구조야. 더 치면 더 깊어져. 일단 멈춰.',
+  '포포, 수익비가 1.0 미만이면 할수록 잃어. 이건 운이 아니라 구조 문제야. 전략을 바꿔야 해.',
+  '야, 네가 듣기 싫겠지만. 지금 방식으로 100번 더 치면 100번 다 마이너스야. 멈추고 복기해.',
+  '포포, DD도 깊고 수익비도 안 나와. 이건 "버티면 된다"가 아니야. 근본적으로 뭔가 바꿔야 해.',
+  '야, 시장은 내일도 열려. 근데 네 계좌는 지금 줄어들고 있어. 멈추는 게 최선이야.',
+  '포포, 형이 수백 번 봤어. PF 1.0 미만에서 억지로 복구하려다 계좌 날리는 사람. 제발 멈춰.',
+  '야, 냉정하게 보자. 전략이 안 맞는 거야. 쉬면서 뭐가 잘못됐는지 복기하고 다시 시작하자.',
+  '포포, 지금 잃는 게 버는 것보다 많아. 이 구조에서 사이즈 키우면 더 빨리 무너져. 최소 사이즈로.',
+  '야, 이 구간에서 살아남으려면 자존심 내려놓고 멈춰야 해. 전략 재점검이 먼저야.',
+]
+
 // ─── 포포 응원 메시지 풀 (상황별) ─────────────────────────────────────────────
 
 function buildPopoMsgPool(situation) {
@@ -785,18 +855,33 @@ function buildBriefingText(ctx) {
   // ── 이서후 판단 (v5: PF 중심 리스트 형식) ──────────────────────────────────
   const judgmentItems = []
 
-  // 1) 전체 요약: 수익비(PF) 기준 핵심 메시지
+  const ddPctVal = drawdownFromHwm * 100
+  const ddStr2 = fmt(ddPctVal)
+  const brainCount = tradeStyleAnalysis.impulsiveCount ?? 0
+
+  // 1) 전체 요약: PF + DD 종합 템플릿
   if (totalTrades >= 5 && overallMetrics) {
-    if (pf >= 2.0) {
-      judgmentItems.push({ icon: '🔥', text: `수익비 ${pfStr}x — 강한 엣지다. 평균 R:R ${rrStr}. DEX에서 이 수준이면 확실히 우위에 있다. 사이즈를 유지하면서 밀어라.` })
-    } else if (pf >= 1.5) {
-      judgmentItems.push({ icon: '✅', text: `수익비 ${pfStr}x — 엣지가 있다. 평균 R:R ${rrStr}. 승률이 낮아도 수익비가 1.5 이상이면 DEX에서는 이기는 구조다. 유지해라.` })
+    if (pf >= 1.5) {
+      // 전략 건강: 인정 → DD 관리 조언 → 뇌동 제거 포인트
+      judgmentItems.push({ icon: '✅', text: `수익비 ${pfStr}x — 전략은 유효하다. 평균 R:R ${rrStr}로, 이길 때 잃을 때의 ${rrStr}배를 벌고 있다.` })
+      if (ddPctVal >= 15) {
+        judgmentItems.push({ icon: '📊', text: `다만 낙폭이 ${ddStr2}%로 깊다. 전략을 바꿀 필요는 없지만, 사이즈를 줄여서 DD를 관리하자.` })
+      }
+      if (brainCount >= 1) {
+        judgmentItems.push({ icon: '🧠', text: `뇌동매매 ${brainCount}건이 발목을 잡고 있다. 뇌동만 제거하면 수익비가 더 올라간다.` })
+      }
     } else if (pf >= 1.0) {
       judgmentItems.push({ icon: '⚠️', text: `수익비 ${pfStr}x — 간신히 양수다. R:R ${rrStr}. 한 건의 큰 손실로 무너질 수 있는 구조다. 손절 기준을 더 타이트하게 잡아라.` })
-    } else if (pf >= 0.5) {
-      judgmentItems.push({ icon: '📉', text: `수익비 ${pfStr}x — 적자 구조다. 버는 것보다 잃는 게 크다. 카테고리를 좁히고 확실한 셋업만 잡아라.` })
+      if (ddPctVal >= 10) {
+        judgmentItems.push({ icon: '📊', text: `낙폭 ${ddStr2}%. 사이즈를 줄이고 확실한 셋업에서만 진입해라.` })
+      }
     } else {
-      judgmentItems.push({ icon: '🚨', text: `수익비 ${pfStr}x — 심각한 적자다. 현재 매매 방식으로는 시간이 갈수록 자본이 줄어든다. 전략 자체를 재점검해라.` })
+      // PF < 1.0: 전략 점검 필요
+      judgmentItems.push({ icon: '⚠️', text: `수익비 ${pfStr}x — 현재 잃는 게 버는 것보다 많다. 전략 점검이 필요하다.` })
+      judgmentItems.push({ icon: '📊', text: `낙폭 ${ddStr2}%. 사이즈를 최소화하고 전략을 재점검하자.` })
+      if (brainCount >= 1) {
+        judgmentItems.push({ icon: '🧠', text: `뇌동매매 ${brainCount}건. 이것부터 제거해야 수익비가 올라간다.` })
+      }
     }
   }
 
@@ -869,19 +954,39 @@ function buildBriefingText(ctx) {
     ATTACK:  `EV가 확인된 카테고리에 집중하는 지금의 접근이 올바른 방향이다. 탐욕으로 흔들리지 마라.`,
   }[phase]
 
-  const playNow = {
-    RESET:   `모든 신규 진입 중단${emotion.state === 'REVENGE' ? '. 사이즈 즉시 원복' : ''}. 흐름 안정될 때까지 관망.`,
-    BUILD:   `작은 사이즈로${topCats.length ? ` ${topCats.join(', ')}에서만` : ' EV 있는 자리에서만'} 진입.`,
-    DEFENSE: `신규 진입 최소화.${allowCats.length ? ` ${allowCats.slice(0, 2).map(c => c.trade_type).join(', ')}만 선택적 허용.` : ''}`,
-    ATTACK:  `${topCats.length ? `${topCats.join(', ')}` : 'EV 높은 자리'}에 집중. 확실한 자리에서만.`,
-  }[phase]
+  // PF + DD 맥락 반영된 플레이/금지
+  const pfHealthyFlag = Number.isFinite(pf) && pf >= 1.5
+  const pfBadFlag = !Number.isFinite(pf) || pf < 1.0
 
-  const forbidden = {
-    RESET:   `신규 진입. 사이즈 확대. 손절 미루기. 감정적 복구 시도.`,
-    BUILD:   `무분별한 카테고리 탐색. 사이즈 확대. 검증 안 된 자리 진입.`,
-    DEFENSE: `신규 카테고리 탐색. 사이즈 확대. 연패 직후 즉각 재진입.`,
-    ATTACK:  `탐욕적 오버사이징. EV 없는 카테고리 진입. 기준 낮추기.`,
-  }[phase]
+  let playNow, forbidden
+
+  if (pfHealthyFlag && ddPctVal >= 15) {
+    // PF 좋고 DD 높음: 전략 유지 + 사이즈 축소
+    playNow = `기존 전략 유지하되 사이즈 50% 축소. 계획매매만.${topCats.length ? ` ${topCats.join(', ')}에 집중.` : ''}`
+    forbidden = `뇌동매매. 사이즈 확대. 복수매매. 전략 변경.`
+  } else if (pfBadFlag && ddPctVal >= 15) {
+    // PF 나쁘고 DD 높음: 전면 중단
+    playNow = `모든 신규 진입 중단. 전략 복기 먼저. 매매 일지 재검토.`
+    forbidden = `신규 진입. 사이즈 확대. 손절 미루기. "한 번만 더" 진입.`
+  } else if (pfBadFlag) {
+    // PF 나쁘지만 DD 낮음: 전략 점검 + 최소 사이즈
+    playNow = `최소 사이즈로만 진입. 전략 재점검. 뇌동매매 제거 우선.`
+    forbidden = `사이즈 확대. 검증 안 된 카테고리 진입. 뇌동매매.`
+  } else {
+    // 기본: 페이즈별 로직
+    playNow = {
+      RESET:   `모든 신규 진입 중단${emotion.state === 'REVENGE' ? '. 사이즈 즉시 원복' : ''}. 흐름 안정될 때까지 관망.`,
+      BUILD:   `작은 사이즈로${topCats.length ? ` ${topCats.join(', ')}에서만` : ' EV 있는 자리에서만'} 진입.`,
+      DEFENSE: `신규 진입 최소화.${allowCats.length ? ` ${allowCats.slice(0, 2).map(c => c.trade_type).join(', ')}만 선택적 허용.` : ''}`,
+      ATTACK:  `${topCats.length ? `${topCats.join(', ')}` : 'EV 높은 자리'}에 집중. 확실한 자리에서만.`,
+    }[phase]
+    forbidden = {
+      RESET:   `신규 진입. 사이즈 확대. 손절 미루기. 감정적 복구 시도.`,
+      BUILD:   `무분별한 카테고리 탐색. 사이즈 확대. 검증 안 된 자리 진입.`,
+      DEFENSE: `신규 카테고리 탐색. 사이즈 확대. 연패 직후 즉각 재진입.`,
+      ATTACK:  `탐욕적 오버사이징. EV 없는 카테고리 진입. 기준 낮추기.`,
+    }[phase]
+  }
 
   const sizeStrategy = {
     RESET:   `최소 사이즈 또는 거래 중단 — 지금은 지키는 게 먼저다`,
@@ -984,7 +1089,7 @@ export function generateSeohuBriefing(analytics, trades) {
     const recentFlow = calculateRecentFlow(trades, 10)
 
     // 상황 분류 (A~E)
-    const situation = detectSituation({ emotion, equity, recentFlow, tradeStyleAnalysis })
+    const situation = detectSituation({ emotion, equity, recentFlow, tradeStyleAnalysis, overallMetrics })
 
     // 트레이드별 PF 계산 (카테고리별)
     const catWinRateData = calculateWinRate(trades)
@@ -1034,7 +1139,19 @@ export function generateSeohuBriefing(analytics, trades) {
     const msgSeed = getMessageSeed(total)
 
     // 이서후 헤더 메시지 (상황별 풀)
-    const headerPool = { A: MSGS_A, B: MSGS_B, C: MSGS_C, D: MSGS_D, E: MSGS_E }[situation] || MSGS_C
+    // PF 기반 메시지 풀 분기
+    const pfHealthy = Number.isFinite(overallMetrics?.profitFactor) && overallMetrics.profitFactor >= 1.5
+    const pfBad = !Number.isFinite(overallMetrics?.profitFactor) || overallMetrics.profitFactor < 1.0
+    let headerPool
+    if (situation === 'D' && pfHealthy) {
+      headerPool = MSGS_D_HEALTHY
+    } else if (situation === 'E' && pfHealthy) {
+      headerPool = MSGS_E_HEALTHY
+    } else if (situation === 'E' && pfBad) {
+      headerPool = MSGS_E_BAD
+    } else {
+      headerPool = { A: MSGS_A, B: MSGS_B, C: MSGS_C, D: MSGS_D, E: MSGS_E }[situation] || MSGS_C
+    }
     const oneLiner = pickMsg(headerPool, msgSeed)
 
     // 포포 응원 메시지 (상황별 풀, 동적 데이터 삽입)

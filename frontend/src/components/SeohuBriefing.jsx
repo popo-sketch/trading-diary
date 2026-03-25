@@ -45,6 +45,60 @@ const EMOTION_EMOJI = {
   TILT:           { emoji: '🔥', text: '틸트',     color: '#ff1744' },
 }
 
+// ─── Info Tooltip ─────────────────────────────────────────────────────────────
+
+function InfoTooltip({ text }) {
+  const [show, setShow] = useState(false)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+
+  const handleEnter = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const tooltipW = 280
+    let left = rect.left + rect.width / 2
+    let top = rect.top - 8
+
+    // 화면 밖 방지
+    if (left - tooltipW / 2 < 8) left = tooltipW / 2 + 8
+    if (left + tooltipW / 2 > window.innerWidth - 8) left = window.innerWidth - tooltipW / 2 - 8
+
+    setPos({ top, left })
+    setShow(true)
+  }
+
+  return (
+    <span
+      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'help' }}
+      onMouseEnter={handleEnter}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span style={{ fontSize: 12, opacity: 0.5, marginLeft: 3 }}>ℹ️</span>
+      {show && (
+        <div style={{
+          position: 'fixed',
+          top: pos.top,
+          left: pos.left,
+          transform: 'translate(-50%, -100%)',
+          zIndex: 9999,
+          background: '#2a2a4a',
+          color: '#e0e0e0',
+          borderRadius: 8,
+          padding: '12px 16px',
+          fontSize: 13,
+          lineHeight: 1.6,
+          maxWidth: 280,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          fontFamily: "'Noto Sans KR', sans-serif",
+          whiteSpace: 'pre-line',
+          animation: 'seohuFadeIn 0.15s ease',
+          pointerEvents: 'none',
+        }}>
+          {text}
+        </div>
+      )}
+    </span>
+  )
+}
+
 // ─── Mini Gauge Bar ─────────────────────────────────────────────────────────
 
 function GaugeBar({ value, max, color, danger = false }) {
@@ -66,7 +120,7 @@ function GaugeBar({ value, max, color, danger = false }) {
 
 // ─── Metric Mini Card ───────────────────────────────────────────────────────
 
-function MetricCard({ label, value, color, icon, gauge, dangerBlink, subLabel }) {
+function MetricCard({ label, value, color, icon, gauge, dangerBlink, subLabel, tooltip }) {
   return (
     <div style={{
       flex: 1,
@@ -83,6 +137,7 @@ function MetricCard({ label, value, color, icon, gauge, dangerBlink, subLabel })
           textTransform: 'uppercase', letterSpacing: '0.08em',
           fontFamily: 'Inter, monospace',
         }}>{label}</span>
+        {tooltip && <InfoTooltip text={tooltip} />}
         {dangerBlink && (
           <span className="seohu-blink" style={{ fontSize: 10, color: '#ff1744' }}>⚠</span>
         )}
@@ -233,17 +288,25 @@ function CategoryCard({ cat }) {
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <div style={{
-          width: 30, height: 30, borderRadius: '50%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 13, fontWeight: 900,
-          color: gm.color, background: gm.bg,
-          border: `2px solid ${gm.border}`,
-          fontFamily: 'Inter, monospace',
-          boxShadow: cat.grade === 'S' ? '0 0 8px #fbbf2433' : 'none',
-          flexShrink: 0,
-        }}>
-          {cat.grade}
+        <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          <div style={{
+            width: 30, height: 30, borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 13, fontWeight: 900,
+            color: gm.color, background: gm.bg,
+            border: `2px solid ${gm.border}`,
+            fontFamily: 'Inter, monospace',
+            boxShadow: cat.grade === 'S' ? '0 0 8px #fbbf2433' : 'none',
+          }}>
+            {cat.grade}
+          </div>
+          <InfoTooltip text={{
+            S: "S등급 — 최상위\nEV +10% 이상 AND 수익비 2.0 이상 AND 5건+\n사이즈 자유.",
+            A: "A등급 — 양호\nEV 양수 AND 수익비 1.5 이상 AND 5건+\n기본 사이즈 OK.",
+            B: "B등급 — 조건부\nPF 1.0~1.5 또는 데이터 부족.\n최소 사이즈만.",
+            C: "C등급 — 자제\n수익비 낮음.\n가급적 패스, 꼭 하려면 $30 이하.",
+            D: "D등급 — 금지\n수익비·EV 모두 부족.\n진입 이유 없음.",
+          }[cat.grade] || ''} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
@@ -278,7 +341,7 @@ function CategoryCard({ cat }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           marginBottom: 4,
         }}>
-          <span style={{ fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace' }}>PF</span>
+          <span style={{ fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace', display: 'flex', alignItems: 'center' }}>PF<InfoTooltip text={"이 카테고리에서의 수익비.\n총 수익 ÷ 총 손실.\n1.0 이상이면 번 게 잃은 것보다 많음."} /></span>
           <span style={{
             fontSize: 12, fontWeight: 800,
             color: cat.profitFactor >= 2.0 ? '#00c853' : cat.profitFactor >= 1.5 ? '#42a5f5' : cat.profitFactor >= 1.0 ? '#ffc107' : '#ff1744',
@@ -308,7 +371,7 @@ function CategoryCard({ cat }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           marginBottom: 4,
         }}>
-          <span style={{ fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace' }}>EV</span>
+          <span style={{ fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace', display: 'flex', alignItems: 'center' }}>EV<InfoTooltip text={"이 카테고리의 기대값.\n한 건당 평균 수익률.\n양수면 이 카테고리에서 평균적으로 수익."} /></span>
           <span style={{
             fontSize: 11, fontWeight: 700,
             color: cat.ev_percent >= 0 ? '#00c853' : '#ff1744',
@@ -654,6 +717,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
             <MetricCard
               label="수익비 (PF)" icon="⚖️"
+              tooltip={"수익비 (Profit Factor)\n총 번 돈 ÷ 총 잃은 돈.\n1.0 = 본전, 1.5 이상 = 양호, 2.0 이상 = 우수.\n예: PF 2.0이면 $1 잃을 때마다 $2를 번다는 뜻."}
               value={briefing.overallMetrics?.profitFactor != null && Number.isFinite(briefing.overallMetrics.profitFactor) ? `${briefing.overallMetrics.profitFactor.toFixed(2)}x` : '—'}
               color={briefing.overallMetrics?.profitFactor >= 2.0 ? '#00c853' : briefing.overallMetrics?.profitFactor >= 1.5 ? '#42a5f5' : briefing.overallMetrics?.profitFactor >= 1.0 ? '#ffc107' : '#ff1744'}
               subLabel={briefing.overallMetrics?.profitFactor >= 2.0 ? '강한 엣지' : briefing.overallMetrics?.profitFactor >= 1.5 ? '양수 구조' : briefing.overallMetrics?.profitFactor >= 1.0 ? '손익 분기점' : briefing.totalTrades >= 5 ? '적자 구조' : null}
@@ -661,12 +725,14 @@ export default function SeohuBriefing({ analytics, trades, error }) {
             />
             <MetricCard
               label="평균 R:R" icon="🎯"
+              tooltip={"평균 Risk/Reward\n수익 건의 평균 금액 ÷ 손실 건의 평균 금액.\n2.0 이상이면 한 번 이길 때 잃을 때의 2배를 번다는 뜻.\n승률이 낮아도 R:R이 높으면 수익 가능."}
               value={briefing.overallMetrics?.avgRR != null && Number.isFinite(briefing.overallMetrics.avgRR) ? `${briefing.overallMetrics.avgRR.toFixed(2)}` : '—'}
               color={briefing.overallMetrics?.avgRR >= 2.0 ? '#00c853' : briefing.overallMetrics?.avgRR >= 1.0 ? '#42a5f5' : '#ffc107'}
               subLabel={briefing.overallMetrics?.avgRR >= 2.0 ? '평균 수익 > 2배 손실' : briefing.overallMetrics?.avgRR >= 1.0 ? '수익 ≥ 손실' : briefing.totalTrades >= 5 ? '손실이 수익보다 큼' : null}
             />
             <MetricCard
               label="EV" icon="📊"
+              tooltip={"기대값 (Expected Value)\n한 건당 평균적으로 얼마를 벌거나 잃는지.\n(승률 × 평균수익) - (패률 × 평균손실)로 계산.\n양수면 장기적으로 수익, 음수면 장기적으로 손실."}
               value={evStr}
               color={evVal !== null && evVal >= 0 ? '#00c853' : '#ff1744'}
               subLabel={briefing.ev.trend === 'DECLINING' ? '↓ 하락 추세' : briefing.ev.trend === 'RISING' ? '↑ 상승 추세' : null}
@@ -674,6 +740,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
             />
             <MetricCard
               label="낙폭 (HWM)" icon="📉"
+              tooltip={"낙폭 / 드로우다운 (Drawdown)\n최고점(HWM) 대비 현재까지 얼마나 떨어졌는지.\n예: 최고 $10,000에서 현재 $7,170이면 DD 28.3%.\nDEX 시장에서 20~30%는 흔히 발생."}
               value={ddStr}
               color={ddVal > 0.15 ? '#ff1744' : ddVal > 0.05 ? '#ffc107' : '#6B7280'}
               dangerBlink={ddVal > 0.15}
@@ -681,11 +748,13 @@ export default function SeohuBriefing({ analytics, trades, error }) {
             />
             <MetricCard
               label="거래 수" icon="📋"
+              tooltip={"이번 달 총 트레이드 수.\n데이터가 많을수록 PF, EV 등 지표의 신뢰도가 올라감.\n최소 20건 이상이어야 통계적으로 의미 있음."}
               value={`${briefing.totalTrades}건`}
               color="#a0a0a0"
             />
             <MetricCard
               label="심리 상태" icon={em.emoji}
+              tooltip={"현재 매매 패턴으로 추정한 심리 상태.\n안정: 계획매매 위주, 일정한 사이즈\n주의: 뇌동매매 증가 또는 사이즈 변동\n위험: 연속 손실 + 사이즈 확대 패턴"}
               value={em.text}
               color={em.color}
               subLabel={briefing.emotion?.detail || null}
@@ -901,6 +970,10 @@ export default function SeohuBriefing({ analytics, trades, error }) {
         @keyframes seohuBlink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
+        }
+        @keyframes seohuFadeIn {
+          from { opacity: 0; transform: translate(-50%, -100%) translateY(4px); }
+          to { opacity: 1; transform: translate(-50%, -100%) translateY(0); }
         }
       `}</style>
     </div>
