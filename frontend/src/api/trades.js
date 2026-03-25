@@ -25,3 +25,8 @@ export async function updateTrade(id, payload) {
 export async function deleteTrade(id) {
   await apiClient.delete(`/trades/${id}`)
 }
+
+export async function getAllTrades() {
+  const { data } = await apiClient.get('/trades')
+  return data
+}

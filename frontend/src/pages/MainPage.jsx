@@ -4,6 +4,7 @@ import { getTradesByMonth } from '../api/trades'
 import { getMonthlyStats } from '../api/stats'
 import { getAnalytics } from '../api/analytics'
 import { formatPnl, calcGiveback } from '../utils/format'
+import NavHeader from '../components/NavHeader'
 import Calendar from '../components/Calendar'
 import TradeSidePanel from '../components/TradeSidePanel'
 import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
@@ -186,9 +187,7 @@ export default function MainPage() {
       <div className="max-w-7xl mx-auto" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {/* ── 헤더 바 ──────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between bg-dark-card rounded-xl border border-white/[0.06] px-5 py-3">
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', margin: 0 }}>PNL Calendar</h1>
-
+        <NavHeader>
           <div className="flex items-center gap-4 flex-1 justify-center">
             {stats && (
               <>
@@ -264,7 +263,7 @@ export default function MainPage() {
               >→</button>
             </div>
           </div>
-        </div>
+        </NavHeader>
 
         {error && (
           <div className="p-3 rounded-xl bg-loss/20 text-loss border border-loss/50 text-[13px]">

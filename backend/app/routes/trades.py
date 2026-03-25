@@ -11,22 +11,31 @@ router = APIRouter()
 
 @router.get("", response_model=list[TradeResponse])
 async def get_trades_by_month(
-    year: int = Query(..., ge=2000, le=2100),
-    month: int = Query(..., ge=1, le=12),
+    year: int = Query(None, ge=2000, le=2100),
+    month: int = Query(None, ge=1, le=12),
 ):
-    """특정 월의 모든 거래 반환"""
-    date_prefix = f"{year}-{month:02d}"
+    """특정 월의 모든 거래 반환. year/month 생략 시 전체 반환."""
     conn = await get_db()
     try:
-        cursor = await conn.execute(
-            """
-            SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, is_mine, trade_style, created_at, updated_at
-            FROM trades
-            WHERE date LIKE ?
-            ORDER BY date, created_at
-            """,
-            (f"{date_prefix}%",)
-        )
+        if year and month:
+            date_prefix = f"{year}-{month:02d}"
+            cursor = await conn.execute(
+                """
+                SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, is_mine, trade_style, created_at, updated_at
+                FROM trades
+                WHERE date LIKE ?
+                ORDER BY date, created_at
+                """,
+                (f"{date_prefix}%",)
+            )
+        else:
+            cursor = await conn.execute(
+                """
+                SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, is_mine, trade_style, created_at, updated_at
+                FROM trades
+                ORDER BY date DESC, created_at DESC
+                """
+            )
         rows = await cursor.fetchall()
         return [_row_to_trade(row) for row in rows]
     finally:
