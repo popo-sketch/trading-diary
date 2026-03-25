@@ -147,8 +147,11 @@ export function detectMinePlay(trades, equity) {
     }
   }
 
-  // 자본 비율 체크 (현재 자본 기준)
-  const currentCapital = Math.max(equity?.current ?? 0, equity?.hwm ?? 0, 1)
+  // 자본 비율 체크 (전체 투입 자본 기준: 현재 잔고 + 미실현 포지션 합계)
+  // equity.current는 누적PNL이므로, 실제 자본은 초기자본 + 누적PNL
+  // 전체 트레이드의 entry_amount 합계를 월간 총 투입 자본으로 사용
+  const allEntrySum = trades.reduce((s, t) => s + Math.abs(t.entry_amount ?? 0), 0)
+  const currentCapital = Math.max(allEntrySum, 1)
   result.capitalRatio = result.totalInvested / currentCapital
 
   // 경고 수준 결정

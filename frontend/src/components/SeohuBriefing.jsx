@@ -157,13 +157,13 @@ function AccordionSection({ title, severity, summaryLine, children, defaultOpen 
 // ─── Keyword Chip Highlighter (v4: 컬러 칩) ─────────────────────────────────
 
 const CHIP_STYLES = {
-  지뢰: { emoji: '💣', background: '#3B82F625', color: '#60a5fa' },
-  뇌동: { emoji: '🧠', background: '#f9731625', color: '#fb923c' },
-  주의: { emoji: '⚠️', background: '#EAB30825', color: '#fbbf24' },
-  좋음: { emoji: '✅', background: '#10B98125', color: '#34d399' },
-  위험: { emoji: '🚨', background: '#EF444425', color: '#f87171' },
-  금지: { emoji: '🚫', background: '#EF444425', color: '#f87171' },
-  틸트: { emoji: '🔥', background: '#EF444425', color: '#f87171' },
+  지뢰: { emoji: '💣', background: 'rgba(66,165,245,0.12)', color: '#42a5f5', border: '1px solid rgba(66,165,245,0.25)' },
+  뇌동: { emoji: '🧠', background: 'rgba(249,115,22,0.12)', color: '#fb923c', border: '1px solid rgba(249,115,22,0.25)' },
+  주의: { emoji: '⚠️', background: 'rgba(234,179,8,0.12)', color: '#fbbf24', border: '1px solid rgba(234,179,8,0.25)' },
+  좋음: { emoji: '✅', background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)' },
+  위험: { emoji: '🚨', background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' },
+  금지: { emoji: '🚫', background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' },
+  틸트: { emoji: '🔥', background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' },
 }
 
 function highlightKeywords(text) {
@@ -175,8 +175,8 @@ function highlightKeywords(text) {
     if (chip) {
       return (
         <span key={i} style={{
-          background: chip.background, color: chip.color,
-          borderRadius: 4, padding: '1px 6px', fontSize: 11, fontWeight: 700,
+          background: chip.background, color: chip.color, border: chip.border,
+          borderRadius: 4, padding: '0px 5px', fontSize: 10, fontWeight: 600,
           display: 'inline-flex', alignItems: 'center', gap: 2,
         }}>
           <span style={{ fontSize: 10 }}>{chip.emoji}</span>{part}
@@ -370,16 +370,20 @@ function TradeQualityCards({ tradeQuality }) {
       </div>
       {insight && (
         <div style={{
-          padding: '8px 12px', borderRadius: 8,
-          background: 'rgba(255,193,7,0.06)',
-          border: '1px solid rgba(255,193,7,0.15)',
+          padding: '10px 14px', borderRadius: 10,
+          background: 'linear-gradient(135deg, rgba(255,193,7,0.08), rgba(255,193,7,0.03))',
+          border: '1px solid rgba(255,193,7,0.2)',
         }}>
           <p style={{
-            margin: 0, fontSize: 12, lineHeight: 1.6,
+            margin: 0, fontSize: 13, lineHeight: 1.7,
             color: '#fbbf24', fontWeight: 700,
             fontFamily: "'Noto Sans KR', sans-serif",
           }}>
-            💡 {insight}
+            💡 {insight.split(/(손실.*?원)/).map((part, i) =>
+              /^손실/.test(part)
+                ? <span key={i} style={{ color: '#ff1744', fontWeight: 800 }}>{part}</span>
+                : part
+            )}
           </p>
         </div>
       )}
@@ -603,7 +607,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
 
       {/* ── Expanded Content ──────────────────────────────────────────── */}
       {expanded && (
-        <div style={{ padding: 16 }}>
+        <div style={{ padding: 20 }}>
 
           {/* ── 상단: 현재 상태 미니 카드 ─── */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
@@ -644,7 +648,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
           <div style={{ display: 'flex', gap: 16 }}>
 
             {/* 좌측: 이서후 판단 (60-65%) */}
-            <div style={{ flex: '0 0 62%', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ flex: '0 0 62%', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
               {/* 이서후 판단 (v4: 리스트 형식) */}
               <div style={{
@@ -663,7 +667,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                       <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                         <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
                         <p style={{
-                          fontSize: 13, lineHeight: 1.7, color: '#d0d0d0', margin: 0,
+                          fontSize: 13, lineHeight: 1.8, color: '#d0d0d0', margin: 0,
                           fontFamily: "'Noto Sans KR', sans-serif",
                         }}>
                           {highlightKeywords(item.text)}
@@ -684,10 +688,11 @@ export default function SeohuBriefing({ analytics, trades, error }) {
               {/* 지금 해야 할 플레이 + 금지 행동 */}
               <div style={{ display: 'flex', gap: 10 }}>
                 <div style={{
-                  flex: 1,
+                  flex: highlightForbid ? '0 0 40%' : highlightPlay ? '0 0 60%' : 1,
                   background: highlightPlay ? 'rgba(255,193,7,0.06)' : 'rgba(16,185,129,0.03)',
-                  border: `1px solid ${highlightPlay ? 'rgba(255,193,7,0.3)' : 'rgba(16,185,129,0.2)'}`,
-                  borderRadius: 10, padding: '10px 12px',
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  borderLeft: `3px solid ${highlightPlay ? '#fbbf24' : '#00c853'}`,
+                  borderRadius: 10, padding: '10px 14px',
                 }}>
                   <div style={{
                     fontSize: 9, fontWeight: 700, color: highlightPlay ? '#fbbf24' : '#00c853',
@@ -700,10 +705,11 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                   }}>{briefing.playNow}</p>
                 </div>
                 <div style={{
-                  flex: 1,
+                  flex: highlightForbid ? '0 0 60%' : highlightPlay ? '0 0 40%' : 1,
                   background: highlightForbid ? 'rgba(255,23,68,0.08)' : 'rgba(239,68,68,0.03)',
-                  border: `1px solid ${highlightForbid ? 'rgba(255,23,68,0.4)' : 'rgba(239,68,68,0.2)'}`,
-                  borderRadius: 10, padding: '10px 12px',
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  borderLeft: `3px solid ${highlightForbid ? '#ff1744' : '#ef444480'}`,
+                  borderRadius: 10, padding: '10px 14px',
                 }}>
                   <div style={{
                     fontSize: 9, fontWeight: 700, color: '#ff1744',
