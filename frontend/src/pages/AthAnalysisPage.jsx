@@ -105,9 +105,6 @@ function computeATHAnalysis(trades, dexData) {
       athEfficiency = 100
     }
 
-    // 놓친 수익
-    const missedProfit = athPnl - pnl
-
     results.push({
       ...trade,
       athStatus: 'ok',
@@ -117,7 +114,6 @@ function computeATHAnalysis(trades, dexData) {
       athMultiple,
       athPnl,
       athEfficiency: Math.round(athEfficiency * 10) / 10,
-      missedProfit: Math.max(0, missedProfit),
       athExitValue,
     })
   }
@@ -138,7 +134,6 @@ function SummaryCards({ analyses }) {
   }
 
   const avgEfficiency = valid.reduce((s, a) => s + a.athEfficiency, 0) / valid.length
-  const totalMissed = valid.reduce((s, a) => s + a.missedProfit, 0)
   const best = valid.reduce((best, a) => a.athEfficiency > best.athEfficiency ? a : best)
   const worst = valid.reduce((w, a) => a.athEfficiency < w.athEfficiency ? a : w)
 
@@ -146,14 +141,8 @@ function SummaryCards({ analyses }) {
     {
       label: '평균 ATH 매도 효율',
       value: `${avgEfficiency.toFixed(1)}%`,
-      sub: `평균적으로 ATH의 ${avgEfficiency.toFixed(0)}%에서 매도`,
+      sub: `평균적으로 ATH의 ${avgEfficiency.toFixed(0)}%에서 매도 (${valid.length}건)`,
       color: avgEfficiency >= 50 ? GREEN : RED,
-    },
-    {
-      label: '총 놓친 수익',
-      value: formatPnl(totalMissed),
-      sub: `${valid.length}건 기준`,
-      color: RED,
     },
     {
       label: '가장 잘 판 트레이드',
@@ -164,13 +153,13 @@ function SummaryCards({ analyses }) {
     {
       label: '가장 아쉬운 트레이드',
       value: `${worst.athEfficiency.toFixed(0)}%`,
-      sub: `${worst.ticker} — 놓친 수익 ${formatPnl(worst.missedProfit)}`,
+      sub: `${worst.ticker} — ATH의 ${worst.athEfficiency.toFixed(0)}%에서 매도`,
       color: RED,
     },
   ]
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
       {cards.map(c => (
         <div key={c.label} style={CARD}>
           <div style={{
@@ -217,7 +206,7 @@ function ATHTradeCard({ analysis }) {
       {/* 접힌 상태: 한 줄 요약 */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '90px 1fr 70px 100px 90px 100px 30px',
+        gridTemplateColumns: '90px 1fr 70px 100px 100px 30px',
         alignItems: 'center',
         padding: '12px 16px',
         gap: 8,
@@ -274,12 +263,6 @@ function ATHTradeCard({ analysis }) {
           )}
         </div>
         <span style={{
-          fontWeight: 600, fontFamily: 'Inter, monospace', fontSize: 12,
-          color: isOk && a.missedProfit > 0 ? RED : '#6b7280',
-        }}>
-          {isOk && a.missedProfit > 0 ? formatPnl(a.missedProfit) : '—'}
-        </span>
-        <span style={{
           fontSize: 11, color: '#6b7280', fontFamily: 'Inter, monospace',
         }}>
           {isOk ? `×${a.athMultiple.toFixed(1)}` : a.athStatus === 'no_data' ? 'N/A' : '—'}
@@ -299,7 +282,6 @@ function ATHTradeCard({ analysis }) {
               { label: '진입 금액', value: `$${Math.round(Number(a.entry_amount) || 0).toLocaleString()}` },
               { label: '실제 PnL', value: formatPnl(pnl), color: pnl >= 0 ? GREEN : RED },
               { label: 'ATH 매도 시 PnL', value: formatPnl(a.athPnl), color: GREEN },
-              { label: '놓친 수익', value: formatPnl(a.missedProfit), color: a.missedProfit > 0 ? RED : '#6b7280' },
               { label: '진입 MC', value: a.entryMC > 0 ? `$${(a.entryMC / 1000).toFixed(0)}K` : '—' },
               { label: 'ATH MC', value: a.athMC > 0 ? `$${(a.athMC / 1000).toFixed(0)}K` : '—' },
               { label: 'ATH 배수', value: `×${a.athMultiple.toFixed(2)}`, color: INFO },
@@ -472,7 +454,6 @@ function FilterBar({ filters, setFilters, tradeTypes }) {
         {[
           { key: 'date', label: '날짜순' },
           { key: 'efficiency', label: '효율순' },
-          { key: 'missed', label: '놓친 수익순' },
         ].map(s => (
           <button key={s.key} style={btnStyle(filters.sort === s.key)} onClick={() => setFilters(f => ({ ...f, sort: s.key }))}>
             {s.label}
@@ -524,7 +505,7 @@ function ListHeader() {
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '90px 1fr 70px 100px 90px 100px 30px',
+      gridTemplateColumns: '90px 1fr 70px 100px 100px 30px',
       padding: '8px 16px', gap: 8,
       fontSize: 10, fontWeight: 700, color: '#4b5563',
       fontFamily: 'Inter, monospace', textTransform: 'uppercase',
@@ -535,7 +516,6 @@ function ListHeader() {
       <span>Token</span>
       <span>PnL</span>
       <span>ATH 효율</span>
-      <span>놓친 수익</span>
       <span>ATH 배수</span>
       <span />
     </div>
@@ -648,8 +628,6 @@ export default function AthAnalysisPage() {
       result.sort((a, b) => (b.date || '').localeCompare(a.date || ''))
     } else if (filters.sort === 'efficiency') {
       result.sort((a, b) => (b.athEfficiency || 0) - (a.athEfficiency || 0))
-    } else if (filters.sort === 'missed') {
-      result.sort((a, b) => (b.missedProfit || 0) - (a.missedProfit || 0))
     }
 
     return result

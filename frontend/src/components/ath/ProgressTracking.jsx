@@ -1,7 +1,7 @@
 /**
  * ProgressTracking.jsx — 성장 추적
  *
- * A) 월별 ATH 효율 추이 차트
+ * A) 월별 ATH 효율 추이 차트 (50% 베이스라인 + 선형 회귀 트렌드라인 + 트렌드 배지 + 호버 툴팁)
  * B) 최근 10건 이동평균 오버레이
  * C) 목표 설정 + 달성률
  */
@@ -20,9 +20,25 @@ const CARD = {
 
 const GOAL_STORAGE_KEY = 'ath_goal_target'
 
-// ─── A+B) 월별 추이 차트 + 이동평균 ─────────────────────────────────────────
+// ─── 선형 회귀 유틸 ──────────────────────────────────────────────────────────
+
+function linearRegression(points) {
+  const n = points.length
+  if (n < 2) return null
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0
+  points.forEach(({ x, y }) => { sumX += x; sumY += y; sumXY += x * y; sumX2 += x * x })
+  const denom = n * sumX2 - sumX * sumX
+  if (denom === 0) return null
+  const slope = (n * sumXY - sumX * sumY) / denom
+  const intercept = (sumY - slope * sumX) / n
+  return { slope, intercept }
+}
+
+// ─── A+B) 월별 추이 차트 + 이동평균 + 트렌드라인 ──────────────────────────────
 
 function MonthlyTrendChart({ analyses, goal }) {
+  const [hoveredIdx, setHoveredIdx] = useState(null)
+
   const valid = useMemo(() =>
     analyses
       .filter(a => a.athStatus === 'ok' && a.athMultiple > 1 && a.date)
@@ -73,6 +89,22 @@ function MonthlyTrendChart({ analyses, goal }) {
     )
   }, [ma10])
 
+  // 선형 회귀
+  const regression = useMemo(() => {
+    if (monthly.length < 2) return null
+    const points = monthly.map((m, i) => ({ x: i, y: m.avgEff }))
+    return linearRegression(points)
+  }, [monthly])
+
+  // 트렌드 방향
+  const trendBadge = useMemo(() => {
+    if (!regression) return null
+    const { slope } = regression
+    if (slope > 2) return { icon: '📈', label: '상승 추세', color: GREEN }
+    if (slope < -2) return { icon: '📉', label: '하락 추세', color: RED }
+    return { icon: '➡️', label: '유지', color: '#9e9e9e' }
+  }, [regression])
+
   if (monthly.length < 2) {
     return (
       <div style={{ color: '#6b7280', fontSize: 12, textAlign: 'center', padding: 20 }}>
@@ -81,7 +113,7 @@ function MonthlyTrendChart({ analyses, goal }) {
     )
   }
 
-  const W = 500, H = 180, PL = 44, PR = 20, PT = 16, PB = 30
+  const W = 500, H = 200, PL = 44, PR = 20, PT = 20, PB = 30
   const cw = W - PL - PR, ch = H - PT - PB
 
   const maxEff = Math.max(...monthly.map(m => m.avgEff), goal || 50, 100)
@@ -105,62 +137,156 @@ function MonthlyTrendChart({ analyses, goal }) {
     `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`
   ).join(' ')
 
+  // 트렌드 라인 좌표
+  const trendLine = regression ? {
+    x1: xScale(0),
+    y1: yScale(regression.intercept),
+    x2: xScale(monthly.length - 1),
+    y2: yScale(regression.slope * (monthly.length - 1) + regression.intercept),
+  } : null
+
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
-      {/* 목표선 */}
-      {goal > 0 && (
-        <>
-          <line x1={PL} y1={yScale(goal)} x2={W - PR} y2={yScale(goal)}
-            stroke={INFO} strokeWidth="1" strokeDasharray="6 3" opacity="0.5" />
-          <text x={W - PR + 4} y={yScale(goal) + 3} fill={INFO} fontSize="8"
-            fontFamily="Inter, monospace">목표 {goal}%</text>
-        </>
+    <div style={{ position: 'relative' }}>
+      {/* 트렌드 배지 */}
+      {trendBadge && (
+        <div style={{
+          position: 'absolute', top: 0, right: 0,
+          display: 'flex', alignItems: 'center', gap: 4,
+          padding: '3px 10px', borderRadius: 6,
+          background: `${trendBadge.color}10`, border: `1px solid ${trendBadge.color}30`,
+          fontSize: 11, fontWeight: 700, color: trendBadge.color,
+          fontFamily: 'Inter, monospace', zIndex: 2,
+        }}>
+          {trendBadge.icon} {trendBadge.label}
+        </div>
       )}
 
-      {/* 그리드 */}
-      {[0, 25, 50, 75, 100].filter(v => v <= maxEff).map(v => (
-        <g key={v}>
-          <line x1={PL} y1={yScale(v)} x2={W - PR} y2={yScale(v)}
-            stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-          <text x={PL - 6} y={yScale(v) + 3} fill="#4b5563" fontSize="8"
-            textAnchor="end" fontFamily="Inter, monospace">{v}%</text>
-        </g>
-      ))}
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}
+        onMouseLeave={() => setHoveredIdx(null)}>
+        {/* 50% 베이스라인 */}
+        <line x1={PL} y1={yScale(50)} x2={W - PR} y2={yScale(50)}
+          stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="4 4" />
+        <text x={PL - 6} y={yScale(50) + 3} fill="#6b7280" fontSize="8"
+          textAnchor="end" fontFamily="Inter, monospace" fontWeight="700">50%</text>
 
-      {/* MA10 라인 */}
-      {maPath && (
-        <path d={maPath} fill="none" stroke={WARN} strokeWidth="1.5"
-          strokeDasharray="4 2" opacity="0.6" />
-      )}
+        {/* 목표선 */}
+        {goal > 0 && goal !== 50 && (
+          <>
+            <line x1={PL} y1={yScale(goal)} x2={W - PR} y2={yScale(goal)}
+              stroke={INFO} strokeWidth="1" strokeDasharray="6 3" opacity="0.5" />
+            <text x={W - PR + 4} y={yScale(goal) + 3} fill={INFO} fontSize="8"
+              fontFamily="Inter, monospace">목표 {goal}%</text>
+          </>
+        )}
 
-      {/* 메인 라인 */}
-      <path d={linePath} fill="none" stroke={INFO} strokeWidth="2" strokeLinecap="round" />
+        {/* 그리드 */}
+        {[0, 25, 75, 100].filter(v => v <= maxEff).map(v => (
+          <g key={v}>
+            <line x1={PL} y1={yScale(v)} x2={W - PR} y2={yScale(v)}
+              stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+            <text x={PL - 6} y={yScale(v) + 3} fill="#4b5563" fontSize="8"
+              textAnchor="end" fontFamily="Inter, monospace">{v}%</text>
+          </g>
+        ))}
 
-      {/* 데이터 포인트 */}
-      {monthly.map((m, i) => (
-        <g key={m.month}>
-          <circle cx={xScale(i)} cy={yScale(m.avgEff)} r={4}
-            fill={m.avgEff >= (goal || 50) ? GREEN : m.avgEff >= 25 ? INFO : RED}
-            stroke="#0d0d1a" strokeWidth="2" />
-          <text x={xScale(i)} y={yScale(m.avgEff) - 8}
-            fill="#e0e0e0" fontSize="9" fontWeight="700" textAnchor="middle"
-            fontFamily="Inter, monospace">{m.avgEff.toFixed(0)}%</text>
-          {/* X축 라벨 */}
-          <text x={xScale(i)} y={H - PB + 14}
-            fill="#6b7280" fontSize="9" textAnchor="middle"
-            fontFamily="Inter, monospace">{m.label}</text>
-          <text x={xScale(i)} y={H - PB + 24}
-            fill="#4b5563" fontSize="7" textAnchor="middle"
-            fontFamily="Inter, monospace">{m.count}건</text>
-        </g>
-      ))}
+        {/* 트렌드라인 (선형 회귀) */}
+        {trendLine && (
+          <line
+            x1={trendLine.x1} y1={trendLine.y1}
+            x2={trendLine.x2} y2={trendLine.y2}
+            stroke={trendBadge?.color || '#6b7280'} strokeWidth="1.5"
+            strokeDasharray="8 4" opacity="0.4"
+          />
+        )}
 
-      {/* 범례 */}
-      <line x1={PL} y1={6} x2={PL + 14} y2={6} stroke={INFO} strokeWidth="2" />
-      <text x={PL + 18} y={9} fill="#6b7280" fontSize="8" fontFamily="Inter, monospace">월 평균</text>
-      <line x1={PL + 60} y1={6} x2={PL + 74} y2={6} stroke={WARN} strokeWidth="1.5" strokeDasharray="4 2" />
-      <text x={PL + 78} y={9} fill="#6b7280" fontSize="8" fontFamily="Inter, monospace">10건 MA</text>
-    </svg>
+        {/* MA10 라인 */}
+        {maPath && (
+          <path d={maPath} fill="none" stroke={WARN} strokeWidth="1.5"
+            strokeDasharray="4 2" opacity="0.6" />
+        )}
+
+        {/* 메인 라인 */}
+        <path d={linePath} fill="none" stroke={INFO} strokeWidth="2" strokeLinecap="round" />
+
+        {/* 호버 영역 + 데이터 포인트 */}
+        {monthly.map((m, i) => {
+          const cx = xScale(i)
+          const cy = yScale(m.avgEff)
+          const isHovered = hoveredIdx === i
+          return (
+            <g key={m.month}>
+              {/* 넓은 호버 영역 */}
+              <rect
+                x={cx - (cw / monthly.length) / 2} y={PT} width={cw / monthly.length} height={ch}
+                fill="transparent"
+                onMouseEnter={() => setHoveredIdx(i)}
+              />
+
+              {/* 호버 시 세로 가이드선 */}
+              {isHovered && (
+                <line x1={cx} y1={PT} x2={cx} y2={PT + ch}
+                  stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+              )}
+
+              {/* 포인트 */}
+              <circle cx={cx} cy={cy} r={isHovered ? 6 : 4}
+                fill={m.avgEff >= (goal || 50) ? GREEN : m.avgEff >= 25 ? INFO : RED}
+                stroke="#0d0d1a" strokeWidth="2"
+                style={{ transition: 'r 0.15s' }} />
+
+              {/* 항상 표시: 효율 값 */}
+              {!isHovered && (
+                <text x={cx} y={cy - 10}
+                  fill="#e0e0e0" fontSize="9" fontWeight="700" textAnchor="middle"
+                  fontFamily="Inter, monospace">{m.avgEff.toFixed(0)}%</text>
+              )}
+
+              {/* X축 라벨 */}
+              <text x={cx} y={H - PB + 14}
+                fill={isHovered ? '#e0e0e0' : '#6b7280'} fontSize="9" textAnchor="middle"
+                fontFamily="Inter, monospace" fontWeight={isHovered ? 700 : 400}>{m.label}</text>
+              <text x={cx} y={H - PB + 24}
+                fill="#4b5563" fontSize="7" textAnchor="middle"
+                fontFamily="Inter, monospace">{m.count}건</text>
+            </g>
+          )
+        })}
+
+        {/* 호버 툴팁 */}
+        {hoveredIdx !== null && monthly[hoveredIdx] && (() => {
+          const m = monthly[hoveredIdx]
+          const cx = xScale(hoveredIdx)
+          const cy = yScale(m.avgEff)
+          const tipW = 110, tipH = 42
+          // 툴팁이 오른쪽으로 넘어가면 왼쪽에 표시
+          const tipX = cx + tipW / 2 + 10 > W ? cx - tipW / 2 - 10 : cx
+          const tipY = cy - tipH - 16
+
+          return (
+            <g>
+              <rect x={tipX - tipW / 2} y={tipY} width={tipW} height={tipH} rx={6}
+                fill="#0d0d1a" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+              <text x={tipX} y={tipY + 14} fill="#e0e0e0" fontSize="11" fontWeight="800"
+                textAnchor="middle" fontFamily="Inter, monospace">
+                {m.avgEff.toFixed(1)}%
+              </text>
+              <text x={tipX} y={tipY + 28} fill="#9e9e9e" fontSize="9"
+                textAnchor="middle" fontFamily="Inter, monospace">
+                {m.month} · {m.count}건
+              </text>
+            </g>
+          )
+        })()}
+
+        {/* 범례 */}
+        <line x1={PL} y1={8} x2={PL + 14} y2={8} stroke={INFO} strokeWidth="2" />
+        <text x={PL + 18} y={11} fill="#6b7280" fontSize="8" fontFamily="Inter, monospace">월 평균</text>
+        <line x1={PL + 60} y1={8} x2={PL + 74} y2={8} stroke={WARN} strokeWidth="1.5" strokeDasharray="4 2" />
+        <text x={PL + 78} y={11} fill="#6b7280" fontSize="8" fontFamily="Inter, monospace">10건 MA</text>
+        <line x1={PL + 118} y1={8} x2={PL + 132} y2={8} stroke={trendBadge?.color || '#6b7280'} strokeWidth="1.5" strokeDasharray="8 4" opacity="0.5" />
+        <text x={PL + 136} y={11} fill="#6b7280" fontSize="8" fontFamily="Inter, monospace">추세</text>
+      </svg>
+    </div>
   )
 }
 

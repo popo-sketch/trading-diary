@@ -102,7 +102,7 @@ function ChainComparison({ analyses }) {
   )
 }
 
-// ─── B) 카테고리별 비교 ──────────────────────────────────────────────────────
+// ─── B) 카테고리별 ATH 효율 랭킹 ─────────────────────────────────────────────
 
 function CategoryComparison({ analyses }) {
   const valid = analyses.filter(a => a.athStatus === 'ok' && a.athMultiple > 1 && a.trade_type)
@@ -115,11 +115,29 @@ function CategoryComparison({ analyses }) {
       groups[t].push(a)
     })
     return Object.entries(groups)
-      .map(([name, data]) => ({ name, data }))
-      .sort((a, b) => avg(b.data, 'athEfficiency') - avg(a.data, 'athEfficiency'))
+      .map(([name, data]) => ({ name, data, avgEff: avg(data, 'athEfficiency') }))
+      .sort((a, b) => b.avgEff - a.avgEff)
   }, [valid])
 
   if (categories.length === 0) return null
+
+  const maxEff = Math.max(...categories.map(c => c.avgEff), 1)
+  const medals = ['🥇', '🥈', '🥉']
+
+  // 인사이트 자동 생성
+  const best = categories[0]
+  const worst = categories[categories.length - 1]
+  let insight = ''
+  if (categories.length >= 2) {
+    if (best.avgEff >= 60) {
+      insight = `${best.name} 카테고리가 평균 ${best.avgEff.toFixed(0)}%로 가장 높은 ATH 매도 효율을 보입니다`
+    } else {
+      insight = `전체적으로 ATH 효율이 낮습니다 — 가장 높은 ${best.name}도 ${best.avgEff.toFixed(0)}%`
+    }
+    if (worst.avgEff < 30 && categories.length > 1) {
+      insight += `. ${worst.name}은(는) ${worst.avgEff.toFixed(0)}%로 매도 타이밍 개선이 필요합니다`
+    }
+  }
 
   return (
     <div>
@@ -127,52 +145,81 @@ function CategoryComparison({ analyses }) {
         fontSize: 10, fontWeight: 700, color: '#4b5563',
         textTransform: 'uppercase', letterSpacing: '0.08em',
         fontFamily: 'Inter, monospace', marginBottom: 10,
-      }}>카테고리별 비교</div>
-      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
-        {categories.map(cat => {
-          const avgEff = avg(cat.data, 'athEfficiency')
-          const avgPnlVal = avg(cat.data, 'pnl')
-          const effColor = avgEff >= 50 ? GREEN : avgEff >= 25 ? WARN : RED
+      }}>카테고리별 ATH 효율 랭킹</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {categories.map((cat, idx) => {
+          const effColor = cat.avgEff >= 50 ? GREEN : cat.avgEff >= 25 ? WARN : RED
+          const isFirst = idx === 0 && categories.length > 1
+          const isLast = idx === categories.length - 1 && categories.length > 1
+          const isLowData = cat.data.length === 1
+
           return (
             <div key={cat.name} style={{
-              flexShrink: 0, minWidth: 150, padding: '12px 14px', borderRadius: 10,
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.06)',
+              padding: '10px 14px', borderRadius: 10,
+              background: isFirst ? 'rgba(0,200,83,0.04)' : isLast ? 'rgba(255,23,68,0.04)' : 'rgba(255,255,255,0.02)',
+              border: isFirst ? `1px solid ${GREEN}30` : isLast ? `1px solid ${RED}25` : '1px solid rgba(255,255,255,0.06)',
             }}>
-              <div style={{
-                fontSize: 12, fontWeight: 700, color: '#e0e0e0',
-                fontFamily: 'Inter, monospace', marginBottom: 8,
-              }}>{cat.name}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                  <span style={{ color: '#6b7280' }}>효율</span>
-                  <span style={{ fontWeight: 700, color: effColor, fontFamily: 'Inter, monospace' }}>{avgEff.toFixed(0)}%</span>
-                </div>
-                <div style={{
-                  width: '100%', height: 4, borderRadius: 2,
-                  background: 'rgba(255,255,255,0.08)', overflow: 'hidden',
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {/* 메달 또는 순위 */}
+                <span style={{
+                  fontSize: idx < 3 ? 16 : 12, minWidth: 24, textAlign: 'center',
+                  fontWeight: 700, color: idx >= 3 ? '#6b7280' : undefined,
+                  fontFamily: idx >= 3 ? 'Inter, monospace' : undefined,
                 }}>
+                  {idx < 3 ? medals[idx] : `${idx + 1}`}
+                </span>
+
+                {/* 카테고리명 */}
+                <span style={{
+                  fontSize: 13, fontWeight: 700, color: '#e0e0e0',
+                  fontFamily: 'Inter, monospace', minWidth: 80,
+                }}>{cat.name}</span>
+
+                {/* 프로그레스 바 */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{
-                    width: `${Math.min(avgEff, 100)}%`, height: '100%', borderRadius: 2,
-                    background: effColor,
-                  }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 4 }}>
-                  <span style={{ color: '#6b7280' }}>Avg PnL</span>
+                    flex: 1, height: 8, borderRadius: 4,
+                    background: 'rgba(255,255,255,0.06)', overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      width: `${(cat.avgEff / maxEff) * 100}%`, height: '100%',
+                      borderRadius: 4, background: effColor,
+                      transition: 'width 0.4s ease',
+                    }} />
+                  </div>
                   <span style={{
-                    fontWeight: 600, fontFamily: 'Inter, monospace',
-                    color: avgPnlVal >= 0 ? GREEN : RED,
-                  }}>{formatPnl(avgPnlVal)}</span>
+                    fontSize: 14, fontWeight: 800, color: effColor,
+                    fontFamily: 'Inter, monospace', minWidth: 44, textAlign: 'right',
+                  }}>{cat.avgEff.toFixed(0)}%</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                  <span style={{ color: '#6b7280' }}>건수</span>
-                  <span style={{ color: '#9e9e9e', fontFamily: 'Inter, monospace' }}>{cat.data.length}건</span>
-                </div>
+
+                {/* 건수 */}
+                <span style={{
+                  fontSize: 10, color: '#6b7280', fontFamily: 'Inter, monospace', minWidth: 32, textAlign: 'right',
+                }}>
+                  {isLowData ? (
+                    <span style={{ color: '#4b5563' }}>{cat.data.length}건 <span style={{ fontSize: 9 }}>(데이터 부족)</span></span>
+                  ) : (
+                    `${cat.data.length}건`
+                  )}
+                </span>
               </div>
             </div>
           )
         })}
       </div>
+
+      {insight && (
+        <div style={{
+          marginTop: 10, fontSize: 12, color: '#9e9e9e', lineHeight: 1.7,
+          fontFamily: "'Noto Sans KR', sans-serif",
+          padding: '8px 12px', borderRadius: 8,
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid rgba(255,255,255,0.04)',
+        }}>
+          💡 {insight}
+        </div>
+      )}
     </div>
   )
 }
