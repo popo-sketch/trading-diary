@@ -6,6 +6,10 @@ import { getAllTrades } from '../api/trades'
 import { fetchBatchATHData, clearATHCache } from '../utils/dexscreener'
 import { formatPnl } from '../utils/format'
 import NavHeader from '../components/NavHeader'
+import SellSimulator from '../components/ath/SellSimulator'
+import PostExitTracker from '../components/ath/PostExitTracker'
+import PatternInsights from '../components/ath/PatternInsights'
+import ProgressTracking from '../components/ath/ProgressTracking'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -329,6 +333,18 @@ function ATHTradeCard({ analysis }) {
               </a>
             </div>
           )}
+
+          {/* 매도 시뮬레이터 */}
+          <div style={{ marginTop: 14, borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 14 }}
+            onClick={e => e.stopPropagation()}>
+            <SellSimulator analysis={a} />
+          </div>
+
+          {/* 매도 후 추적 */}
+          <div style={{ marginTop: 14, borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 14 }}
+            onClick={e => e.stopPropagation()}>
+            <PostExitTracker analysis={a} />
+          </div>
         </div>
       )}
 
@@ -727,8 +743,14 @@ export default function AthAnalysisPage() {
             </div>
           </div>
 
+          {/* 패턴 인사이트 */}
+          <PatternInsights analyses={analyses} />
+
           {/* 히스토그램 */}
           <EfficiencyHistogram analyses={analyses} />
+
+          {/* 성장 추적 */}
+          <ProgressTracking analyses={analyses} />
         </>
       )}
       </div>
