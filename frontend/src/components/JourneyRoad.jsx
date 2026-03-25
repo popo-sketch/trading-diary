@@ -78,7 +78,8 @@ function VectorChar({ stage, height = 80, faceRight = true }) {
     { hair: '#2a1f14', skin: '#f0c088', top: '#d94040', topAcc: '#e06060', bottom: '#4a7ab0', shoe: '#c49060', shoeAcc: '#a87850' },
   ]
   const p = palettes[stage] || palettes[0]
-  const W = 50, H = 80
+  // ViewBox: 60x80 gives more horizontal space for accessories
+  const W = 60, H = 80
   const scale = height / H
 
   // Expression varies by stage
@@ -91,135 +92,119 @@ function VectorChar({ stage, height = 80, faceRight = true }) {
     <svg width={W * scale} height={height} viewBox={`0 0 ${W} ${H}`}
       style={{ overflow: 'visible', display: 'block', transform: faceRight ? 'scaleX(-1)' : 'none' }}>
 
-      {/* ── Head ── */}
-      <circle cx="25" cy="17" r="13" fill={p.skin} />
+      {/* ── Head (큰 원형, 2.5등신 = 머리 40%) ── */}
+      <circle cx="30" cy="17" r="14" fill={p.skin} />
       {/* Ear */}
-      <ellipse cx="12" cy="18" rx="2.5" ry="3" fill={p.skin} />
-      <ellipse cx="12" cy="18" rx="1.5" ry="2" fill="#e0a870" />
-      {/* Hair base */}
-      <ellipse cx="25" cy="11" rx="14" ry="9" fill={p.hair} />
-      {/* Hair top volume */}
-      <ellipse cx="25" cy="7" rx="11" ry="6" fill={p.hair} />
-      {/* Hair side fringe */}
-      <path d="M 12 14 Q 11 8 16 6" fill={p.hair} stroke="none" />
-      <path d="M 38 14 Q 39 9 34 7" fill={p.hair} stroke="none" />
-      {/* Hair highlights */}
-      <path d="M 18 5 Q 22 3 26 5" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+      <ellipse cx="16" cy="19" rx="2.5" ry="3" fill={p.skin} />
+      <ellipse cx="16" cy="19" rx="1.5" ry="2" fill="#e0a870" />
+      {/* Hair — 반원형 볼륨 */}
+      <ellipse cx="30" cy="11" rx="15" ry="10" fill={p.hair} />
+      <ellipse cx="30" cy="7" rx="12" ry="7" fill={p.hair} />
+      {/* Side fringe */}
+      <path d="M 16 15 Q 15 8 20 5" fill={p.hair} stroke="none" />
+      <path d="M 44 15 Q 45 8 40 5" fill={p.hair} stroke="none" />
+      {/* Hair shine */}
+      <path d="M 22 4 Q 27 2 32 4" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.2" />
 
       {/* ── Face ── */}
-      {/* Eyes */}
-      <ellipse cx="20" cy="18" rx="2" ry="2.2" fill="#1a1008" />
-      <ellipse cx="30" cy="18" rx="2" ry="2.2" fill="#1a1008" />
-      {/* Eye highlights */}
-      <circle cx="21" cy="17" r="0.8" fill="#fff" />
-      <circle cx="31" cy="17" r="0.8" fill="#fff" />
-      <circle cx="19.5" cy="18.5" r="0.4" fill="rgba(255,255,255,0.5)" />
-      <circle cx="29.5" cy="18.5" r="0.4" fill="rgba(255,255,255,0.5)" />
+      {/* Eyes — 검정 타원 */}
+      <ellipse cx="24" cy="18" rx="2.2" ry="2.5" fill="#1a1008" />
+      <ellipse cx="36" cy="18" rx="2.2" ry="2.5" fill="#1a1008" />
+      {/* Eye highlights — 하이라이트 */}
+      <circle cx="25" cy="17" r="1" fill="#fff" />
+      <circle cx="37" cy="17" r="1" fill="#fff" />
+      <circle cx="23.5" cy="19" r="0.5" fill="rgba(255,255,255,0.4)" />
+      <circle cx="35.5" cy="19" r="0.5" fill="rgba(255,255,255,0.4)" />
       {/* Eyebrows */}
       {isDetermined ? (
         <>
-          <line x1="17" y1="14" x2="22" y2="14.5" stroke="#2a1f14" strokeWidth="0.8" strokeLinecap="round" />
-          <line x1="28" y1="14.5" x2="33" y2="14" stroke="#2a1f14" strokeWidth="0.8" strokeLinecap="round" />
+          <line x1="21" y1="13.5" x2="27" y2="14" stroke={p.hair} strokeWidth="1" strokeLinecap="round" />
+          <line x1="33" y1="14" x2="39" y2="13.5" stroke={p.hair} strokeWidth="1" strokeLinecap="round" />
         </>
       ) : (
         <>
-          <path d="M 17 14.5 Q 19.5 13.5 22 14.5" fill="none" stroke="#2a1f14" strokeWidth="0.7" strokeLinecap="round" />
-          <path d="M 28 14.5 Q 30.5 13.5 33 14.5" fill="none" stroke="#2a1f14" strokeWidth="0.7" strokeLinecap="round" />
+          <path d="M 21 14 Q 24 12.8 27 14" fill="none" stroke={p.hair} strokeWidth="0.8" strokeLinecap="round" />
+          <path d="M 33 14 Q 36 12.8 39 14" fill="none" stroke={p.hair} strokeWidth="0.8" strokeLinecap="round" />
         </>
       )}
       {/* Nose */}
-      <ellipse cx="25" cy="21" rx="1" ry="0.8" fill="#dda070" />
-      {/* Mouth */}
-      {isDetermined && <path d="M 22 24 L 28 24" fill="none" stroke="#c08060" strokeWidth="0.8" strokeLinecap="round" />}
-      {isSmile && !isConfident && !isRelaxed && <path d="M 21 24 Q 25 27 29 24" fill="none" stroke="#c08060" strokeWidth="0.8" strokeLinecap="round" />}
-      {isConfident && <path d="M 21 23.5 Q 25 27.5 29 23.5" fill="none" stroke="#c08060" strokeWidth="1" strokeLinecap="round" />}
+      <ellipse cx="30" cy="22" rx="1.2" ry="1" fill="#dda070" />
+      {/* Mouth — 미소 곡선 */}
+      {isDetermined && <path d="M 26 25 L 34 25" fill="none" stroke="#c08060" strokeWidth="1" strokeLinecap="round" />}
+      {isSmile && !isConfident && !isRelaxed && <path d="M 25 25 Q 30 29 35 25" fill="none" stroke="#c08060" strokeWidth="1" strokeLinecap="round" />}
+      {isConfident && <path d="M 25 24.5 Q 30 29.5 35 24.5" fill="none" stroke="#c08060" strokeWidth="1.2" strokeLinecap="round" />}
       {isRelaxed && (
         <>
-          <path d="M 21 24 Q 25 28 29 24" fill="none" stroke="#c08060" strokeWidth="0.8" strokeLinecap="round" />
+          <path d="M 25 25 Q 30 30 35 25" fill="none" stroke="#c08060" strokeWidth="1" strokeLinecap="round" />
           {/* Blush */}
-          <ellipse cx="17" cy="22" rx="2.5" ry="1.5" fill="rgba(255,130,100,0.15)" />
-          <ellipse cx="33" cy="22" rx="2.5" ry="1.5" fill="rgba(255,130,100,0.15)" />
+          <ellipse cx="21" cy="23" rx="3" ry="1.8" fill="rgba(255,130,100,0.18)" />
+          <ellipse cx="39" cy="23" rx="3" ry="1.8" fill="rgba(255,130,100,0.18)" />
         </>
       )}
-      {/* Stage 4, 7 default smile */}
-      {(stage === 4 || stage === 7) && <path d="M 22 24 Q 25 26 28 24" fill="none" stroke="#c08060" strokeWidth="0.7" strokeLinecap="round" />}
+      {(stage === 4 || stage === 7) && <path d="M 26 25 Q 30 28 34 25" fill="none" stroke="#c08060" strokeWidth="0.9" strokeLinecap="round" />}
 
       {/* ── Neck ── */}
-      <rect x="22" y="28" width="6" height="4" rx="2" fill={p.skin} />
+      <rect x="27" y="29" width="6" height="4" rx="2" fill={p.skin} />
 
-      {/* ── Body (torso) ── */}
+      {/* ── Body (torso) — 중심 cx=30 ── */}
       {stage === 0 ? (
         /* 민소매 */
-        <rect x="15" y="31" width="20" height="18" rx="3" fill={p.top} />
+        <rect x="20" y="32" width="20" height="18" rx="4" fill={p.top} />
       ) : stage === 2 ? (
         /* 후드티 — hood + kangaroo pocket */
         <>
-          <rect x="14" y="31" width="22" height="19" rx="4" fill={p.top} />
-          {/* Hood behind head */}
-          <path d="M 16 31 Q 25 28 34 31" fill={p.topAcc} stroke="none" />
-          {/* Kangaroo pocket */}
-          <rect x="18" y="42" width="14" height="5" rx="2" fill={p.topAcc} />
+          <rect x="18" y="32" width="24" height="19" rx="4" fill={p.top} />
+          <path d="M 20 32 Q 30 29 40 32" fill={p.topAcc} stroke="none" />
+          <rect x="22" y="43" width="16" height="5" rx="2" fill={p.topAcc} />
         </>
       ) : stage === 5 ? (
         /* 정장 + 흰셔츠 + 빨간넥타이 */
         <>
-          <rect x="14" y="31" width="22" height="19" rx="3" fill={p.top} />
-          {/* White shirt V */}
-          <path d="M 22 31 L 25 38 L 28 31" fill="#eee" stroke="none" />
-          {/* Red tie */}
-          <polygon points="24.5,32 25.5,32 26,42 25,44 24,42" fill="#cc2020" />
-          {/* Lapel lines */}
-          <line x1="22" y1="31" x2="19" y2="38" stroke={p.topAcc} strokeWidth="0.8" />
-          <line x1="28" y1="31" x2="31" y2="38" stroke={p.topAcc} strokeWidth="0.8" />
+          <rect x="18" y="32" width="24" height="19" rx="3" fill={p.top} />
+          <path d="M 27 32 L 30 39 L 33 32" fill="#eee" stroke="none" />
+          <polygon points="29.5,33 30.5,33 31,43 30,45 29,43" fill="#cc2020" />
+          <line x1="27" y1="32" x2="24" y2="39" stroke={p.topAcc} strokeWidth="0.8" />
+          <line x1="33" y1="32" x2="36" y2="39" stroke={p.topAcc} strokeWidth="0.8" />
         </>
       ) : stage === 6 ? (
-        /* 코트 — long, open front */
+        /* 코트 */
         <>
-          <rect x="13" y="31" width="24" height="22" rx="4" fill={p.top} />
-          {/* Inner shirt visible */}
-          <rect x="20" y="32" width="10" height="10" rx="1" fill="#2a2a36" />
-          {/* Coat collar */}
-          <path d="M 18 31 L 22 35" stroke={p.topAcc} strokeWidth="1.2" fill="none" />
-          <path d="M 32 31 L 28 35" stroke={p.topAcc} strokeWidth="1.2" fill="none" />
+          <rect x="17" y="32" width="26" height="22" rx="4" fill={p.top} />
+          <rect x="25" y="33" width="10" height="10" rx="1" fill="#2a2a36" />
+          <path d="M 22 32 L 27 36" stroke={p.topAcc} strokeWidth="1.2" fill="none" />
+          <path d="M 38 32 L 33 36" stroke={p.topAcc} strokeWidth="1.2" fill="none" />
         </>
       ) : stage === 7 ? (
         /* 풀 수트 */
         <>
-          <rect x="14" y="31" width="22" height="19" rx="3" fill={p.top} />
-          <path d="M 22 31 L 25 36 L 28 31" fill="#2a2a36" stroke="none" />
-          {/* Lapel */}
-          <line x1="22" y1="31" x2="20" y2="37" stroke={p.topAcc} strokeWidth="0.6" />
-          <line x1="28" y1="31" x2="30" y2="37" stroke={p.topAcc} strokeWidth="0.6" />
-          {/* Pocket square */}
-          <rect x="16" y="35" width="3" height="2" rx="0.5" fill="#e0e0e0" />
+          <rect x="18" y="32" width="24" height="19" rx="3" fill={p.top} />
+          <path d="M 27 32 L 30 37 L 33 32" fill="#2a2a36" stroke="none" />
+          <line x1="27" y1="32" x2="25" y2="38" stroke={p.topAcc} strokeWidth="0.6" />
+          <line x1="33" y1="32" x2="35" y2="38" stroke={p.topAcc} strokeWidth="0.6" />
+          <rect x="20" y="36" width="3" height="2" rx="0.5" fill="#e0e0e0" />
         </>
       ) : stage === 8 ? (
-        /* 하와이안 셔츠 — floral pattern */
+        /* 하와이안 셔츠 */
         <>
-          <rect x="14" y="31" width="22" height="16" rx="3" fill={p.top} />
-          {/* Floral dots */}
-          <circle cx="18" cy="36" r="1.5" fill="#ffcc44" opacity="0.7" />
-          <circle cx="24" cy="34" r="1.2" fill="#44cc88" opacity="0.6" />
-          <circle cx="30" cy="38" r="1.3" fill="#ffcc44" opacity="0.6" />
-          <circle cx="20" cy="41" r="1" fill="#44cc88" opacity="0.5" />
-          <circle cx="28" cy="42" r="1.4" fill="#ffaa44" opacity="0.5" />
-          {/* Open collar */}
-          <path d="M 22 31 L 25 35 L 28 31" fill={p.skin} stroke="none" />
+          <rect x="18" y="32" width="24" height="16" rx="3" fill={p.top} />
+          <circle cx="22" cy="37" r="1.5" fill="#ffcc44" opacity="0.7" />
+          <circle cx="30" cy="35" r="1.2" fill="#44cc88" opacity="0.6" />
+          <circle cx="36" cy="39" r="1.3" fill="#ffcc44" opacity="0.6" />
+          <circle cx="24" cy="42" r="1" fill="#44cc88" opacity="0.5" />
+          <circle cx="34" cy="43" r="1.4" fill="#ffaa44" opacity="0.5" />
+          <path d="M 27 32 L 30 36 L 33 32" fill={p.skin} stroke="none" />
         </>
       ) : (
         /* Default torso (stages 1, 3, 4) */
         <>
-          <rect x="14" y="31" width="22" height="19" rx="3" fill={p.top} />
-          {/* Neckline */}
-          <path d="M 21 31 Q 25 34 29 31" fill="none" stroke={p.topAcc || 'rgba(0,0,0,0.1)'} strokeWidth="0.6" />
-          {/* Collar for stage 3 (셔츠) */}
+          <rect x="18" y="32" width="24" height="19" rx="4" fill={p.top} />
+          <path d="M 26 32 Q 30 35 34 32" fill="none" stroke={p.topAcc || 'rgba(0,0,0,0.1)'} strokeWidth="0.6" />
           {stage === 3 && (
             <>
-              <path d="M 20 31 L 18 34" stroke={p.topAcc} strokeWidth="0.8" fill="none" />
-              <path d="M 30 31 L 32 34" stroke={p.topAcc} strokeWidth="0.8" fill="none" />
-              {/* Button */}
-              <circle cx="25" cy="36" r="0.6" fill="#bbb" />
-              <circle cx="25" cy="40" r="0.6" fill="#bbb" />
+              <path d="M 25 32 L 22 35" stroke={p.topAcc} strokeWidth="0.8" fill="none" />
+              <path d="M 35 32 L 38 35" stroke={p.topAcc} strokeWidth="0.8" fill="none" />
+              <circle cx="30" cy="37" r="0.7" fill="#bbb" />
+              <circle cx="30" cy="41" r="0.7" fill="#bbb" />
             </>
           )}
         </>
@@ -227,72 +212,63 @@ function VectorChar({ stage, height = 80, faceRight = true }) {
 
       {/* ── Arms ── */}
       {stage === 6 ? (
-        /* Coat has wider arms */
         <>
-          <rect x="6" y="32" width="8" height="16" rx="4" fill={p.top} />
-          <rect x="36" y="31" width="8" height="17" rx="4" fill={p.top} />
-          <circle cx="10" cy="49" r="3" fill={p.skin} />
-          <circle cx="40" cy="49" r="3" fill={p.skin} />
+          <rect x="10" y="33" width="9" height="16" rx="4.5" fill={p.top} />
+          <rect x="41" y="32" width="9" height="17" rx="4.5" fill={p.top} />
+          <circle cx="14.5" cy="50" r="3" fill={p.skin} />
+          <circle cx="45.5" cy="50" r="3" fill={p.skin} />
         </>
       ) : (
         <>
-          <rect x="7" y="32" width="7" height="15" rx="3.5" fill={stage === 0 ? p.skin : p.top} />
-          <rect x="36" y="31" width="7" height="16" rx="3.5" fill={stage === 0 ? p.skin : p.top} />
-          <circle cx="10.5" cy="48" r="2.8" fill={p.skin} />
-          <circle cx="39.5" cy="48" r="2.8" fill={p.skin} />
+          <rect x="11" y="33" width="8" height="15" rx="4" fill={stage === 0 ? p.skin : p.top} />
+          <rect x="41" y="32" width="8" height="16" rx="4" fill={stage === 0 ? p.skin : p.top} />
+          <circle cx="15" cy="49" r="3" fill={p.skin} />
+          <circle cx="45" cy="49" r="3" fill={p.skin} />
         </>
       )}
 
       {/* ── Legs ── */}
       {(stage === 0 || stage === 8) ? (
-        /* Shorts — shorter legs visible */
         <>
-          <rect x="16" y="49" width="8" height="9" rx="3" fill={p.bottom} />
-          <rect x="26" y="49" width="8" height="9" rx="3" fill={p.bottom} />
-          {/* Exposed legs */}
-          <rect x="17" y="57" width="6" height="10" rx="2" fill={p.skin} />
-          <rect x="27" y="57" width="6" height="10" rx="2" fill={p.skin} />
+          <rect x="21" y="50" width="8" height="9" rx="3" fill={p.bottom} />
+          <rect x="31" y="50" width="8" height="9" rx="3" fill={p.bottom} />
+          <rect x="22" y="58" width="6" height="10" rx="2.5" fill={p.skin} />
+          <rect x="32" y="58" width="6" height="10" rx="2.5" fill={p.skin} />
         </>
       ) : (
-        /* Long pants */
         <>
-          <rect x="16" y="49" width="8" height="19" rx="3" fill={p.bottom} />
-          <rect x="26" y="49" width="8" height="19" rx="3" fill={p.bottom} />
+          <rect x="21" y="50" width="8" height="19" rx="3" fill={p.bottom} />
+          <rect x="31" y="50" width="8" height="19" rx="3" fill={p.bottom} />
         </>
       )}
 
       {/* ── Shoes ── */}
       {stage === 0 ? (
-        /* Slippers */
         <>
-          <ellipse cx="20" cy="68" rx="5.5" ry="2" fill={p.shoe} />
-          <ellipse cx="30" cy="68" rx="5.5" ry="2" fill={p.shoe} />
-          <path d="M 17 67 Q 20 65.5 23 67" fill={p.shoe} stroke="none" />
-          <path d="M 27 67 Q 30 65.5 33 67" fill={p.shoe} stroke="none" />
+          <ellipse cx="25" cy="69" rx="5.5" ry="2.2" fill={p.shoe} />
+          <ellipse cx="35" cy="69" rx="5.5" ry="2.2" fill={p.shoe} />
+          <path d="M 22 68 Q 25 66.5 28 68" fill={p.shoe} stroke="none" />
+          <path d="M 32 68 Q 35 66.5 38 68" fill={p.shoe} stroke="none" />
         </>
       ) : stage === 8 ? (
-        /* Sandals */
         <>
-          <ellipse cx="20" cy="68" rx="5" ry="2" fill={p.shoe} />
-          <ellipse cx="30" cy="68" rx="5" ry="2" fill={p.shoe} />
-          <line x1="17" y1="67" x2="23" y2="67" stroke={p.shoeAcc} strokeWidth="0.8" />
-          <line x1="27" y1="67" x2="33" y2="67" stroke={p.shoeAcc} strokeWidth="0.8" />
-          <line x1="20" y1="65" x2="20" y2="68" stroke={p.shoeAcc} strokeWidth="0.6" />
-          <line x1="30" y1="65" x2="30" y2="68" stroke={p.shoeAcc} strokeWidth="0.6" />
+          <ellipse cx="25" cy="69" rx="5" ry="2" fill={p.shoe} />
+          <ellipse cx="35" cy="69" rx="5" ry="2" fill={p.shoe} />
+          <line x1="22" y1="68" x2="28" y2="68" stroke={p.shoeAcc} strokeWidth="0.8" />
+          <line x1="32" y1="68" x2="38" y2="68" stroke={p.shoeAcc} strokeWidth="0.8" />
+          <line x1="25" y1="66" x2="25" y2="69" stroke={p.shoeAcc} strokeWidth="0.6" />
+          <line x1="35" y1="66" x2="35" y2="69" stroke={p.shoeAcc} strokeWidth="0.6" />
         </>
       ) : (
-        /* Normal shoes / sneakers */
         <>
-          <ellipse cx="20" cy="69" rx="6" ry="2.5" fill={p.shoe} />
-          <ellipse cx="30" cy="69" rx="6" ry="2.5" fill={p.shoe} />
-          {/* Shoe detail line */}
-          <path d="M 15 69 Q 20 67.5 25 69" fill="none" stroke={p.shoeAcc || 'rgba(255,255,255,0.1)'} strokeWidth="0.5" />
-          <path d="M 25 69 Q 30 67.5 35 69" fill="none" stroke={p.shoeAcc || 'rgba(255,255,255,0.1)'} strokeWidth="0.5" />
+          <ellipse cx="25" cy="70" rx="6" ry="2.5" fill={p.shoe} />
+          <ellipse cx="35" cy="70" rx="6" ry="2.5" fill={p.shoe} />
+          <path d="M 20 70 Q 25 68.5 30 70" fill="none" stroke={p.shoeAcc || 'rgba(255,255,255,0.1)'} strokeWidth="0.5" />
+          <path d="M 30 70 Q 35 68.5 40 70" fill="none" stroke={p.shoeAcc || 'rgba(255,255,255,0.1)'} strokeWidth="0.5" />
           {stage === 1 && (
-            /* White sneaker stripes */
             <>
-              <line x1="17" y1="69" x2="19" y2="68" stroke="#ccc" strokeWidth="0.4" />
-              <line x1="27" y1="69" x2="29" y2="68" stroke="#ccc" strokeWidth="0.4" />
+              <line x1="22" y1="70" x2="24" y2="69" stroke="#ccc" strokeWidth="0.5" />
+              <line x1="32" y1="70" x2="34" y2="69" stroke="#ccc" strokeWidth="0.5" />
             </>
           )}
         </>
@@ -300,92 +276,88 @@ function VectorChar({ stage, height = 80, faceRight = true }) {
 
       {/* ── Stage-specific Accessories ── */}
 
-      {/* $1K: Coffee cup in right hand */}
+      {/* $1K: 갈색 커피컵 (#8B4513) in right hand */}
       {stage === 1 && (
         <g>
-          <rect x="37" y="42" width="6" height="8" rx="1.5" fill="#7a5230" />
-          <rect x="36.5" y="41" width="7" height="2.5" rx="1" fill="#f0f0f0" />
-          <path d="M 43 44 Q 45 45.5 43 47" fill="none" stroke="#6a4220" strokeWidth="0.8" />
+          <rect x="43" y="43" width="7" height="9" rx="2" fill="#8B4513" />
+          <rect x="42" y="42" width="9" height="3" rx="1.2" fill="#f5f5f5" />
+          <path d="M 50 45 Q 52.5 47 50 49" fill="none" stroke="#6a3410" strokeWidth="1" />
           {/* Steam */}
-          <path d="M 39 39 Q 40 37 39 35" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5" className="steam-anim" />
-          <path d="M 41 40 Q 42 38 41 36" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="0.5" className="steam-anim-2" />
+          <path d="M 45 40 Q 46 37 45 34" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.6" className="steam-anim" />
+          <path d="M 48 41 Q 49 38 48 35" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="0.6" className="steam-anim-2" />
         </g>
       )}
 
-      {/* $5K: Airpods (white dots in ears) */}
+      {/* $5K: Airpods */}
       {stage === 2 && (
         <g>
-          <circle cx="12" cy="19" r="1.8" fill="#f0f0f0" />
-          <circle cx="12" cy="19" r="1" fill="#e0e0e0" />
-          <line x1="12" y1="21" x2="12" y2="24" stroke="#e0e0e0" strokeWidth="0.6" />
+          <circle cx="16" cy="20" r="2" fill="#f0f0f0" />
+          <circle cx="16" cy="20" r="1.2" fill="#e0e0e0" />
+          <line x1="16" y1="22" x2="16" y2="25" stroke="#e0e0e0" strokeWidth="0.7" />
         </g>
       )}
 
       {/* $10K: Gold wristwatch */}
       {stage === 3 && (
         <g>
-          <rect x="36" y="44" width="5" height="4" rx="1" fill="#c0a040" />
-          <rect x="37" y="44.5" width="3" height="3" rx="0.5" fill="#1a1a2a" />
-          <circle cx="38.5" cy="46" r="0.3" fill="#ffd700" />
-          {/* Watch band */}
-          <rect x="37" y="42.5" width="3" height="2" rx="0.5" fill="#c0a040" />
-          <rect x="37" y="48" width="3" height="2" rx="0.5" fill="#c0a040" />
+          <rect x="42" y="45" width="6" height="4.5" rx="1.2" fill="#c0a040" />
+          <rect x="43" y="45.5" width="4" height="3.5" rx="0.8" fill="#1a1a2a" />
+          <circle cx="45" cy="47.2" r="0.4" fill="#ffd700" />
+          <rect x="43.5" y="43" width="3" height="2.5" rx="0.6" fill="#c0a040" />
+          <rect x="43.5" y="49.5" width="3" height="2.5" rx="0.6" fill="#c0a040" />
         </g>
       )}
 
-      {/* $25K: Sunglasses + motorcycle silhouette to the side */}
+      {/* $25K: Sunglasses */}
       {stage === 4 && (
         <g>
-          {/* Sunglasses */}
-          <rect x="16" y="16" width="7" height="4.5" rx="2" fill="#1a1a1a" opacity="0.85" />
-          <rect x="27" y="16" width="7" height="4.5" rx="2" fill="#1a1a1a" opacity="0.85" />
-          <line x1="23" y1="18" x2="27" y2="18" stroke="#1a1a1a" strokeWidth="0.8" />
-          <line x1="16" y1="18" x2="12" y2="17" stroke="#1a1a1a" strokeWidth="0.6" />
-          {/* Lens shine */}
-          <line x1="18" y1="17" x2="20" y2="17.5" stroke="rgba(255,255,255,0.2)" strokeWidth="0.4" />
-          <line x1="29" y1="17" x2="31" y2="17.5" stroke="rgba(255,255,255,0.2)" strokeWidth="0.4" />
+          <rect x="20" y="16" width="8" height="5" rx="2.5" fill="#1a1a1a" opacity="0.85" />
+          <rect x="32" y="16" width="8" height="5" rx="2.5" fill="#1a1a1a" opacity="0.85" />
+          <line x1="28" y1="18.5" x2="32" y2="18.5" stroke="#1a1a1a" strokeWidth="1" />
+          <line x1="20" y1="18.5" x2="16" y2="17.5" stroke="#1a1a1a" strokeWidth="0.7" />
+          <line x1="22" y1="17.5" x2="25" y2="18" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" />
+          <line x1="34" y1="17.5" x2="37" y2="18" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" />
         </g>
       )}
 
-      {/* $50K: Gold watch + relaxed confident look */}
+      {/* $50K: Gold watch */}
       {stage === 5 && (
         <g>
-          <rect x="36" y="44" width="5" height="4" rx="1.2" fill="#daa520" />
-          <rect x="37" y="44.5" width="3" height="3" rx="0.8" fill="#0a0a1a" />
-          <circle cx="38.5" cy="46" r="0.4" fill="#ffd700" />
-          <rect x="37" y="42.5" width="3" height="2" rx="0.5" fill="#c8a830" />
-          <rect x="37" y="48" width="3" height="2" rx="0.5" fill="#c8a830" />
+          <rect x="42" y="45" width="6" height="4.5" rx="1.5" fill="#daa520" />
+          <rect x="43" y="45.5" width="4" height="3.5" rx="1" fill="#0a0a1a" />
+          <circle cx="45" cy="47.2" r="0.5" fill="#ffd700" />
+          <rect x="43.5" y="43" width="3" height="2.5" rx="0.6" fill="#c8a830" />
+          <rect x="43.5" y="49.5" width="3" height="2.5" rx="0.6" fill="#c8a830" />
         </g>
       )}
 
-      {/* $100K: Scarf accent */}
+      {/* $100K: Scarf */}
       {stage === 6 && (
         <g>
-          <path d="M 19 31 Q 25 34 31 31" fill="none" stroke="#8a7050" strokeWidth="2" strokeLinecap="round" />
-          <line x1="31" y1="31" x2="33" y2="38" stroke="#8a7050" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M 23 32 Q 30 35 37 32" fill="none" stroke="#8a7050" strokeWidth="2.5" strokeLinecap="round" />
+          <line x1="37" y1="32" x2="39" y2="40" stroke="#8a7050" strokeWidth="1.8" strokeLinecap="round" />
         </g>
       )}
 
       {/* $150K: Briefcase */}
       {stage === 7 && (
         <g>
-          <rect x="37" y="44" width="10" height="7" rx="1.5" fill="#2a2a2a" />
-          <rect x="40" y="42.5" width="4" height="2.5" rx="0.8" fill="none" stroke="#3a3a3a" strokeWidth="0.6" />
-          <line x1="42" y1="47" x2="42" y2="48" stroke="#c0a040" strokeWidth="0.5" />
-          <circle cx="42" cy="48.5" r="0.5" fill="#c0a040" />
+          <rect x="43" y="44" width="12" height="8" rx="2" fill="#2a2a2a" />
+          <rect x="46.5" y="42" width="5" height="3" rx="1" fill="none" stroke="#3a3a3a" strokeWidth="0.7" />
+          <line x1="49" y1="47.5" x2="49" y2="49" stroke="#c0a040" strokeWidth="0.6" />
+          <circle cx="49" cy="49.5" r="0.6" fill="#c0a040" />
         </g>
       )}
 
-      {/* $200K: Sunglasses + relaxed */}
+      {/* $200K: Sunglasses */}
       {stage === 8 && (
         <g>
-          <rect x="16" y="16" width="7" height="4.5" rx="2" fill="#2a2a2a" opacity="0.8" />
-          <rect x="27" y="16" width="7" height="4.5" rx="2" fill="#2a2a2a" opacity="0.8" />
-          <line x1="23" y1="18" x2="27" y2="18" stroke="#2a2a2a" strokeWidth="0.8" />
-          <line x1="16" y1="18" x2="12" y2="17" stroke="#2a2a2a" strokeWidth="0.6" />
-          {/* Lens gradient shine */}
-          <line x1="18" y1="17" x2="21" y2="17.5" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
-          <line x1="29" y1="17" x2="32" y2="17.5" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+          <rect x="20" y="16" width="8" height="5" rx="2.5" fill="#2a2a2a" opacity="0.8" />
+          <rect x="32" y="16" width="8" height="5" rx="2.5" fill="#2a2a2a" opacity="0.8" />
+          <line x1="28" y1="18.5" x2="32" y2="18.5" stroke="#2a2a2a" strokeWidth="1" />
+          <line x1="20" y1="18.5" x2="16" y2="17.5" stroke="#2a2a2a" strokeWidth="0.7" />
+          <line x1="22" y1="17.5" x2="26" y2="18" stroke="rgba(255,255,255,0.15)" strokeWidth="0.6" />
+          <line x1="34" y1="17.5" x2="38" y2="18" stroke="rgba(255,255,255,0.15)" strokeWidth="0.6" />
         </g>
       )}
     </svg>
@@ -395,15 +367,15 @@ function VectorChar({ stage, height = 80, faceRight = true }) {
 // ─── Stage Backgrounds (은은한 실루엣 파노라마) ──────────────────────────────
 
 const STAGE_BG = [
-  { grad: 'linear-gradient(180deg, #0a0a14 0%, #15151f 40%, #0d0d14 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #0a0a16 0%, #14141e 40%, #0f0f16 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #0a0e18 0%, #0f1422 40%, #0a0e18 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #1a1410 0%, #201810 40%, #1a1410 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #0a0a1a 0%, #14102a 40%, #0a0a1a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #060818 0%, #0a1028 40%, #060818 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #08081a 0%, #0e0e28 40%, #08081a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #1a1008 0%, #2a1810 40%, #1a1008 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #081820 0%, #0a2030 40%, #081820 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
+  { grad: 'linear-gradient(180deg, #0a0a14 0%, #15151f 40%, #0d0d14 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
+  { grad: 'linear-gradient(180deg, #0a0a16 0%, #14141e 40%, #0f0f16 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
+  { grad: 'linear-gradient(180deg, #0a0e18 0%, #0f1422 40%, #0a0e18 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
+  { grad: 'linear-gradient(180deg, #1a1410 0%, #201810 40%, #1a1410 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
+  { grad: 'linear-gradient(180deg, #0a0a1a 0%, #14102a 40%, #0a0a1a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
+  { grad: 'linear-gradient(180deg, #060818 0%, #0a1028 40%, #060818 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
+  { grad: 'linear-gradient(180deg, #08081a 0%, #0e0e28 40%, #08081a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
+  { grad: 'linear-gradient(180deg, #1a1008 0%, #2a1810 40%, #1a1008 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
+  { grad: 'linear-gradient(180deg, #081820 0%, #0a2030 40%, #081820 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
 ]
 
 /* Helper: 건물 실루엣 + 창문 */
@@ -486,11 +458,12 @@ function StageBackground({ stage }) {
         <BuildingSilhouette x={60} y={28} w={40} h={72} windowRows={3} windowCols={1} />
         {/* 편의점 건물 (중앙) */}
         <rect x={180} y={22} width={120} height={68} fill="#1c1c28" />
-        {/* 간판 배경 */}
-        <rect x={185} y={24} width={110} height={14} fill="rgba(40,80,60,0.3)" rx="1" />
-        <text x="215" y="34" fill="rgba(68,220,136,0.5)" fontSize="7" fontFamily="Inter, monospace" fontWeight="700">24H</text>
+        {/* 간판 (텍스트 제거, 빛나는 간판 rect 실루엣으로만) */}
+        <rect x={195} y={25} width={90} height={10} fill="rgba(68,220,136,0.06)" rx="1" />
+        <rect x={210} y={27} width={12} height={5} rx="1" fill="rgba(68,220,136,0.1)" />
+        <rect x={226} y={27} width={8} height={5} rx="1" fill="rgba(68,220,136,0.08)" />
         {/* 간판 따뜻한 빛 glow */}
-        <ellipse cx={240} cy={30} rx={30} ry={5} fill="rgba(255,200,100,0.06)" />
+        <ellipse cx={240} cy={30} rx={25} ry={4} fill="rgba(255,200,100,0.04)" />
         {/* 편의점 창문 (밝은 노란 빛) */}
         <rect x={188} y={42} width={20} height={22} fill="rgba(255,200,100,0.08)" rx="1" />
         <rect x={212} y={42} width={20} height={22} fill="rgba(255,200,100,0.06)" rx="1" />
@@ -856,14 +829,14 @@ function CharacterProfileCard({ stage, journey }) {
           <div style={{ fontSize: 10, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.7 }}>현재 단계</div>
           <div style={{ fontSize: 16, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace', marginBottom: 4, whiteSpace: 'nowrap' }}>{current.icon} {current.label}</div>
           {next ? (
-            <div style={{ marginBottom: 8, whiteSpace: 'nowrap' }}>
+            <div style={{ marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               <span style={{ fontSize: 11, color: '#4b5563', fontFamily: 'Inter, monospace', lineHeight: 1.7 }}>다음: {next.label} 🔒</span>
             </div>
           ) : <div style={{ fontSize: 11, color: '#fbbf24', fontFamily: 'Inter, monospace', marginBottom: 8, lineHeight: 1.7 }}>최종 단계 달성!</div>}
           {next && (
             <div>
               <div style={{ fontSize: 11, color: '#9e9e9e', fontFamily: 'Inter, monospace', lineHeight: 1.7, marginBottom: 2 }}>다음 변신까지</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: INFO, fontFamily: 'Inter, monospace', lineHeight: 1.7, marginBottom: 6 }}>{fmtDollar(stageRemaining)} 남음</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#00c853', fontFamily: 'Inter, monospace', lineHeight: 1.7, marginBottom: 6 }}>{fmtDollar(stageRemaining)} 남음</div>
               <div style={{ width: '100%', height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
                 <div style={{ width: `${stageProgress}%`, height: '100%', borderRadius: 3, background: stage <= 1 ? '#cd7f32' : stage <= 4 ? INFO : '#ffd700', transition: 'width 0.5s' }} />
               </div>
