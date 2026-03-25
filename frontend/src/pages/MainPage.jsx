@@ -14,9 +14,6 @@ import JourneyRoad from '../components/JourneyRoad'
 import { computeJourneyState, getJourneyBriefing } from '../utils/journeyEngine'
 import RiskWeatherCard from '../components/RiskWeatherCard'
 import MonthlyReplay from '../components/MonthlyReplay'
-import WinRateHeatmap from '../components/analytics/WinRateHeatmap'
-import DrawdownPanel from '../components/analytics/DrawdownPanel'
-import RMultipleHistogram from '../components/analytics/RMultipleHistogram'
 
 const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
@@ -308,35 +305,22 @@ export default function MainPage() {
               <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e0e0e0', marginBottom: 16 }}>Trading Rules</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {[
-                  { num: '1', title: '좋은 판에만 앉는다', desc: '모든 급등이 나의 게임은 아니다.', compliance: 0 },
-                  { num: '2', title: '맞히는 능력보다, 잃지 않는 구조가 먼저다', desc: '큰돈을 번 사람은 촉이 좋은 사람이 아니라, 잘못된 판에서 크게 안 죽는 사람이다.', compliance: 0 },
-                  { num: '3', title: '흥분은 신호가 아니라 잡음이다', desc: '심장이 뛰는 진입은 대체로 늦은 진입일 가능성이 높다.', compliance: 0 },
-                  { num: '4', title: '현금은 패배가 아니라 옵션이다', desc: '안 들어간 돈은 죽은 돈이 아니라 다음 좋은 판을 살 수 있는 탄약이다.', compliance: 0 },
-                  { num: '5', title: '복구 욕망은 가장 비싼 감정이다', desc: '"한 번에 복구"가 계좌를 망친다.', compliance: 0 },
-                ].map((rule) => {
-                  const c = rule.compliance
-                  const barColor = c >= 80 ? '#00c853' : c >= 50 ? '#ffc107' : '#ff1744'
-                  return (
+                  { num: '1', title: '좋은 판에만 앉는다', desc: '모든 급등이 나의 게임은 아니다.' },
+                  { num: '2', title: '맞히는 능력보다, 잃지 않는 구조가 먼저다', desc: '큰돈을 번 사람은 촉이 좋은 사람이 아니라, 잘못된 판에서 크게 안 죽는 사람이다.' },
+                  { num: '3', title: '흥분은 신호가 아니라 잡음이다', desc: '심장이 뛰는 진입은 대체로 늦은 진입일 가능성이 높다.' },
+                  { num: '4', title: '현금은 패배가 아니라 옵션이다', desc: '안 들어간 돈은 죽은 돈이 아니라 다음 좋은 판을 살 수 있는 탄약이다.' },
+                  { num: '5', title: '복구 욕망은 가장 비싼 감정이다', desc: '"한 번에 복구"가 계좌를 망친다.' },
+                ].map((rule) => (
                     <div key={rule.num}>
                       <div className="flex items-start gap-2">
                         <span style={{ fontSize: 12, fontWeight: 700, color: '#9e9e9e', marginTop: 1 }}>{rule.num}.</span>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e0', margin: 0, lineHeight: 1.4 }}>{rule.title}</p>
                           <p style={{ fontSize: 12, color: '#9e9e9e', margin: '4px 0 0 0', lineHeight: 1.5 }}>{rule.desc}</p>
-                          {/* 준수율 프로그레스 바 */}
-                          <div style={{ marginTop: 6 }}>
-                            <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                              <div style={{ width: `${Math.min(c, 100)}%`, height: '100%', borderRadius: 2, background: barColor, transition: 'width 0.3s' }} />
-                            </div>
-                            <span style={{ fontSize: 11, color: barColor, fontFamily: 'Inter, monospace', marginTop: 2, display: 'inline-block' }}>
-                              {c}%
-                            </span>
-                          </div>
                         </div>
                       </div>
                     </div>
-                  )
-                })}
+                  ))}
               </div>
             </div>
           </div>
@@ -354,19 +338,7 @@ export default function MainPage() {
           </div>
         )}
 
-        {/* 드로우다운 분석 + 요일·시간대 히트맵 */}
-        {analytics && (
-          <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <DrawdownPanel equityCurve={analytics.equity_curve} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <WinRateHeatmap trades={trades} />
-            </div>
-          </div>
-        )}
-
-        {/* 포지션 사이즈 / 트레이드 타입 + R배수 분포 */}
+        {/* 포지션 사이즈 / 트레이드 타입 */}
         {analytics && (
           <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -374,9 +346,6 @@ export default function MainPage() {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <TradeTypeTableCompact stats={analytics.trade_type_stats} />
-            </div>
-            <div style={{ width: 300, flexShrink: 0 }}>
-              <RMultipleHistogram trades={trades} />
             </div>
           </div>
         )}
