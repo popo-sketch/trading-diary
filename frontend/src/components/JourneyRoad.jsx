@@ -55,67 +55,60 @@ function fmtDollar(n) {
 
 // ─── Vector Character (clean SVG) ────────────────────────────────────────────
 
-function VectorChar({ stage, height = 80 }) {
-  // Color palettes per stage
+function VectorChar({ stage, height = 80, faceRight = true }) {
   const palettes = [
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#e0e0e0', bottom: '#8899aa', shoe: '#888', acc: null },           // 0: 무일푼 - 흰 티셔츠
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#4a90d9', bottom: '#3b5998', shoe: '#f0f0f0', acc: '#8b5e3c' },   // 1: 첫수익 - 파란 티셔츠+커피
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#444', bottom: '#333', shoe: '#222', acc: '#fff' },                // 2: 자기투자 - 후드티+에어팟
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#dde', bottom: '#3a3a50', shoe: '#e0e0e0', acc: '#c0c0c0' },      // 3: 셔츠+시계
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#1a1008', bottom: '#222', shoe: '#d44', acc: '#333' },             // 4: 가죽자켓+선글
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#1a1a2e', bottom: '#1a1a2e', shoe: '#333', acc: '#ffd700' },       // 5: 정장+넥타이
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#8b7355', bottom: '#3a3a50', shoe: '#5a3a1a', acc: '#c0c0c0' },    // 6: 코트+스카프
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#1a1a3a', bottom: '#1a1a3a', shoe: '#333', acc: '#ffd700' },       // 7: 수트+서류가방
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#e05050', bottom: '#4a90d9', shoe: '#d4956a', acc: '#ff9' },       // 8: 하와이안셔츠
+    { hair: '#3a2a1a', skin: '#f4c28f', top: '#e0e0e0', bottom: '#8899aa', shoe: '#888', acc: null },
+    { hair: '#3a2a1a', skin: '#f4c28f', top: '#4a90d9', bottom: '#3b5998', shoe: '#f0f0f0', acc: '#8b5e3c' },
+    { hair: '#3a2a1a', skin: '#f4c28f', top: '#444', bottom: '#333', shoe: '#222', acc: '#fff' },
+    { hair: '#3a2a1a', skin: '#f4c28f', top: '#dde', bottom: '#3a3a50', shoe: '#e0e0e0', acc: '#c0c0c0' },
+    { hair: '#3a2a1a', skin: '#f4c28f', top: '#1a1008', bottom: '#222', shoe: '#d44', acc: '#333' },
+    { hair: '#3a2a1a', skin: '#f4c28f', top: '#1a1a2e', bottom: '#1a1a2e', shoe: '#333', acc: '#ffd700' },
+    { hair: '#3a2a1a', skin: '#f4c28f', top: '#8b7355', bottom: '#3a3a50', shoe: '#5a3a1a', acc: '#c0c0c0' },
+    { hair: '#3a2a1a', skin: '#f4c28f', top: '#1a1a3a', bottom: '#1a1a3a', shoe: '#333', acc: '#ffd700' },
+    { hair: '#3a2a1a', skin: '#f4c28f', top: '#e05050', bottom: '#4a90d9', shoe: '#d4956a', acc: '#ff9' },
   ]
   const p = palettes[stage] || palettes[0]
   const W = 40, H = 80
   const scale = height / H
 
   return (
-    <svg width={W * scale} height={height} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible', display: 'block' }}>
-      {/* Head */}
+    <svg width={W * scale} height={height} viewBox={`0 0 ${W} ${H}`}
+      style={{ overflow: 'visible', display: 'block', transform: faceRight ? 'scaleX(-1)' : 'none' }}>
       <circle cx="20" cy="14" r="10" fill={p.skin} />
-      {/* Hair */}
       <ellipse cx="20" cy="9" rx="10" ry="6" fill={p.hair} />
       <ellipse cx="20" cy="7" rx="8" ry="4" fill={p.hair} />
-      {/* Eyes */}
-      <circle cx="16.5" cy="14" r="1.5" fill="#2a1a0a" />
-      <circle cx="23.5" cy="14" r="1.5" fill="#2a1a0a" />
-      <circle cx="17" cy="13.3" r="0.5" fill="#fff" />
-      <circle cx="24" cy="13.3" r="0.5" fill="#fff" />
-      {/* Smile */}
+      {/* Eyes — slight right gaze */}
+      <circle cx="16" cy="14" r="1.5" fill="#2a1a0a" />
+      <circle cx="23" cy="14" r="1.5" fill="#2a1a0a" />
+      <circle cx="16.5" cy="13.3" r="0.5" fill="#fff" />
+      <circle cx="23.5" cy="13.3" r="0.5" fill="#fff" />
       <path d="M 17 17 Q 20 20 23 17" fill="none" stroke="#c77" strokeWidth="0.8" strokeLinecap="round" />
-      {/* Neck */}
       <rect x="18" y="23" width="4" height="3" rx="1" fill={p.skin} />
-      {/* Body / Torso */}
       <rect x="10" y="25" width="20" height="18" rx="3" fill={p.top} />
-      {/* Arms */}
+      {/* Arms — right arm slightly forward */}
       <rect x="5" y="26" width="6" height="14" rx="3" fill={p.top} />
-      <rect x="29" y="26" width="6" height="14" rx="3" fill={p.top} />
-      {/* Hands */}
+      <rect x="29" y="25" width="6" height="15" rx="3" fill={p.top} />
       <circle cx="8" cy="41" r="2.5" fill={p.skin} />
       <circle cx="32" cy="41" r="2.5" fill={p.skin} />
-      {/* Legs */}
+      {/* Legs — walking pose */}
       <rect x="12" y="42" width="7" height="16" rx="3" fill={p.bottom} />
       <rect x="21" y="42" width="7" height="16" rx="3" fill={p.bottom} />
-      {/* Shoes */}
       <ellipse cx="15" cy="59" rx="5" ry="2.5" fill={p.shoe} />
       <ellipse cx="25" cy="59" rx="5" ry="2.5" fill={p.shoe} />
+      {/* Ear */}
+      <ellipse cx="10" cy="14" r="2" fill={p.skin} />
+      {/* Nose */}
+      <ellipse cx="26" cy="15" rx="1" ry="1.2" fill="#e0b080" />
 
-      {/* Stage-specific accessories */}
-      {/* Stage 1: Coffee cup in right hand */}
       {stage === 1 && (
         <g>
           <rect x="30" y="34" width="5" height="7" rx="1" fill={p.acc} />
           <rect x="29.5" y="33" width="6" height="2" rx="1" fill="#a07040" />
           <path d="M 35 36 Q 37 37 35 39" fill="none" stroke="#a07040" strokeWidth="0.8" />
-          {/* steam */}
           <path d="M 31 31 Q 32 29 31 27" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5" className="steam-anim" />
           <path d="M 33 32 Q 34 30 33 28" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" className="steam-anim-2" />
         </g>
       )}
-      {/* Stage 2: Earbuds (white dots) */}
       {stage === 2 && (
         <g>
           <circle cx="10" cy="15" r="1.5" fill={p.acc} />
@@ -124,11 +117,9 @@ function VectorChar({ stage, height = 80 }) {
           <line x1="30" y1="15" x2="30" y2="20" stroke={p.acc} strokeWidth="0.5" />
         </g>
       )}
-      {/* Stage 3: Watch on wrist */}
       {stage >= 3 && stage < 8 && (
-        <rect x="5.5" y="38" width="5" height="3" rx="1" fill={p.acc} stroke="#888" strokeWidth="0.3" />
+        <rect x="29" y="38" width="5" height="3" rx="1" fill={p.acc} stroke="#888" strokeWidth="0.3" />
       )}
-      {/* Stage 4: Sunglasses */}
       {stage === 4 && (
         <g>
           <rect x="13" y="12" width="6" height="4" rx="1.5" fill={p.acc} opacity="0.8" />
@@ -136,27 +127,21 @@ function VectorChar({ stage, height = 80 }) {
           <line x1="19" y1="14" x2="21" y2="14" stroke={p.acc} strokeWidth="0.8" />
         </g>
       )}
-      {/* Stage 5: Necktie */}
       {stage === 5 && (
-        <g>
-          <polygon points="19,26 21,26 21.5,34 20,36 18.5,34" fill={p.acc} />
-        </g>
+        <polygon points="19,26 21,26 21.5,34 20,36 18.5,34" fill={p.acc} />
       )}
-      {/* Stage 6: Scarf */}
       {stage === 6 && (
         <g>
           <path d="M 10 26 Q 20 30 30 26" fill="none" stroke={p.acc} strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="12" y1="27" x2="10" y2="35" stroke={p.acc} strokeWidth="2" strokeLinecap="round" />
+          <line x1="28" y1="27" x2="30" y2="35" stroke={p.acc} strokeWidth="2" strokeLinecap="round" />
         </g>
       )}
-      {/* Stage 7: Briefcase */}
       {stage === 7 && (
         <g>
           <rect x="30" y="38" width="8" height="6" rx="1" fill={p.acc} />
           <rect x="32" y="37" width="4" height="2" rx="0.5" fill="none" stroke={p.acc} strokeWidth="0.5" />
         </g>
       )}
-      {/* Stage 8: Sunglasses + lei */}
       {stage >= 8 && (
         <g>
           <rect x="13" y="12" width="6" height="4" rx="1.5" fill="#333" opacity="0.7" />
@@ -172,15 +157,15 @@ function VectorChar({ stage, height = 80 }) {
 // ─── Stage Backgrounds ───────────────────────────────────────────────────────
 
 const STAGE_BG = [
-  { grad: 'linear-gradient(180deg, #0a0a14 0%, #15151f 40%, #0d0d14 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #0a0a16 0%, #14141e 40%, #0f0f16 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.45), rgba(13,13,26,0.65))' },
-  { grad: 'linear-gradient(180deg, #0a0e18 0%, #0f1422 40%, #0a0e18 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
-  { grad: 'linear-gradient(180deg, #1a1410 0%, #201810 40%, #1a1410 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.4), rgba(13,13,26,0.65))' },
-  { grad: 'linear-gradient(180deg, #0a0a1a 0%, #14102a 40%, #0a0a1a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.4), rgba(13,13,26,0.65))' },
-  { grad: 'linear-gradient(180deg, #060818 0%, #0a1028 40%, #060818 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.6))' },
-  { grad: 'linear-gradient(180deg, #08081a 0%, #0e0e28 40%, #08081a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.6))' },
-  { grad: 'linear-gradient(180deg, #1a1008 0%, #2a1810 40%, #1a1008 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.3), rgba(13,13,26,0.55))' },
-  { grad: 'linear-gradient(180deg, #081820 0%, #0a2030 40%, #081820 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.3), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #0a0a14 0%, #15151f 40%, #0d0d14 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #0a0a16 0%, #14141e 40%, #0f0f16 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.30), rgba(13,13,26,0.50))' },
+  { grad: 'linear-gradient(180deg, #0a0e18 0%, #0f1422 40%, #0a0e18 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #1a1410 0%, #201810 40%, #1a1410 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.30), rgba(13,13,26,0.50))' },
+  { grad: 'linear-gradient(180deg, #0a0a1a 0%, #14102a 40%, #0a0a1a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.30), rgba(13,13,26,0.50))' },
+  { grad: 'linear-gradient(180deg, #060818 0%, #0a1028 40%, #060818 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.25), rgba(13,13,26,0.45))' },
+  { grad: 'linear-gradient(180deg, #08081a 0%, #0e0e28 40%, #08081a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.25), rgba(13,13,26,0.45))' },
+  { grad: 'linear-gradient(180deg, #1a1008 0%, #2a1810 40%, #1a1008 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.20), rgba(13,13,26,0.40))' },
+  { grad: 'linear-gradient(180deg, #081820 0%, #0a2030 40%, #081820 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.20), rgba(13,13,26,0.40))' },
 ]
 
 function StageBackground({ stage }) {
@@ -214,38 +199,52 @@ function StageBackground({ stage }) {
         <circle cx="280" cy="12" r="0.5" fill="#ddd" className="star-twinkle" />
       </g>
     ),
-    1: ( // 편의점 앞 — 간판, 네온빛, 가로등, 보도블록
+    1: ( // 편의점 앞 — 간판, 네온빛, 가로등, 보도블록 (전체 영역)
       <g>
-        {/* 편의점 건물 */}
-        <rect x="340" y="18" width="120" height="72" fill="#1e1e2a" rx="2" />
-        <rect x="345" y="22" width="110" height="24" fill="#1a2a1a" rx="1" />
-        {/* 간판 glow */}
-        <rect x="345" y="22" width="110" height="24" fill="rgba(68,221,136,0.12)" rx="1" />
-        <text x="375" y="38" fill="#44dd88" fontSize="10" fontFamily="Inter, monospace" fontWeight="700" opacity="0.7">24H MART</text>
-        {/* 간판 빛 반사 바닥 */}
-        <ellipse cx="400" cy="88" rx="60" ry="8" fill="rgba(68,221,136,0.06)" />
-        {/* 창문들 */}
-        <rect x="350" y="52" width="18" height="22" fill="rgba(255,200,100,0.08)" rx="1" />
-        <rect x="375" y="52" width="18" height="22" fill="rgba(255,200,100,0.06)" rx="1" />
-        <rect x="400" y="52" width="40" height="22" fill="rgba(255,200,100,0.1)" rx="1" />
-        {/* 왼쪽 건물 */}
-        <rect x="0" y="30" width="50" height="60" fill="#181822" />
-        <rect x="5" y="38" width="10" height="10" fill="#222230" />
-        <rect x="25" y="38" width="10" height="10" fill="rgba(255,200,100,0.04)" />
-        {/* 가로등 2개 */}
-        <line x1="120" y1="12" x2="120" y2="78" stroke="#3a3a44" strokeWidth="1.5" />
-        <circle cx="120" cy="11" r="3.5" fill="#ffc96625" /><circle cx="120" cy="11" r="1.5" fill="#ffc966" className="flicker-light" />
-        <line x1="280" y1="15" x2="280" y2="78" stroke="#3a3a44" strokeWidth="1.5" />
-        <circle cx="280" cy="14" r="3.5" fill="#ffc96625" /><circle cx="280" cy="14" r="1.5" fill="#ffc966" className="flicker-light" />
+        {/* 왼쪽 낡은 건물 */}
+        <rect x="0" y="15" width="70" height="85" fill="#1a1a24" />
+        <rect x="8" y="25" width="12" height="10" fill="#222230" />
+        <rect x="30" y="25" width="12" height="10" fill="rgba(255,200,100,0.06)" />
+        <rect x="8" y="45" width="12" height="10" fill="#222230" />
+        <rect x="30" y="45" width="12" height="10" fill="rgba(255,200,100,0.04)" />
+        {/* 편의점 건물 (중앙~오른쪽) */}
+        <rect x="160" y="10" width="200" height="80" fill="#1e1e2a" rx="2" />
+        <rect x="165" y="15" width="190" height="28" fill="#1a2a1a" rx="1" />
+        <rect x="165" y="15" width="190" height="28" fill="rgba(68,221,136,0.15)" rx="1" />
+        <text x="210" y="34" fill="#44dd88" fontSize="14" fontFamily="Inter, monospace" fontWeight="800" opacity="0.8">24H MART</text>
+        {/* 간판 글로우 */}
+        <ellipse cx="260" cy="14" rx="80" ry="6" fill="rgba(68,221,136,0.08)" />
+        {/* 간판 빛 바닥 반사 */}
+        <ellipse cx="260" cy="88" rx="80" ry="10" fill="rgba(68,221,136,0.08)" />
+        {/* 편의점 창문들 */}
+        <rect x="170" y="48" width="25" height="28" fill="rgba(255,200,100,0.1)" rx="1" />
+        <rect x="200" y="48" width="25" height="28" fill="rgba(255,200,100,0.08)" rx="1" />
+        <rect x="230" y="48" width="45" height="28" fill="rgba(255,200,100,0.12)" rx="1" />
+        <rect x="285" y="48" width="25" height="28" fill="rgba(255,200,100,0.08)" rx="1" />
+        <rect x="320" y="48" width="25" height="28" fill="rgba(255,200,100,0.06)" rx="1" />
+        {/* 오른쪽 건물 */}
+        <rect x="410" y="20" width="90" height="80" fill="#181822" />
+        <rect x="420" y="30" width="12" height="10" fill="#222230" />
+        <rect x="445" y="30" width="12" height="10" fill="rgba(255,200,100,0.04)" />
+        <rect x="470" y="30" width="12" height="10" fill="#222230" />
+        <rect x="420" y="50" width="12" height="10" fill="rgba(255,200,100,0.05)" />
+        <rect x="445" y="50" width="12" height="10" fill="#222230" />
+        {/* 가로등 3개 (균등 배치) */}
+        <line x1="90" y1="10" x2="90" y2="78" stroke="#3a3a44" strokeWidth="2" />
+        <circle cx="90" cy="9" r="4" fill="#ffc96630" /><circle cx="90" cy="9" r="2" fill="#ffc966" className="flicker-light" />
+        <ellipse cx="90" cy="82" rx="15" ry="4" fill="rgba(255,201,102,0.06)" />
+        <line x1="380" y1="12" x2="380" y2="78" stroke="#3a3a44" strokeWidth="2" />
+        <circle cx="380" cy="11" r="4" fill="#ffc96630" /><circle cx="380" cy="11" r="2" fill="#ffc966" className="flicker-light" />
+        <ellipse cx="380" cy="82" rx="15" ry="4" fill="rgba(255,201,102,0.06)" />
         {/* 보도블록 */}
         <line x1="0" y1="80" x2="500" y2="80" stroke="#2a2a35" strokeWidth="1" />
-        {[0,40,80,120,160,200,240,280,320,360,400,440,480].map(x => (
-          <line key={x} x1={x} y1="80" x2={x} y2="90" stroke="#2a2a35" strokeWidth="0.3" />
+        {[0,35,70,105,140,175,210,245,280,315,350,385,420,455,490].map(x => (
+          <line key={x} x1={x} y1="80" x2={x} y2="92" stroke="#2a2a35" strokeWidth="0.3" />
         ))}
         {/* 별 */}
-        <circle cx="80" cy="6" r="0.7" fill="#fff" className="star-twinkle" />
-        <circle cx="180" cy="4" r="0.5" fill="#ddd" className="star-twinkle-2" />
-        <circle cx="250" cy="8" r="0.6" fill="#eee" className="star-twinkle" />
+        <circle cx="30" cy="5" r="0.7" fill="#fff" className="star-twinkle" />
+        <circle cx="130" cy="3" r="0.5" fill="#ddd" className="star-twinkle-2" />
+        <circle cx="460" cy="6" r="0.6" fill="#eee" className="star-twinkle" />
       </g>
     ),
     2: ( // 원룸 책상 — 듀얼 모니터, 작은 창문, 도시불빛
@@ -452,13 +451,13 @@ function StageBackground({ stage }) {
   }
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 16 }}>
-      <div style={{ position: 'absolute', inset: 0, background: bg.grad }} />
-      <svg width="100%" height="100%" viewBox="0 0 500 100" preserveAspectRatio="xMidYMid slice"
-        style={{ position: 'absolute', inset: 0, opacity: 0.5 }}>
+    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', borderRadius: 16 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: bg.grad }} />
+      <svg width="100%" height="100%" viewBox="0 0 500 100" preserveAspectRatio="none"
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.35 }}>
         {scenes[stage]}
       </svg>
-      <div style={{ position: 'absolute', inset: 0, background: bg.overlay }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: bg.overlay }} />
     </div>
   )
 }
@@ -609,9 +608,9 @@ function CharacterProfileCard({ stage, journey }) {
       backgroundImage: `linear-gradient(to top right, ${tint}, transparent)`,
       width: '100%',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={{ flexShrink: 0, width: 60, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <VectorChar stage={stage} height={120} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ flexShrink: 0, width: 50, height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <VectorChar stage={stage} height={100} faceRight />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 10, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.7 }}>현재 단계</div>
@@ -664,7 +663,7 @@ function MilestoneMarker({ cp, reached, isNext, pct, cumulativePnl, curve, perso
   }
   return (
     <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-      style={{ position: 'absolute', left: `${pct}%`, top: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: reached ? 3 : isNext ? 2 : 1, cursor: 'pointer' }}>
+      style={{ position: 'absolute', left: `${pct}%`, top: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: reached ? 3 : isNext ? 2 : 1, cursor: 'pointer', pointerEvents: 'auto' }}>
       {hovered && (
         <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: 'rgba(26,26,46,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 12px', whiteSpace: 'nowrap', zIndex: 100, boxShadow: '0 4px 20px rgba(0,0,0,0.5)', fontSize: 11, fontFamily: 'Inter, monospace' }}>
           <div style={{ fontWeight: 700, color: reached ? '#fbbf24' : '#9ca3af', marginBottom: 2, lineHeight: 1.7 }}>{stageInfo.icon} {stageInfo.badge || `$${CP_LABELS[cp]}`} — {reached ? '달성!' : '미달성'}</div>
@@ -675,42 +674,72 @@ function MilestoneMarker({ cp, reached, isNext, pct, cumulativePnl, curve, perso
         </div>
       )}
       <div className={reached ? 'ms-reached' : isNext ? 'ms-next' : ''} style={{
-        width: reached ? 36 : 28, height: reached ? 36 : 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: reached ? 16 : 12, background: reached ? 'radial-gradient(circle, #2a1f00, #151000)' : isNext ? 'radial-gradient(circle, rgba(66,165,245,0.1), #121220)' : '#15151f',
+        width: reached ? 30 : 24, height: reached ? 30 : 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: reached ? 13 : 10, background: reached ? 'radial-gradient(circle, #2a1f00, #151000)' : isNext ? 'radial-gradient(circle, rgba(66,165,245,0.1), #121220)' : '#15151f',
         border: reached ? '2px solid #fbbf24' : isNext ? '2px dashed rgba(66,165,245,0.5)' : '1px solid #2a2a3a',
         boxShadow: reached ? '0 0 12px rgba(255,215,0,0.4)' : 'none', filter: reached ? 'none' : isNext ? 'none' : 'grayscale(1) opacity(0.4)', position: 'relative', transition: 'all 0.3s',
       }}>
         {stageInfo.icon || '?'}
-        {reached && <div style={{ position: 'absolute', bottom: -2, right: -2, width: 12, height: 12, borderRadius: '50%', background: GREEN, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, fontWeight: 900, color: '#fff', border: '2px solid #121220' }}>✓</div>}
-        {!reached && !isNext && <div style={{ position: 'absolute', bottom: -2, right: -2, width: 10, height: 10, borderRadius: '50%', background: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 5, color: '#6b7280' }}>🔒</div>}
+        {reached && <div style={{ position: 'absolute', bottom: -2, right: -2, width: 10, height: 10, borderRadius: '50%', background: GREEN, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 5, fontWeight: 900, color: '#fff', border: '2px solid #121220' }}>✓</div>}
+        {!reached && !isNext && <div style={{ position: 'absolute', bottom: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 4, color: '#6b7280' }}>🔒</div>}
       </div>
       <div style={{ marginTop: 2, fontSize: 7, fontWeight: 700, fontFamily: 'Inter, monospace', color: reached ? '#fbbf24' : isNext ? '#42a5f5' : '#3a3a4a', textAlign: 'center', whiteSpace: 'nowrap' }}>${CP_LABELS[cp]}</div>
     </div>
   )
 }
 
+// Log-scale milestone positions so early milestones don't overlap
+const MILESTONE_PCT = {
+  1000: 5,
+  5000: 15,
+  10000: 25,
+  25000: 40,
+  50000: 55,
+  100000: 70,
+  150000: 85,
+  200000: 100,
+}
+
+function getLogPct(pnl) {
+  // Map pnl to the same log scale as milestones
+  if (pnl <= 0) return 0
+  if (pnl >= JOURNEY_GOAL) return 100
+  const cps = Object.keys(MILESTONE_PCT).map(Number).sort((a, b) => a - b)
+  for (let i = 0; i < cps.length; i++) {
+    if (pnl <= cps[i]) {
+      const prev = i === 0 ? 0 : cps[i - 1]
+      const prevPct = i === 0 ? 0 : MILESTONE_PCT[prev]
+      const curPct = MILESTONE_PCT[cps[i]]
+      const ratio = (pnl - prev) / (cps[i] - prev)
+      return prevPct + ratio * (curPct - prevPct)
+    }
+  }
+  return 100
+}
+
 function ProgressSection({ journey, ps, curve, personalBests, stage }) {
-  const pct = Math.min(100, Math.max(0, journey.progressPercent))
-  const grad = getProgressGradient(pct)
+  const logPct = getLogPct(journey.cumulativePnl)
+  const pct = Math.min(100, Math.max(0, logPct))
+  const realPct = Math.min(100, Math.max(0, journey.progressPercent))
+  const grad = getProgressGradient(realPct)
   const showInside = pct > 12
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      {/* 캐릭터 위 영역 — 말풍선 + 캐릭터 */}
-      <div style={{ position: 'relative', height: 110, marginBottom: 4 }}>
+      {/* 캐릭터 위 영역 */}
+      <div style={{ position: 'relative', height: 105, marginBottom: 4 }}>
         <div style={{
-          position: 'absolute', left: `${pct}%`, bottom: 0,
+          position: 'absolute', left: `${Math.max(5, Math.min(95, pct))}%`, bottom: 0,
           transform: 'translateX(-50%)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10,
         }}>
-          {/* 말풍선 */}
           <div style={{ background: 'rgba(26,26,46,0.92)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '4px 10px', marginBottom: 4, whiteSpace: 'nowrap', position: 'relative' }}>
             <div style={{ fontSize: 12, fontWeight: 800, color: journey.cumulativePnl >= 0 ? GREEN : RED, fontFamily: 'Inter, monospace', textAlign: 'center' }}>{fmtPnl(journey.cumulativePnl)}</div>
             {journey.nextCpRemaining > 0 && <div style={{ fontSize: 9, color: '#9e9e9e', fontFamily: 'Inter, monospace', textAlign: 'center', lineHeight: 1.7 }}>다음까지 {fmtK(journey.nextCpRemaining)}</div>}
             <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '4px solid rgba(255,255,255,0.15)' }} />
           </div>
-          {/* 캐릭터 (80px) */}
+          {/* 캐릭터 (65px, 오른쪽 바라봄) */}
           <div className="char-bounce">
-            <VectorChar stage={stage} height={80} />
+            <VectorChar stage={stage} height={65} faceRight />
           </div>
         </div>
       </div>
@@ -727,13 +756,13 @@ function ProgressSection({ journey, ps, curve, personalBests, stage }) {
             <div className="progress-shimmer" style={{ position: 'absolute', inset: 0, borderRadius: 20, overflow: 'hidden' }} />
           </div>
           {showInside ? (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, fontFamily: 'Inter, monospace', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.6)', zIndex: 5 }}>{pct.toFixed(2)}%</div>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, fontFamily: 'Inter, monospace', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.6)', zIndex: 5 }}>{realPct.toFixed(2)}%</div>
           ) : (
-            <div style={{ position: 'absolute', top: '50%', left: `${pct + 1}%`, transform: 'translateY(-50%)', fontSize: 11, fontWeight: 800, fontFamily: 'Inter, monospace', color: '#9e9e9e', zIndex: 5, whiteSpace: 'nowrap' }}>{pct.toFixed(2)}%</div>
+            <div style={{ position: 'absolute', top: '50%', left: `${pct + 2}%`, transform: 'translateY(-50%)', fontSize: 11, fontWeight: 800, fontFamily: 'Inter, monospace', color: '#9e9e9e', zIndex: 5, whiteSpace: 'nowrap' }}>{realPct.toFixed(2)}%</div>
           )}
         </div>
         {CHECKPOINTS.map(cp => (
-          <MilestoneMarker key={cp} cp={cp} reached={journey.cumulativePnl >= cp} isNext={journey.nextCheckpoint === cp} pct={(cp / JOURNEY_GOAL) * 100} cumulativePnl={journey.cumulativePnl} curve={curve} personalBests={personalBests} />
+          <MilestoneMarker key={cp} cp={cp} reached={journey.cumulativePnl >= cp} isNext={journey.nextCheckpoint === cp} pct={MILESTONE_PCT[cp] || (cp / JOURNEY_GOAL) * 100} cumulativePnl={journey.cumulativePnl} curve={curve} personalBests={personalBests} />
         ))}
       </div>
     </div>
@@ -937,8 +966,8 @@ export default function JourneyRoad({ allTimeAnalytics }) {
 
       {/* 메인 영역: 왼쪽 프로필 + 오른쪽 배경+프로그레스 */}
       <div style={{ display: 'flex', gap: 16, padding: '16px', position: 'relative', zIndex: 1, minHeight: 200 }}>
-        {/* 왼쪽 프로필 카드 (25%) */}
-        <div style={{ width: '25%', flexShrink: 0 }}>
+        {/* 왼쪽 프로필 카드 (20%) */}
+        <div style={{ width: '20%', maxWidth: 200, flexShrink: 0 }}>
           <CharacterProfileCard stage={stage} journey={journey} />
         </div>
         {/* 오른쪽 프로그레스 영역 (75%) */}
