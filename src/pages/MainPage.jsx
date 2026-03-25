@@ -9,6 +9,11 @@ import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
 import PositionSizeTableCompact from '../components/analytics/PositionSizeTableCompact'
 import TradeTypeTableCompact from '../components/analytics/TradeTypeTableCompact'
 import FlowStatusModule from '../components/FlowStatusModule'
+import RoadJourneyMap from '../components/RoadJourneyMap'
+import SeohooAIBriefing from '../components/SeohooAIBriefing'
+import RiskWeatherCard from '../components/RiskWeatherCard'
+import MonthlyReplay from '../components/MonthlyReplay'
+import { computePhase } from '../utils/journeyEngine'
 
 const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
@@ -140,6 +145,47 @@ export default function MainPage() {
   const bestTrade = stats?.top_wins?.[0]
   const worstTrade = stats?.top_losses?.[0]
 
+  // ── 여정 관련 계산 ──────────────────────────────────────────────
+  const cumulativePnl = useMemo(() => {
+    const curve = analytics?.equity_curve
+    if (!curve || curve.length === 0) return 0
+    return curve[curve.length - 1]?.cumulative_pnl ?? 0
+  }, [analytics])
+
+  const recentLossDays = useMemo(() => {
+    const dayPnl = {}
+    trades.forEach((t) => {
+      dayPnl[t.date] = (dayPnl[t.date] ?? 0) + Number(t.pnl || 0)
+    })
+    const days = Object.values(dayPnl).sort((a, b) => b - a < 0 ? -1 : 1)
+    let streak = 0
+    for (const pnl of days) {
+      if (pnl < 0) streak++
+      else break
+    }
+    return streak
+  }, [trades])
+
+  const maxDrawdownPct = useMemo(() => {
+    const curve = analytics?.equity_curve
+    if (!curve || curve.length === 0) return 0
+    let peak = curve[0]?.cumulative_pnl ?? 0
+    let maxDd = 0
+    for (const pt of curve) {
+      const cur = pt?.cumulative_pnl ?? 0
+      if (cur > peak) peak = cur
+      if (peak > 0) maxDd = Math.max(maxDd, ((peak - cur) / peak) * 100)
+    }
+    return maxDd
+  }, [analytics])
+
+  const phase = useMemo(() => computePhase({
+    cumulativePnl,
+    recentLossDays,
+    maxDrawdownPct,
+    kellyPercent: analytics?.kelly_percent ?? 0,
+  }), [cumulativePnl, recentLossDays, maxDrawdownPct, analytics])
+
   return (
     <div className="min-h-screen p-6 bg-dark-bg">
       <div className="max-w-7xl mx-auto space-y-4">
@@ -232,6 +278,17 @@ export default function MainPage() {
           </div>
         )}
 
+        {/* [1] 200K 여정 도로 UI */}
+        <RoadJourneyMap cumulativePnl={cumulativePnl} phase={phase} />
+
+        {/* [2] 이서후 AI 브리핑 */}
+        <SeohooAIBriefing
+          analytics={analytics}
+          trades={trades}
+          cumulativePnl={cumulativePnl}
+          phase={phase}
+        />
+
         {/* 캘린더 + 트레이딩 규칙 */}
         <div className="grid grid-cols-[1fr_280px] gap-4 items-start">
           <Calendar
@@ -288,18 +345,23 @@ export default function MainPage() {
           </div>
         </div>
 
-        {/* Equity Curve + Expected Value Curve */}
+        {/* 리스크 날씨 + Equity Curve + EV Curve */}
         {analytics && (
-          <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} kellyPercent={analytics.kelly_percent} />
-        )}
-
-        {/* 좌우 50:50 테이블 */}
-        {analytics && (
-          <div className="grid grid-cols-2 gap-4">
-            <PositionSizeTableCompact buckets={analytics.position_size_buckets} />
-            <TradeTypeTableCompact stats={analytics.trade_type_stats} />
+          <div className="grid grid-cols-[280px_1fr] gap-4 items-start">
+            <RiskWeatherCard analytics={analytics} trades={trades} />
+            <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} kellyPercent={analytics.kelly_percent} />
           </div>
         )}
+
+        {/* 포지션 사이즈 / 트레이드 타입 + 월간 리플레이 */}
+        {analytics && (
+          <div className="grid grid-cols-[1fr_1fr_300px] gap-4 items-start">
+            <PositionSizeTableCompact buckets={analytics.position_size_buckets} />
+            <TradeTypeTableCompact stats={analytics.trade_type_stats} />
+            <MonthlyReplay trades={trades} analytics={analytics} />
+          </div>
+        )}
+
       </div>
     </div>
   )

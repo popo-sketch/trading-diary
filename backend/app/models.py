@@ -2,7 +2,7 @@ import re
 from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional
 
-TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'Elon', 'CZ', 'HeYi', 'Trump', 'ETC']
+TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'Elon', 'CZ', 'HeYi', 'Trump', 'Binance', 'ETC']
 
 
 class TradeCreate(BaseModel):
@@ -16,6 +16,8 @@ class TradeCreate(BaseModel):
     return_percent: float = Field(..., description="수익률 (%)")
     trade_type: Optional[str] = None
     avg_entry_mc: Optional[float] = None  # 평균 진입 시총 ($)
+    is_mine: Optional[bool] = False  # 지뢰플레이 여부
+    trade_style: Optional[str] = None  # '계획매매' 또는 '뇌동매매'
 
     @field_validator("date")
     @classmethod
@@ -29,6 +31,13 @@ class TradeCreate(BaseModel):
     def validate_trade_type(cls, v: Optional[str]) -> Optional[str]:
         if v and v not in TRADE_TYPES:
             raise ValueError(f"trade_type must be one of {TRADE_TYPES}")
+        return v
+
+    @field_validator("trade_style")
+    @classmethod
+    def validate_trade_style(cls, v: Optional[str]) -> Optional[str]:
+        if v and v not in ('계획매매', '뇌동매매'):
+            raise ValueError("trade_style must be '계획매매' or '뇌동매매'")
         return v
 
     @field_validator("return_percent")
@@ -66,6 +75,8 @@ class TradeUpdate(BaseModel):
     return_percent: Optional[float] = None
     trade_type: Optional[str] = None
     avg_entry_mc: Optional[float] = None
+    is_mine: Optional[bool] = None
+    trade_style: Optional[str] = None
 
     @model_validator(mode='after')
     def compute_entry_amount_if_needed(self):
@@ -100,6 +111,8 @@ class TradeResponse(BaseModel):
     return_percent: Optional[float] = None
     trade_type: Optional[str] = None
     avg_entry_mc: Optional[float] = None
+    is_mine: Optional[bool] = False
+    trade_style: Optional[str] = None
     created_at: str
     updated_at: str
 

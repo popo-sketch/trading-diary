@@ -20,7 +20,7 @@ async def get_trades_by_month(
     try:
         cursor = await conn.execute(
             """
-            SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, created_at, updated_at
+            SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, is_mine, trade_style, created_at, updated_at
             FROM trades
             WHERE date LIKE ?
             ORDER BY date, created_at
@@ -42,7 +42,7 @@ async def get_trades_by_date(
     try:
         cursor = await conn.execute(
             """
-            SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, created_at, updated_at
+            SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, is_mine, trade_style, created_at, updated_at
             FROM trades
             WHERE date = ?
             ORDER BY created_at
@@ -63,14 +63,14 @@ async def create_trade(data: TradeCreate):
     try:
         await conn.execute(
             """
-            INSERT INTO trades (id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO trades (id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, is_mine, trade_style)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (trade_id, data.date, data.ticker, data.chain, data.ca, data.pnl, data.memo, data.entry_amount, data.return_percent, data.trade_type, data.avg_entry_mc)
+            (trade_id, data.date, data.ticker, data.chain, data.ca, data.pnl, data.memo, data.entry_amount, data.return_percent, data.trade_type, data.avg_entry_mc, 1 if data.is_mine else 0, data.trade_style)
         )
         await conn.commit()
         cursor = await conn.execute(
-            "SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, created_at, updated_at FROM trades WHERE id = ?",
+            "SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, is_mine, trade_style, created_at, updated_at FROM trades WHERE id = ?",
             (trade_id,)
         )
         row = await cursor.fetchone()
@@ -87,7 +87,11 @@ async def update_trade(trade_id: str, data: TradeUpdate):
         payload = data.model_dump(exclude_unset=True)
         updates = []
         params = []
-        for key in ("memo", "pnl", "entry_amount", "return_percent", "trade_type", "avg_entry_mc"):
+        for key in ("memo", "pnl", "entry_amount", "return_percent", "trade_type", "avg_entry_mc", "is_mine", "trade_style"):
+            if key == "is_mine" and key in payload:
+                updates.append(f"{key} = ?")
+                params.append(1 if payload[key] else 0)
+                continue
             if key in payload:
                 updates.append(f"{key} = ?")
                 params.append(payload[key])
@@ -109,7 +113,7 @@ async def update_trade(trade_id: str, data: TradeUpdate):
             raise HTTPException(status_code=404, detail="Trade not found")
 
         cursor = await conn.execute(
-            "SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, created_at, updated_at FROM trades WHERE id = ?",
+            "SELECT id, date, ticker, chain, ca, pnl, memo, entry_amount, return_percent, trade_type, avg_entry_mc, is_mine, trade_style, created_at, updated_at FROM trades WHERE id = ?",
             (trade_id,)
         )
         row = await cursor.fetchone()
@@ -145,6 +149,8 @@ def _row_to_trade(row) -> TradeResponse:
         return_percent=row.get("return_percent"),
         trade_type=row.get("trade_type"),
         avg_entry_mc=row.get("avg_entry_mc"),
+        is_mine=bool(row.get("is_mine", 0)),
+        trade_style=row.get("trade_style"),
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )

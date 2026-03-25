@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { getTradesByDate, createTrade, updateTrade, deleteTrade } from '../api/trades'
+import { getTradesByDate, getTradesByMonth, createTrade, updateTrade, deleteTrade } from '../api/trades'
+import { getAnalytics } from '../api/analytics'
 import { formatPnl, formatDateEn, calcGiveback } from '../utils/format'
 import { useToast } from '../contexts/ToastContext'
 import TradeCard from '../components/TradeCard'
@@ -29,6 +30,7 @@ export default function DailyPage() {
   const [error, setError] = useState(null)
   const [selectedTrade, setSelectedTrade] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [coachingData, setCoachingData] = useState({ analytics: null, monthTrades: [] })
 
   useEffect(() => {
     if (!date) return
@@ -44,6 +46,24 @@ export default function DailyPage() {
       .finally(() => setLoading(false))
   }, [date])
 
+  // 코칭용 월별 데이터 로드 (진입 전 코칭에 필요)
+  useEffect(() => {
+    if (!date) return
+    const [y, m] = date.split('-').map(Number)
+    Promise.all([getAnalytics(y, m, null), getTradesByMonth(y, m)])
+      .then(([a, t]) => setCoachingData({ analytics: a, monthTrades: t }))
+      .catch(() => {})
+  }, [date])
+
+  // 거래 수정/추가/삭제 후 코칭 데이터 즉시 재조회
+  const refreshCoachingData = () => {
+    if (!date) return
+    const [y, m] = date.split('-').map(Number)
+    Promise.all([getAnalytics(y, m, null), getTradesByMonth(y, m)])
+      .then(([a, t]) => setCoachingData({ analytics: a, monthTrades: t }))
+      .catch(() => {})
+  }
+
   const dailyPnl = trades.reduce((sum, t) => sum + Number(t.pnl || 0), 0)
   const wins = trades.filter((t) => t.pnl > 0).length
   const losses = trades.filter((t) => t.pnl < 0).length
@@ -58,6 +78,7 @@ export default function DailyPage() {
         prev.map((t) => (t.id === updated.id ? updated : t))
       )
       setSelectedTrade(updated)
+      refreshCoachingData()
     } catch (err) {
       const detail = err?.response?.data?.detail
       const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
@@ -71,6 +92,7 @@ export default function DailyPage() {
       await deleteTrade(selectedTrade.id)
       setTrades((prev) => prev.filter((t) => t.id !== selectedTrade.id))
       setSelectedTrade(null)
+      refreshCoachingData()
     } catch (err) {
       const detail = err?.response?.data?.detail
       const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
@@ -83,6 +105,7 @@ export default function DailyPage() {
       const created = await createTrade({ ...payload, date })
       setTrades((prev) => [...prev, created])
       setShowAddModal(false)
+      refreshCoachingData()
     } catch (err) {
       const detail = err?.response?.data?.detail
       const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : null)
@@ -183,6 +206,8 @@ export default function DailyPage() {
           dateLocked
           onCreated={handleAddTrade}
           onClose={() => setShowAddModal(false)}
+          analytics={coachingData.analytics}
+          trades={coachingData.monthTrades}
         />
       )}
     </div>

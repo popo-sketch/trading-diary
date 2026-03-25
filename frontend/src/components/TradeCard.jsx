@@ -96,6 +96,20 @@ export default function TradeCard({ trade, onClick }) {
                   {trade.trade_type}
                 </span>
               )}
+              {trade.is_mine && (
+                <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">
+                  💣 지뢰
+                </span>
+              )}
+              {trade.trade_style && (
+                <span className={`px-2 py-0.5 rounded ${
+                  trade.trade_style === '계획매매'
+                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                    : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                }`}>
+                  {trade.trade_style === '계획매매' ? '📋' : '🧠'} {trade.trade_style}
+                </span>
+              )}
             </div>
           )}
           {trade.avg_entry_mc != null && (

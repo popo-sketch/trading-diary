@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { formatPnl, formatDollarKMB, parseDollarInput, formatDollarInput } from '../utils/format'
 import { useToast } from '../contexts/ToastContext'
 
-const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'Elon', 'CZ', 'HeYi', 'Trump', 'ETC']
+const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'Elon', 'CZ', 'HeYi', 'Trump', 'Binance', 'ETC']
 
 export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   const { showToast } = useToast()
@@ -11,6 +11,8 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
   const [returnPercent, setReturnPercent] = useState('')
   const [tradeType, setTradeType] = useState('')
   const [avgEntryMc, setAvgEntryMc] = useState('')
+  const [isMine, setIsMine] = useState(false)
+  const [tradeStyle, setTradeStyle] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -21,6 +23,8 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
       const ret = trade.return_percent != null ? Number(trade.return_percent) : ''
       setReturnPercent(Number.isFinite(ret) ? String(ret) : '')
       setTradeType(trade.trade_type ?? '')
+      setIsMine(!!trade.is_mine)
+      setTradeStyle(trade.trade_style ?? '')
       const mc = trade.avg_entry_mc
       setAvgEntryMc(mc != null && Number.isFinite(mc) ? formatDollarInput(mc) : '')
     }
@@ -82,6 +86,8 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
         return_percent: normalizedReturn,
         trade_type: tradeType || null,
         avg_entry_mc: avgEntryMcNum ?? null,
+        is_mine: isMine,
+        trade_style: tradeStyle || null,
       })
       showToast('Saved!')
       onClose()
@@ -211,6 +217,36 @@ export default function TradeMemoModal({ trade, onSave, onDelete, onClose }) {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* 지뢰플레이 + 매매스타일 */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">지뢰플레이</label>
+            <button
+              type="button"
+              onClick={() => setIsMine(!isMine)}
+              className={`w-full px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                isMine
+                  ? 'bg-red-500/20 border-red-500/50 text-red-400'
+                  : 'bg-[#0f0f0f] border-[#2a2a2a] text-[#6B7280]'
+              }`}
+            >
+              {isMine ? '💣 지뢰 ON' : '지뢰 OFF'}
+            </button>
+          </div>
+          <div>
+            <label className="block text-sm text-[#a0a0a0] mb-2">매매 스타일</label>
+            <select
+              value={tradeStyle}
+              onChange={(e) => setTradeStyle(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-[#0f0f0f] border border-[#2a2a2a] text-white focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="">— 선택 —</option>
+              <option value="계획매매">📋 계획매매</option>
+              <option value="뇌동매매">🧠 뇌동매매</option>
+            </select>
+          </div>
         </div>
 
         <div className="mb-4">
