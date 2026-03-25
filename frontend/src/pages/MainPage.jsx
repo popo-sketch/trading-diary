@@ -23,7 +23,7 @@ function HeaderTooltip({ text, children }) {
     >
       {children}
       {show && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[10px] bg-dark-card border border-white/[0.06] text-[#e0e0e0] whitespace-nowrap z-50 shadow-lg">
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[13px] bg-dark-card border border-white/[0.06] text-[#e0e0e0] whitespace-nowrap z-50 shadow-lg">
           {text}
         </span>
       )}
@@ -178,24 +178,24 @@ export default function MainPage() {
           <div className="flex items-center gap-4 flex-1 justify-center">
             {stats && (
               <>
-                <div className="text-[13px]">
-                  <span className="text-[#9e9e9e] text-[12px]">Total PNL </span>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: stats.total_pnl >= 0 ? '#00c853' : '#ff1744' }}>
+                <div className="text-[15px]">
+                  <span className="text-[#9e9e9e] text-[14px]">Total PNL </span>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: stats.total_pnl >= 0 ? '#00c853' : '#ff1744' }}>
                     {formatPnl(stats.total_pnl)}
                   </span>
                 </div>
                 <HeaderDivider />
-                <div className="text-[13px]">
-                  <span className="text-[#9e9e9e] text-[12px]">Win Rate </span>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#ffffff' }}>
+                <div className="text-[15px]">
+                  <span className="text-[#9e9e9e] text-[14px]">Win Rate </span>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: '#ffffff' }}>
                     {(stats.win_rate * 100).toFixed(1)}%
                   </span>
                 </div>
                 <HeaderDivider />
-                <div className="text-[13px]">
-                  <span className="text-[#9e9e9e] text-[12px]">Trades </span>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#ffffff' }}>{stats.total_trades}</span>
-                  <span className="text-[#9e9e9e] text-[12px] ml-1">
+                <div className="text-[15px]">
+                  <span className="text-[#9e9e9e] text-[14px]">Trades </span>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: '#ffffff' }}>{stats.total_trades}</span>
+                  <span className="text-[#9e9e9e] text-[14px] ml-1">
                     ({stats.wins}W / {stats.losses}L)
                   </span>
                 </div>
@@ -207,7 +207,7 @@ export default function MainPage() {
                 <HeaderDivider />
                 {bestTrade && (
                   <HeaderTooltip text={`${bestTrade.ticker} ${formatPnl(bestTrade.pnl)}`}>
-                    <div className="text-[12px]">
+                    <div className="text-[14px]">
                       <span className="text-[#9e9e9e]">Best </span>
                       <span className="text-profit font-bold max-w-[120px] inline-block truncate align-bottom">
                         {bestTrade.ticker} {formatPnl(bestTrade.pnl)}
@@ -217,7 +217,7 @@ export default function MainPage() {
                 )}
                 {worstTrade && (
                   <HeaderTooltip text={`${worstTrade.ticker} ${formatPnl(worstTrade.pnl)}`}>
-                    <div className="text-[12px]">
+                    <div className="text-[14px]">
                       <span className="text-[#9e9e9e]">Worst </span>
                       <span className="text-loss font-bold max-w-[120px] inline-block truncate align-bottom">
                         {worstTrade.ticker} {formatPnl(worstTrade.pnl)}
@@ -233,7 +233,7 @@ export default function MainPage() {
             <select
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="bg-dark-hover border border-white/[0.06] rounded-lg px-3 py-2 text-[#e0e0e0] text-[13px] focus:outline-none focus:ring-2 focus:ring-info"
+              className="bg-dark-hover border border-white/[0.06] rounded-lg px-3 py-2 text-[#e0e0e0] text-[15px] focus:outline-none focus:ring-2 focus:ring-info"
             >
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
@@ -253,7 +253,7 @@ export default function MainPage() {
         </NavHeader>
 
         {error && (
-          <div className="p-3 rounded-xl bg-loss/20 text-loss border border-loss/50 text-[13px]">
+          <div className="p-3 rounded-xl bg-loss/20 text-loss border border-loss/50 text-[15px]">
             {error}
           </div>
         )}
@@ -286,9 +286,9 @@ export default function MainPage() {
           </div>
 
           {/* 트레이딩 규칙 */}
-          <div style={{ width: 280, flexShrink: 0 }}>
+          <div style={{ width: 320, flexShrink: 0 }}>
             <div className="bg-dark-card rounded-xl border border-white/[0.06] h-full" style={{ padding: 20 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e0e0e0', marginBottom: 16 }}>Trading Rules</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 600, color: '#e0e0e0', marginBottom: 16 }}>Trading Rules</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {[
                   { num: '1', title: '좋은 판에만 앉는다', desc: '모든 급등이 나의 게임은 아니다.' },
@@ -299,10 +299,10 @@ export default function MainPage() {
                 ].map((rule) => (
                     <div key={rule.num}>
                       <div className="flex items-start gap-2">
-                        <span style={{ fontSize: 12, fontWeight: 700, color: '#9e9e9e', marginTop: 1 }}>{rule.num}.</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: '#9e9e9e', marginTop: 1 }}>{rule.num}.</span>
                         <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e0', margin: 0, lineHeight: 1.4 }}>{rule.title}</p>
-                          <p style={{ fontSize: 12, color: '#9e9e9e', margin: '4px 0 0 0', lineHeight: 1.5 }}>{rule.desc}</p>
+                          <p style={{ fontSize: 16, fontWeight: 600, color: '#e0e0e0', margin: 0, lineHeight: 1.8 }}>{rule.title}</p>
+                          <p style={{ fontSize: 14, color: '#9e9e9e', margin: '4px 0 0 0', lineHeight: 1.8 }}>{rule.desc}</p>
                         </div>
                       </div>
                     </div>

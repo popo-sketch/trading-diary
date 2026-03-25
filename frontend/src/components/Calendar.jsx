@@ -61,10 +61,10 @@ export default function Calendar({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: '#e0e0e0', margin: 0 }}>{formatMonthKst(year, month)}</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 600, color: '#e0e0e0', margin: 0, lineHeight: 1.8 }}>{formatMonthKst(year, month)}</h2>
         <Link
           to={`/leaderboard?year=${year}&month=${month}`}
-          style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e0', padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', background: '#242442', transition: 'background 0.2s' }}
+          style={{ fontSize: 15, fontWeight: 600, color: '#e0e0e0', padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', background: '#242442', transition: 'background 0.2s', lineHeight: 1.8 }}
           onMouseEnter={(e) => e.currentTarget.style.background = '#2e2e4a'}
           onMouseLeave={(e) => e.currentTarget.style.background = '#242442'}
         >
@@ -74,7 +74,7 @@ export default function Calendar({
 
       <div className="grid grid-cols-7 gap-1">
         {WEEKDAYS.map((w) => (
-          <div key={w} style={{ textAlign: 'center', fontSize: 12, color: '#9e9e9e', padding: '8px 0', fontWeight: 500 }}>
+          <div key={w} style={{ textAlign: 'center', fontSize: 15, color: '#9e9e9e', padding: '8px 0', fontWeight: 500, lineHeight: 1.8 }}>
             {w}
           </div>
         ))}
@@ -83,7 +83,7 @@ export default function Calendar({
             key={i}
             onClick={() => !cell.empty && handleDateClick(cell.date)}
             style={{
-              minHeight: 80, padding: 8, borderRadius: 8,
+              minHeight: 90, padding: 10, borderRadius: 8,
               border: cell.empty ? 'none' : '1px solid rgba(255,255,255,0.06)',
               background: cell.empty ? 'transparent' : '#1a1a2e',
               cursor: cell.empty ? 'default' : 'pointer',
@@ -98,9 +98,9 @@ export default function Calendar({
           >
             {!cell.empty && (
               <>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e0' }}>{cell.day}</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: '#e0e0e0', lineHeight: 1.8 }}>{cell.day}</div>
                 <div style={{
-                  fontSize: 12, marginTop: 4, fontWeight: 600,
+                  fontSize: 14, marginTop: 4, fontWeight: 600, lineHeight: 1.8,
                   color: cell.pnl != null
                     ? cell.pnl > 0 ? '#00c853' : cell.pnl < 0 ? '#ff1744' : '#9e9e9e'
                     : '#9e9e9e',
@@ -109,19 +109,19 @@ export default function Calendar({
                   {cell.pnl != null ? formatPnl(cell.pnl) : '—'}
                 </div>
                 {cell.tradeCount > 0 && (
-                  <div style={{ fontSize: 10, marginTop: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                  <div style={{ fontSize: 14, marginTop: 2, display: 'flex', flexWrap: 'wrap', gap: 2, lineHeight: 1.8 }}>
                     {cell.trades.slice(0, 5).map((trade, idx) => {
                       const pnl = Number(trade.pnl || 0)
                       return <span key={idx} style={{ color: pnl > 0 ? '#00c853' : pnl < 0 ? '#ff1744' : '#9e9e9e' }}>●</span>
                     })}
                     {cell.tradeCount > 5 && (
-                      <span style={{ color: '#9e9e9e' }}>+{cell.tradeCount}</span>
+                      <span style={{ color: '#9e9e9e', fontSize: 14 }}>+{cell.tradeCount}</span>
                     )}
                   </div>
                 )}
                 {cell.giveback && (
                   <div style={{
-                    fontSize: 10, marginTop: 4, fontWeight: 600,
+                    fontSize: 14, marginTop: 4, fontWeight: 600, lineHeight: 1.8,
                     color: cell.giveback.givebackRate >= 50 ? '#ff1744' : cell.giveback.givebackRate >= 20 ? '#ffc107' : '#9e9e9e',
                   }}>
                     ↓{cell.giveback.givebackRate.toFixed(0)}% 반납

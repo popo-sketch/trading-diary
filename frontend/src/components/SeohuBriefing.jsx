@@ -71,7 +71,7 @@ function InfoTooltip({ text }) {
       onMouseEnter={handleEnter}
       onMouseLeave={() => setShow(false)}
     >
-      <span style={{ fontSize: 12, opacity: 0.5, marginLeft: 3 }}>ℹ️</span>
+      <span style={{ fontSize: 14, opacity: 0.5, marginLeft: 3 }}>ℹ️</span>
       {show && (
         <div style={{
           position: 'fixed',
@@ -84,7 +84,7 @@ function InfoTooltip({ text }) {
           borderRadius: 8,
           padding: '12px 16px',
           fontSize: 13,
-          lineHeight: 1.6,
+          lineHeight: 1.8,
           maxWidth: 280,
           boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
           fontFamily: "'Noto Sans KR', sans-serif",
@@ -133,23 +133,23 @@ function MetricCard({ label, value, color, icon, gauge, dangerBlink, subLabel, t
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
         <span style={{ fontSize: 14 }}>{icon}</span>
         <span style={{
-          fontSize: 9, fontWeight: 600, color: '#6b7280',
+          fontSize: 14, fontWeight: 600, color: '#6b7280',
           textTransform: 'uppercase', letterSpacing: '0.08em',
           fontFamily: 'Inter, monospace',
         }}>{label}</span>
         {tooltip && <InfoTooltip text={tooltip} />}
         {dangerBlink && (
-          <span className="seohu-blink" style={{ fontSize: 10, color: '#ff1744' }}>⚠</span>
+          <span className="seohu-blink" style={{ fontSize: 14, color: '#ff1744' }}>⚠</span>
         )}
       </div>
       <div style={{
-        fontSize: 16, fontWeight: 800, color,
+        fontSize: 22, fontWeight: 800, color,
         fontFamily: 'Inter, monospace',
       }}>
         {value}
       </div>
       {subLabel && (
-        <div style={{ fontSize: 9, color: '#4b5563', marginTop: 2, fontFamily: 'Inter, monospace' }}>
+        <div style={{ fontSize: 14, color: '#4b5563', marginTop: 2, fontFamily: 'Inter, monospace' }}>
           {subLabel}
         </div>
       )}
@@ -180,7 +180,7 @@ function AccordionSection({ title, severity, summaryLine, children, defaultOpen 
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
           <span style={{
-            fontSize: 9, fontWeight: 700, color: sevColor,
+            fontSize: 14, fontWeight: 700, color: sevColor,
             fontFamily: 'Inter, monospace', textTransform: 'uppercase',
             letterSpacing: '0.1em', flexShrink: 0,
           }}>
@@ -188,7 +188,7 @@ function AccordionSection({ title, severity, summaryLine, children, defaultOpen 
           </span>
           {!open && summaryLine && (
             <span style={{
-              fontSize: 10, color: '#6b7280', fontFamily: 'Inter, monospace',
+              fontSize: 14, color: '#6b7280', fontFamily: 'Inter, monospace',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               marginLeft: 4,
             }}>
@@ -196,11 +196,11 @@ function AccordionSection({ title, severity, summaryLine, children, defaultOpen 
             </span>
           )}
         </div>
-        <span style={{ fontSize: 10, color: '#4a4a5a', flexShrink: 0, marginLeft: 8 }}>{open ? '▲' : '▼'}</span>
+        <span style={{ fontSize: 14, color: '#4a4a5a', flexShrink: 0, marginLeft: 8 }}>{open ? '▲' : '▼'}</span>
       </div>
       {open && (
         <div style={{
-          padding: '0 12px 10px', fontSize: 12, lineHeight: 1.6,
+          padding: '0 12px 10px', fontSize: 16, lineHeight: 1.8,
         }}>
           {children}
         </div>
@@ -231,10 +231,10 @@ function highlightKeywords(text) {
       return (
         <span key={i} style={{
           background: chip.background, color: chip.color, border: chip.border,
-          borderRadius: 4, padding: '0px 5px', fontSize: 10, fontWeight: 600,
+          borderRadius: 4, padding: '0px 5px', fontSize: 14, fontWeight: 600,
           display: 'inline-flex', alignItems: 'center', gap: 2,
         }}>
-          <span style={{ fontSize: 10 }}>{chip.emoji}</span>{part}
+          <span style={{ fontSize: 14 }}>{chip.emoji}</span>{part}
         </span>
       )
     }
@@ -271,7 +271,7 @@ function CategoryCard({ cat }) {
           background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: 8, padding: '8px 12px',
           zIndex: 50, boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-          fontSize: 11, color: '#9ca3af', maxWidth: 240, lineHeight: 1.5,
+          fontSize: 14, color: '#9ca3af', maxWidth: 240, lineHeight: 1.8,
           fontFamily: "'Noto Sans KR', sans-serif",
           whiteSpace: 'normal',
         }}>
@@ -310,14 +310,14 @@ function CategoryCard({ cat }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontSize: 13, fontWeight: 700, color: '#e8e8e8',
+            fontSize: 17, fontWeight: 700, color: '#e8e8e8',
             fontFamily: 'Inter, monospace',
           }}>
             {cat.trade_type}
           </div>
           <span style={{
             display: 'inline-block', marginTop: 2,
-            fontSize: 9, fontWeight: 700, padding: '2px 8px',
+            fontSize: 14, fontWeight: 700, padding: '2px 8px',
             borderRadius: 4, color: pm.color, background: pm.bg,
             fontFamily: 'Inter, monospace',
           }}>
@@ -328,8 +328,8 @@ function CategoryCard({ cat }) {
 
       {/* 조건 텍스트 */}
       <div style={{
-        fontSize: 10, color: '#6b7280', lineHeight: 1.4, marginBottom: 6,
-        fontFamily: "'Noto Sans KR', sans-serif",
+        fontSize: 14, color: '#6b7280', lineHeight: 1.8, marginBottom: 6,
+        fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
       }}>
         {cat.conditionText}
       </div>
@@ -341,9 +341,9 @@ function CategoryCard({ cat }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           marginBottom: 4,
         }}>
-          <span style={{ fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace', display: 'flex', alignItems: 'center' }}>PF<InfoTooltip text={"이 카테고리에서의 수익비.\n총 수익 ÷ 총 손실.\n1.0 이상이면 번 게 잃은 것보다 많음."} /></span>
+          <span style={{ fontSize: 14, color: '#6b7280', fontFamily: 'Inter, monospace', display: 'flex', alignItems: 'center' }}>PF<InfoTooltip text={"이 카테고리에서의 수익비.\n총 수익 ÷ 총 손실.\n1.0 이상이면 번 게 잃은 것보다 많음."} /></span>
           <span style={{
-            fontSize: 12, fontWeight: 800,
+            fontSize: 16, fontWeight: 800,
             color: cat.profitFactor >= 2.0 ? '#00c853' : cat.profitFactor >= 1.5 ? '#42a5f5' : cat.profitFactor >= 1.0 ? '#ffc107' : '#ff1744',
             fontFamily: 'Inter, monospace',
           }}>
@@ -371,9 +371,9 @@ function CategoryCard({ cat }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           marginBottom: 4,
         }}>
-          <span style={{ fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace', display: 'flex', alignItems: 'center' }}>EV<InfoTooltip text={"이 카테고리의 기대값.\n한 건당 평균 수익률.\n양수면 이 카테고리에서 평균적으로 수익."} /></span>
+          <span style={{ fontSize: 14, color: '#6b7280', fontFamily: 'Inter, monospace', display: 'flex', alignItems: 'center' }}>EV<InfoTooltip text={"이 카테고리의 기대값.\n한 건당 평균 수익률.\n양수면 이 카테고리에서 평균적으로 수익."} /></span>
           <span style={{
-            fontSize: 11, fontWeight: 700,
+            fontSize: 16, fontWeight: 800,
             color: cat.ev_percent >= 0 ? '#00c853' : '#ff1744',
             fontFamily: 'Inter, monospace',
           }}>
@@ -397,8 +397,8 @@ function CategoryCard({ cat }) {
       {/* 데이터 부족 표시 */}
       {cat.insufficientData && (
         <div style={{
-          marginTop: 6, fontSize: 9, color: '#6b7280', fontStyle: 'italic',
-          fontFamily: "'Noto Sans KR', sans-serif",
+          marginTop: 6, fontSize: 14, color: '#6b7280', fontStyle: 'italic',
+          fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
         }}>
           ※ {cat.trades}건 — 데이터 부족
         </div>
@@ -424,38 +424,38 @@ function TradeQualityCards({ tradeQuality }) {
         padding: '12px 14px',
       }}>
         <div style={{
-          fontSize: 11, fontWeight: 700, color: borderColor,
+          fontSize: 14, fontWeight: 700, color: borderColor,
           fontFamily: 'Inter, monospace', marginBottom: 8,
         }}>{label}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
           <div>
-            <div style={{ fontSize: 9, color: '#6b7280' }}>건수</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace' }}>
+            <div style={{ fontSize: 14, color: '#6b7280' }}>건수</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace' }}>
               {stats.count}건
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 9, color: '#6b7280' }}>승률</div>
+            <div style={{ fontSize: 14, color: '#6b7280' }}>승률</div>
             <div style={{
-              fontSize: 16, fontWeight: 800, fontFamily: 'Inter, monospace',
+              fontSize: 18, fontWeight: 800, fontFamily: 'Inter, monospace',
               color: stats.winRate >= 0.5 ? '#00c853' : stats.count > 0 ? '#ff1744' : '#6b7280',
             }}>
               {stats.count > 0 ? `${(stats.winRate * 100).toFixed(0)}%` : '—'}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 9, color: '#6b7280' }}>총 손익</div>
+            <div style={{ fontSize: 14, color: '#6b7280' }}>총 손익</div>
             <div style={{
-              fontSize: 13, fontWeight: 700, fontFamily: 'Inter, monospace',
+              fontSize: 16, fontWeight: 700, fontFamily: 'Inter, monospace',
               color: stats.totalPnl >= 0 ? '#00c853' : '#ff1744',
             }}>
               {stats.count > 0 ? formatPnl(stats.totalPnl) : '—'}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 9, color: '#6b7280' }}>평균 손익</div>
+            <div style={{ fontSize: 14, color: '#6b7280' }}>평균 손익</div>
             <div style={{
-              fontSize: 13, fontWeight: 700, fontFamily: 'Inter, monospace',
+              fontSize: 16, fontWeight: 700, fontFamily: 'Inter, monospace',
               color: stats.avgPnl >= 0 ? '#00c853' : '#ff1744',
             }}>
               {stats.count > 0 ? formatPnl(stats.avgPnl) : '—'}
@@ -479,9 +479,9 @@ function TradeQualityCards({ tradeQuality }) {
           border: '1px solid rgba(255,193,7,0.2)',
         }}>
           <p style={{
-            margin: 0, fontSize: 13, lineHeight: 1.7,
+            margin: 0, fontSize: 16, lineHeight: 1.8,
             color: '#fbbf24', fontWeight: 700,
-            fontFamily: "'Noto Sans KR', sans-serif",
+            fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
           }}>
             💡 {insight.split(/(손실.*?원)/).map((part, i) =>
               /^손실/.test(part)
@@ -506,8 +506,8 @@ function MinePlayContent({ mine }) {
           flex: 1, padding: '8px 10px', borderRadius: 8,
           background: 'rgba(59,130,246,0.06)',
         }}>
-          <div style={{ fontSize: 9, color: '#6b7280', marginBottom: 2 }}>총 투입</div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#60a5fa', fontFamily: 'Inter, monospace' }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 2 }}>총 투입</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: '#60a5fa', fontFamily: 'Inter, monospace' }}>
             ${Math.round(mine.totalInvested).toLocaleString()}
           </div>
         </div>
@@ -515,8 +515,8 @@ function MinePlayContent({ mine }) {
           flex: 1, padding: '8px 10px', borderRadius: 8,
           background: 'rgba(59,130,246,0.06)',
         }}>
-          <div style={{ fontSize: 9, color: '#6b7280', marginBottom: 2 }}>총 회수</div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#60a5fa', fontFamily: 'Inter, monospace' }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 2 }}>총 회수</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: '#60a5fa', fontFamily: 'Inter, monospace' }}>
             ${Math.round(mine.totalRecovered).toLocaleString()}
           </div>
         </div>
@@ -524,9 +524,9 @@ function MinePlayContent({ mine }) {
           flex: 1, padding: '8px 10px', borderRadius: 8,
           background: mine.netPnl >= 0 ? 'rgba(0,200,83,0.06)' : 'rgba(255,255,255,0.03)',
         }}>
-          <div style={{ fontSize: 9, color: '#6b7280', marginBottom: 2 }}>순손익</div>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 2 }}>순손익</div>
           <div style={{
-            fontSize: 15, fontWeight: 800, fontFamily: 'Inter, monospace',
+            fontSize: 18, fontWeight: 800, fontFamily: 'Inter, monospace',
             color: mine.netPnl >= 0 ? '#00c853' : '#ff1744',
           }}>
             {mine.netPnl >= 0 ? '+' : ''}${Math.round(mine.netPnl).toLocaleString()}
@@ -536,7 +536,7 @@ function MinePlayContent({ mine }) {
 
       {/* 건수 정보 */}
       <div style={{
-        display: 'flex', gap: 12, fontSize: 11, color: '#6b7280',
+        display: 'flex', gap: 12, fontSize: 14, color: '#6b7280',
         fontFamily: 'Inter, monospace', marginBottom: 8,
       }}>
         <span>전체 {mine.mineCount}건</span>
@@ -547,17 +547,17 @@ function MinePlayContent({ mine }) {
 
       {/* 인사이트 */}
       <p style={{
-        margin: 0, fontSize: 12, lineHeight: 1.6,
+        margin: 0, fontSize: 16, lineHeight: 1.8,
         color: '#9ca3af',
-        fontFamily: "'Noto Sans KR', sans-serif",
+        fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
       }}>
         {highlightKeywords(mine.detail)}
       </p>
 
       {/* 하단 톤 메시지 */}
       <p style={{
-        margin: '6px 0 0', fontSize: 11, color: '#4b5563', fontStyle: 'italic',
-        fontFamily: "'Noto Sans KR', sans-serif",
+        margin: '6px 0 0', fontSize: 16, color: '#4b5563', fontStyle: 'italic',
+        fontFamily: "'Noto Sans KR', sans-serif", lineHeight: 1.8, letterSpacing: '0.3px',
       }}>
         지뢰는 원래 많이 잃고 한 번에 크게 먹는 전략. 사이즈 관리만 잘하면 OK.
       </p>
@@ -618,11 +618,11 @@ export default function SeohuBriefing({ analytics, trades, error }) {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <span style={{
-            fontSize: 12, fontWeight: 800, color: '#7a7a8a',
+            fontSize: 14, fontWeight: 800, color: '#7a7a8a',
             letterSpacing: '0.12em', fontFamily: 'Inter, monospace',
           }}>◈ 이서후</span>
           <span style={{
-            fontSize: 10, fontWeight: 800,
+            fontSize: 14, fontWeight: 800,
             color: pm.color, background: pm.bg,
             border: `1px solid ${pm.color}30`,
             borderRadius: 5, padding: '2px 8px',
@@ -634,8 +634,8 @@ export default function SeohuBriefing({ analytics, trades, error }) {
 
         <p style={{
           flex: 1, margin: 0,
-          fontSize: 14, fontWeight: 700, color: pm.color,
-          fontFamily: "'Noto Sans KR', sans-serif",
+          fontSize: 18, fontWeight: 700, color: pm.color,
+          fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {briefing.oneLiner}
@@ -651,11 +651,11 @@ export default function SeohuBriefing({ analytics, trades, error }) {
               border: `1px solid ${sitEvHighlight ? '#00c85340' : evVal >= 0 ? '#10B98140' : '#EF444440'}`,
             }}>
               <span style={{
-                fontSize: 10, fontWeight: 700, color: '#6b7280',
+                fontSize: 14, fontWeight: 700, color: '#6b7280',
                 fontFamily: 'Inter, monospace',
               }}>EV </span>
               <span style={{
-                fontSize: 13, fontWeight: 800,
+                fontSize: 14, fontWeight: 800,
                 color: evVal >= 0 ? '#00c853' : '#ff1744',
                 fontFamily: 'Inter, monospace',
               }}>{evStr}</span>
@@ -670,17 +670,17 @@ export default function SeohuBriefing({ analytics, trades, error }) {
               border: `1px solid ${sitDdHighlight ? '#ff174440' : ddVal > 0.15 ? '#EF444440' : 'rgba(255,255,255,0.08)'}`,
             }}>
               <span style={{
-                fontSize: 10, fontWeight: 700, color: '#6b7280',
+                fontSize: 14, fontWeight: 700, color: '#6b7280',
                 fontFamily: 'Inter, monospace',
               }}>DD </span>
               <span style={{
-                fontSize: 13, fontWeight: 800,
+                fontSize: 14, fontWeight: 800,
                 color: ddVal > 0.15 ? '#ff1744' : ddVal > 0.05 ? '#ffc107' : '#a0a0a0',
                 fontFamily: 'Inter, monospace',
               }}>{ddStr}</span>
             </div>
           )}
-          <span style={{ fontSize: 11, color: '#4a4a5a' }}>{expanded ? '▲' : '▼'}</span>
+          <span style={{ fontSize: 14, color: '#4a4a5a' }}>{expanded ? '▲' : '▼'}</span>
         </div>
       </div>
 
@@ -695,9 +695,9 @@ export default function SeohuBriefing({ analytics, trades, error }) {
           borderBottom: '1px solid rgba(255,255,255,0.04)',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
-          <span style={{ fontSize: 13, flexShrink: 0 }}>🐾</span>
+          <span style={{ fontSize: 16, flexShrink: 0 }}>🐾</span>
           <p style={{
-            margin: 0, fontSize: 12, lineHeight: 1.6,
+            margin: 0, fontSize: 16, lineHeight: 1.8, letterSpacing: '0.3px',
             color: briefing.situation === 'E' ? '#ff6d6dcc'
                  : briefing.situation === 'D' ? '#fbbf24cc'
                  : briefing.situation === 'A' ? '#69f0aecc'
@@ -774,7 +774,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                 borderRadius: 10, padding: '12px 14px',
               }}>
                 <div style={{
-                  fontSize: 9, fontWeight: 700, color: '#4a4a5a',
+                  fontSize: 14, fontWeight: 700, color: '#4a4a5a',
                   textTransform: 'uppercase', letterSpacing: '0.12em',
                   fontFamily: 'Inter, monospace', marginBottom: 8,
                 }}>이서후 판단</div>
@@ -784,8 +784,8 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                       <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                         <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
                         <p style={{
-                          fontSize: 13, lineHeight: 1.8, color: '#d0d0d0', margin: 0,
-                          fontFamily: "'Noto Sans KR', sans-serif",
+                          fontSize: 16, lineHeight: 2.0, color: '#d0d0d0', margin: 0,
+                          fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
                         }}>
                           {highlightKeywords(item.text)}
                         </p>
@@ -793,8 +793,8 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                     ))
                   ) : (
                     <p style={{
-                      fontSize: 13, lineHeight: 1.7, color: '#d0d0d0', margin: 0,
-                      fontFamily: "'Noto Sans KR', sans-serif",
+                      fontSize: 16, lineHeight: 2.0, color: '#d0d0d0', margin: 0,
+                      fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
                     }}>
                       {highlightKeywords(briefing.judgment)}
                     </p>
@@ -812,13 +812,13 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                   borderRadius: 10, padding: '10px 14px',
                 }}>
                   <div style={{
-                    fontSize: 9, fontWeight: 700, color: highlightPlay ? '#fbbf24' : '#00c853',
+                    fontSize: 14, fontWeight: 700, color: highlightPlay ? '#fbbf24' : '#00c853',
                     textTransform: 'uppercase', letterSpacing: '0.1em',
                     fontFamily: 'Inter, monospace', marginBottom: 6,
                   }}>✅ 지금 해야 할 플레이</div>
                   <p style={{
-                    fontSize: 12, lineHeight: 1.6, color: '#9ca3af', margin: 0,
-                    fontFamily: "'Noto Sans KR', sans-serif",
+                    fontSize: 16, lineHeight: 1.8, color: '#9ca3af', margin: 0,
+                    fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
                   }}>{briefing.playNow}</p>
                 </div>
                 <div style={{
@@ -829,13 +829,13 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                   borderRadius: 10, padding: '10px 14px',
                 }}>
                   <div style={{
-                    fontSize: 9, fontWeight: 700, color: '#ff1744',
+                    fontSize: 14, fontWeight: 700, color: '#ff1744',
                     textTransform: 'uppercase', letterSpacing: '0.1em',
                     fontFamily: 'Inter, monospace', marginBottom: 6,
                   }}>🚫 금지 행동</div>
                   <p style={{
-                    fontSize: 12, lineHeight: 1.6, color: '#f87171aa', margin: 0,
-                    fontFamily: "'Noto Sans KR', sans-serif",
+                    fontSize: 16, lineHeight: 1.8, color: '#f87171aa', margin: 0,
+                    fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
                   }}>{briefing.forbidden}</p>
                 </div>
               </div>
@@ -847,13 +847,13 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                 borderRadius: 10, padding: '10px 12px',
               }}>
                 <div style={{
-                  fontSize: 9, fontWeight: 700, color: '#4a4a5a',
+                  fontSize: 14, fontWeight: 700, color: '#4a4a5a',
                   textTransform: 'uppercase', letterSpacing: '0.12em',
                   fontFamily: 'Inter, monospace', marginBottom: 6,
                 }}>사이즈 전략</div>
                 <p style={{
-                  fontSize: 12, lineHeight: 1.6, color: '#9ca3af', margin: 0,
-                  fontFamily: "'Noto Sans KR', sans-serif",
+                  fontSize: 16, lineHeight: 1.8, color: '#9ca3af', margin: 0,
+                  fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
                 }}>{briefing.sizeStrategy}</p>
               </div>
 
@@ -893,17 +893,17 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{
-                        fontSize: 13, fontWeight: 700,
+                        fontSize: 16, fontWeight: 700,
                         color: briefing.recentFlow.type === 'hot_streak' ? '#00c853' :
                                briefing.recentFlow.type === 'cold_streak' ? '#ff1744' :
                                briefing.recentFlow.type === 'winning' ? '#10B981aa' :
                                briefing.recentFlow.type === 'losing' ? '#EF4444aa' : '#6b7280',
-                        fontFamily: "'Noto Sans KR', sans-serif",
+                        fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
                       }}>
                         {briefing.recentFlow.detail}
                       </span>
                       <span style={{
-                        fontSize: 10, color: '#4b5563', fontFamily: 'Inter, monospace',
+                        fontSize: 14, color: '#4b5563', fontFamily: 'Inter, monospace',
                       }}>
                         최근 승률 {(briefing.recentFlow.recentWinRate * 100).toFixed(0)}%
                       </span>
@@ -914,8 +914,8 @@ export default function SeohuBriefing({ analytics, trades, error }) {
 
               {/* 목표 진행 */}
               <div style={{
-                fontSize: 11, color: '#6b7280', lineHeight: 1.5,
-                fontFamily: "'Noto Sans KR', sans-serif",
+                fontSize: 14, color: '#6b7280', lineHeight: 1.8,
+                fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
               }}>
                 {briefing.targetView}
               </div>
@@ -928,14 +928,14 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                   borderRadius: 10, padding: '10px 12px',
                 }}>
                   <div style={{
-                    fontSize: 9, fontWeight: 700, color: '#4a4a5a',
+                    fontSize: 14, fontWeight: 700, color: '#4a4a5a',
                     textTransform: 'uppercase', letterSpacing: '0.12em',
                     fontFamily: 'Inter, monospace', marginBottom: 6,
                   }}>오늘의 관망 브리핑</div>
                   <p style={{
-                    fontSize: 12, lineHeight: 1.6, color: '#9ca3af', margin: 0,
+                    fontSize: 16, lineHeight: 1.8, color: '#9ca3af', margin: 0,
                     fontStyle: 'italic',
-                    fontFamily: "'Noto Sans KR', sans-serif",
+                    fontFamily: "'Noto Sans KR', sans-serif", letterSpacing: '0.3px',
                   }}>{briefing.noTradeBriefing}</p>
                 </div>
               )}
@@ -944,13 +944,13 @@ export default function SeohuBriefing({ analytics, trades, error }) {
             {/* 우측: 카테고리 판단 (35-40%) */}
             <div style={{ flex: '0 0 36%', minWidth: 0 }}>
               <div style={{
-                fontSize: 9, fontWeight: 700, color: '#4a4a5a',
+                fontSize: 14, fontWeight: 700, color: '#4a4a5a',
                 textTransform: 'uppercase', letterSpacing: '0.12em',
                 fontFamily: 'Inter, monospace', marginBottom: 10,
               }}>카테고리 판단</div>
 
               {briefing.categories.length === 0 ? (
-                <p style={{ fontSize: 12, color: '#6b7280' }}>카테고리 데이터 없음</p>
+                <p style={{ fontSize: 14, color: '#6b7280' }}>카테고리 데이터 없음</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {briefing.categories.map(cat => (
