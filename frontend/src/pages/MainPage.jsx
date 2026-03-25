@@ -7,14 +7,8 @@ import { formatPnl, calcGiveback } from '../utils/format'
 import NavHeader from '../components/NavHeader'
 import Calendar from '../components/Calendar'
 import TradeSidePanel from '../components/TradeSidePanel'
-import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
-import PositionSizeTableCompact from '../components/analytics/PositionSizeTableCompact'
-import TradeTypeTableCompact from '../components/analytics/TradeTypeTableCompact'
 import SeohuBriefing from '../components/SeohuBriefing'
 import JourneyRoad from '../components/JourneyRoad'
-import { computeJourneyState, getJourneyBriefing } from '../utils/journeyEngine'
-import RiskWeatherCard from '../components/RiskWeatherCard'
-import MonthlyReplay from '../components/MonthlyReplay'
 
 const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
@@ -52,13 +46,6 @@ export default function MainPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
-
-  const popoBriefing = useMemo(() => {
-    if (!allTimeAnalytics) return null
-    const journey = computeJourneyState(allTimeAnalytics)
-    const { phase, briefing } = getJourneyBriefing(journey, allTimeAnalytics)
-    return { phase, briefing }
-  }, [allTimeAnalytics])
 
   useEffect(() => {
     if (location.state?.year != null && location.state?.month != null) {
@@ -325,34 +312,6 @@ export default function MainPage() {
           </div>
         </div>
 
-        {/* 리스크 날씨 + Equity Curve */}
-        {analytics && (
-          <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
-            <div style={{ width: 280, flexShrink: 0 }}>
-              <RiskWeatherCard analytics={analytics} trades={trades} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} kellyPercent={analytics.kelly_percent} />
-            </div>
-          </div>
-        )}
-
-        {/* 포지션 사이즈 / 트레이드 타입 */}
-        {analytics && (
-          <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <PositionSizeTableCompact buckets={analytics.position_size_buckets} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <TradeTypeTableCompact stats={analytics.trade_type_stats} />
-            </div>
-          </div>
-        )}
-
-        {/* 월간 리플레이 */}
-        {analytics && (
-          <MonthlyReplay trades={trades} analytics={analytics} />
-        )}
       </div>
 
       {/* 트레이드 상세 사이드 패널 */}

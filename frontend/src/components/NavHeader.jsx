@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 
 const TABS = [
   { path: '/', label: '📊 Dashboard' },
+  { path: '/analytics', label: '📈 Analytics' },
   { path: '/ath-analysis', label: '🎯 ATH Analysis' },
 ]
 
