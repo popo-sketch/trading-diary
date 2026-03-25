@@ -93,11 +93,11 @@ export function calculateWinRate(trades) {
   for (const t of (trades ?? [])) {
     if (!Number.isFinite(t.pnl)) continue
     const cat = t.trade_type || 'unknown'
-    if (!map[cat]) map[cat] = { wins: 0, losses: 0, total: 0, totalPnl: 0 }
+    if (!map[cat]) map[cat] = { wins: 0, losses: 0, total: 0, totalPnl: 0, totalWinPnl: 0, totalLossPnl: 0 }
     map[cat].total++
     map[cat].totalPnl += t.pnl
-    if (t.pnl > 0) map[cat].wins++
-    else if (t.pnl < 0) map[cat].losses++
+    if (t.pnl > 0) { map[cat].wins++; map[cat].totalWinPnl += t.pnl }
+    else if (t.pnl < 0) { map[cat].losses++; map[cat].totalLossPnl += Math.abs(t.pnl) }
   }
   return Object.entries(map).map(([cat, s]) => ({
     trade_type: cat,
@@ -106,7 +106,50 @@ export function calculateWinRate(trades) {
     losses: s.losses,
     total: s.total,
     totalPnl: s.totalPnl,
+    totalWinPnl: s.totalWinPnl,
+    totalLossPnl: s.totalLossPnl,
+    profitFactor: s.totalLossPnl > 0 ? s.totalWinPnl / s.totalLossPnl : (s.totalWinPnl > 0 ? Infinity : 0),
+    avgWin: s.wins > 0 ? s.totalWinPnl / s.wins : 0,
+    avgLoss: s.losses > 0 ? s.totalLossPnl / s.losses : 0,
   }))
+}
+
+// ─── Profit Factor & Expectancy (전체) ──────────────────────────────────────
+
+export function calculateOverallMetrics(trades) {
+  const valid = (trades ?? []).filter(t => Number.isFinite(t.pnl))
+  const wins = valid.filter(t => t.pnl > 0)
+  const losses = valid.filter(t => t.pnl < 0)
+
+  const totalWinPnl = wins.reduce((s, t) => s + t.pnl, 0)
+  const totalLossPnl = losses.reduce((s, t) => s + Math.abs(t.pnl), 0)
+
+  const profitFactor = totalLossPnl > 0 ? totalWinPnl / totalLossPnl : (totalWinPnl > 0 ? Infinity : 0)
+
+  const winRate = valid.length > 0 ? wins.length / valid.length : 0
+  const lossRate = 1 - winRate
+  const avgWin = wins.length > 0 ? totalWinPnl / wins.length : 0
+  const avgLoss = losses.length > 0 ? totalLossPnl / losses.length : 0
+
+  // Expectancy = (WinRate × AvgWin) - (LossRate × AvgLoss)
+  const expectancy = (winRate * avgWin) - (lossRate * avgLoss)
+
+  // 평균 R/R = AvgWin / AvgLoss
+  const avgRR = avgLoss > 0 ? avgWin / avgLoss : (avgWin > 0 ? Infinity : 0)
+
+  return {
+    profitFactor,
+    expectancy,
+    avgRR,
+    winRate,
+    avgWin,
+    avgLoss,
+    totalWinPnl,
+    totalLossPnl,
+    totalTrades: valid.length,
+    wins: wins.length,
+    losses: losses.length,
+  }
 }
 
 // ─── 지뢰플레이 현황 (v4: 투입/회수 기반) ─────────────────────────────────────
@@ -357,8 +400,43 @@ export function calculatePhase({ emotion, equity, ev, totalTrades }) {
   return 'BUILD'
 }
 
-// ─── Category Grading (v4: 5단계 S/A/B/C/D) ──────────────────────────────────
+// ─── Category Grading (v5: EV + PF + 건수 종합) ──────────────────────────────
 
+/**
+ * 카테고리 등급 산정 (DEX 밈코인 맥락)
+ * - S: EV > 10 & PF > 2.0 & 건수 >= 5
+ * - A: EV > 0  & PF > 1.5 & 건수 >= 5  (또는 EV > 20 & PF > 1.0 & 건수 >= 3)
+ * - B: EV > 0  & PF > 1.0 & 건수 >= 3  (또는 PF > 1.5 & 건수 >= 3)
+ * - C: EV > -15 & PF > 0.5 & 건수 >= 3
+ * - D: 나머지
+ * - 3건 이하는 최대 B등급 (데이터 부족)
+ */
+function gradeCategory(ev, pf, count) {
+  // 데이터 부족: 3건 이하는 최대 B등급
+  if (count <= 3) {
+    if (ev > 0 && pf > 1.0) return 'B'
+    if (ev > -15) return 'C'
+    return 'D'
+  }
+
+  // S: 강한 엣지 + 높은 수익비 + 충분한 건수
+  if (ev > 10 && pf > 2.0 && count >= 5) return 'S'
+
+  // A: 양수 EV + 좋은 수익비 or 매우 높은 EV
+  if (ev > 0 && pf > 1.5 && count >= 5) return 'A'
+  if (ev > 20 && pf > 1.0 && count >= 3) return 'A'
+
+  // B: 양수 EV or 괜찮은 수익비
+  if (ev > 0 && pf > 1.0 && count >= 3) return 'B'
+  if (pf > 1.5 && count >= 3) return 'B'
+
+  // C: 약한 마이너스 EV + 일부 수익비
+  if (ev > -15 && pf > 0.5 && count >= 3) return 'C'
+
+  return 'D'
+}
+
+// 하위 호환: EV만으로 등급 산정 (ev_curve 등에서 사용)
 function gradeEv(ev) {
   if (ev > 20)  return 'S'
   if (ev > 0)   return 'A'
@@ -368,11 +446,11 @@ function gradeEv(ev) {
 }
 
 const GRADE_CONDITIONS = {
-  S: { label: '적극 허용', text: '사이즈 자유' },
-  A: { label: '허용', text: '기본 사이즈 OK' },
-  B: { label: '조건부', text: '최소 사이즈만 ($50 이하)' },
-  C: { label: '자제', text: '가급적 패스. 꼭 하려면 $30 이하' },
-  D: { label: '금지', text: 'EV 없음. 진입 이유가 없다.' },
+  S: { label: '적극 허용', text: 'PF 2.0+, 강한 엣지. 사이즈 자유.' },
+  A: { label: '허용', text: 'PF 1.5+, 좋은 엣지. 기본 사이즈 OK.' },
+  B: { label: '조건부', text: 'PF 1.0~1.5 또는 데이터 부족. 최소 사이즈만.' },
+  C: { label: '자제', text: '수익비 낮음. 가급적 패스, 꼭 하려면 $30 이하.' },
+  D: { label: '금지', text: '수익비·EV 모두 부족. 진입 이유 없음.' },
 }
 
 function categoryPermission(grade, phase) {
@@ -488,6 +566,9 @@ const MSGS_A = [
   '야 포포, 잘하고 있다. 진짜 잘하고 있어. 근데 잘하는 날에 무리하면 잘한 게 사라져. 절제.',
   '포포, 이기고 있을 때가 규칙 세울 최적 타이밍이야. 지금 규칙 안 세우면 질 때 후회해.',
   '좋아 포포. 이 타이밍에 멈출 줄 아는 놈이 결국 오래 가. 욕심 한 스푼만 덜어내.',
+  '포포, DEX에서 연승이면 수익비가 구조적으로 높다는 뜻이야. 근데 한 번의 러그풀로 다 날릴 수 있어. 분산 유지해.',
+  '야, 밈코인에서 연승하면 "나 좀 잘하는데?" 하잖아. 그 순간 사이즈 2배 올리면 다음 -90%에 다 토해내. 절대 사이즈 키우지 마.',
+  '포포, 수익비가 좋으니까 탐나겠지만 DEX는 한 방에 -90% 맞는 시장이야. 수익금 일부 출금해놔.',
 ]
 
 const MSGS_B = [
@@ -545,6 +626,8 @@ const MSGS_D = [
   '형이 한마디 할게. 지금 네 상태는 "조금만 더"하면 위험해지는 단계야. 여기서 멈춰.',
   '포포, 원칙이 흔들릴 때는 원칙을 다시 읽어봐. 써놓은 이유가 있잖아.',
   '야, 약간 삐끗한 거니까 아직 늦지 않았어. 오늘 하루만 확실하게 쉬어.',
+  '포포, 지금 수익비가 흔들리기 시작하고 있어. DEX에서 PF가 1.0 밑으로 가면 복구하기 진짜 어려워. 카테고리 좁혀.',
+  '야, 밈코인은 승률보다 수익비가 전부야. 지금 수익비가 떨어지고 있으면 셋업 기준을 올려야 해. 아무거나 들어가지 마.',
 ]
 
 const MSGS_E = [
@@ -566,6 +649,9 @@ const MSGS_E = [
   '야, "한 번만 더"가 매번 세 번이 되는 거 알잖아. 오늘은 0건이 정답이야.',
   '포포, 이 구간 넘기면 더 강해져. 근데 넘기려면 일단 살아남아야 해. 지금은 생존 모드야.',
   '형이 딱 하나만 물어볼게. 지금 들어가는 이유가 "분석"이야 "감정"이야? 솔직해져.',
+  '포포, DEX에서 연패는 흔한 일이야. 승률 30%여도 수익비가 3x면 이기는 구조야. 근데 지금은 구조가 아니라 감정이 매매하고 있어. 멈춰.',
+  '야, 밈코인은 -90% 손실이 정상이야. 근데 그게 연속이면 전략이 아니라 FOMO로 들어가는 거야. 셋업 다시 점검해.',
+  '포포, DEX 트레이딩에서 제일 위험한 건 "다음 건에서 복구"야. 다음 건도 -80%일 수 있어. 자본부터 지켜.',
 ]
 
 // ─── 포포 응원 메시지 풀 (상황별) ─────────────────────────────────────────────
@@ -682,7 +768,7 @@ function fmtDollar(n) {
 function fmt(n, d = 1) { return Number.isFinite(n) ? n.toFixed(d) : '—' }
 
 function buildBriefingText(ctx) {
-  const { phase, emotion, equity, ev, totalTrades, categories, minePlay, tradeStyleAnalysis } = ctx
+  const { phase, emotion, equity, ev, totalTrades, categories, minePlay, tradeStyleAnalysis, overallMetrics } = ctx
   const { consecutiveLosses, consecutiveWins, sizeTrend } = emotion
   const { current: currentEquity, drawdownFromHwm, maxDdPct } = equity
   const { current: currentEv, trend: evTrend } = ev
@@ -691,9 +777,30 @@ function buildBriefingText(ctx) {
   const allowCats = categories.filter(c => ['집중 가능', '선택적 허용'].includes(c.permission))
   const forbidCats = categories.filter(c => c.permission === '금지')
 
-  // ── 이서후 판단 (리스트 형식) ─────────────────────────────────────────────
+  // PF 요약 텍스트
+  const pf = overallMetrics?.profitFactor ?? 0
+  const pfStr = Number.isFinite(pf) ? pf.toFixed(2) : '—'
+  const rrStr = overallMetrics?.avgRR != null && Number.isFinite(overallMetrics.avgRR) ? overallMetrics.avgRR.toFixed(2) : '—'
+
+  // ── 이서후 판단 (v5: PF 중심 리스트 형식) ──────────────────────────────────
   const judgmentItems = []
 
+  // 1) 전체 요약: 수익비(PF) 기준 핵심 메시지
+  if (totalTrades >= 5 && overallMetrics) {
+    if (pf >= 2.0) {
+      judgmentItems.push({ icon: '🔥', text: `수익비 ${pfStr}x — 강한 엣지다. 평균 R:R ${rrStr}. DEX에서 이 수준이면 확실히 우위에 있다. 사이즈를 유지하면서 밀어라.` })
+    } else if (pf >= 1.5) {
+      judgmentItems.push({ icon: '✅', text: `수익비 ${pfStr}x — 엣지가 있다. 평균 R:R ${rrStr}. 승률이 낮아도 수익비가 1.5 이상이면 DEX에서는 이기는 구조다. 유지해라.` })
+    } else if (pf >= 1.0) {
+      judgmentItems.push({ icon: '⚠️', text: `수익비 ${pfStr}x — 간신히 양수다. R:R ${rrStr}. 한 건의 큰 손실로 무너질 수 있는 구조다. 손절 기준을 더 타이트하게 잡아라.` })
+    } else if (pf >= 0.5) {
+      judgmentItems.push({ icon: '📉', text: `수익비 ${pfStr}x — 적자 구조다. 버는 것보다 잃는 게 크다. 카테고리를 좁히고 확실한 셋업만 잡아라.` })
+    } else {
+      judgmentItems.push({ icon: '🚨', text: `수익비 ${pfStr}x — 심각한 적자다. 현재 매매 방식으로는 시간이 갈수록 자본이 줄어든다. 전략 자체를 재점검해라.` })
+    }
+  }
+
+  // 2) 페이즈별 판단
   if (phase === 'RESET') {
     if (emotion.state === 'REVENGE') {
       judgmentItems.push({ icon: '🚨', text: `${consecutiveLosses}연패 후 사이즈가 ${Math.round((sizeTrend - 1) * 100)}% 커졌다. 복구 욕망이다. 지금 당장 멈춰라.` })
@@ -704,28 +811,38 @@ function buildBriefingText(ctx) {
     }
   } else if (phase === 'DEFENSE') {
     if (evTrend === 'DECLINING') {
-      judgmentItems.push({ icon: '📉', text: `EV가 꺾이고 있다. 지금은 벌 때가 아니라 있는 것을 지킬 때다.` })
+      judgmentItems.push({ icon: '📉', text: `EV가 꺾이고 있다. 수익비가 무너지기 전에 사이즈를 줄여라.` })
     } else if (drawdownFromHwm > 0.15) {
-      judgmentItems.push({ icon: '📉', text: `고점에서 ${fmt(drawdownFromHwm * 100)}% 빠졌다. 방어 모드다.` })
+      judgmentItems.push({ icon: '📉', text: `고점에서 ${fmt(drawdownFromHwm * 100)}% 빠졌다. 방어 모드다. PF가 1.5 이상인 카테고리에서만 진입해라.` })
     } else if (emotion.state === 'OVERCONFIDENCE') {
       judgmentItems.push({ icon: '⚡', text: `${consecutiveWins}연승이지만 빈도가 올라가고 있다. 과신이다. 사이즈를 유지하거나 줄여라.` })
     } else {
-      judgmentItems.push({ icon: '🛡️', text: `${consecutiveLosses}연패다. 신규 진입은 최소화하고 흐름이 바뀔 때까지 기다려라.` })
+      judgmentItems.push({ icon: '🛡️', text: `${consecutiveLosses}연패다. 수익비가 높은 카테고리에서만 최소 사이즈로 기다려라.` })
     }
   } else if (phase === 'ATTACK') {
     const topStr = topCats.length ? topCats.join(', ') : '확인된 카테고리'
-    judgmentItems.push({ icon: '🎯', text: `EV ${fmt(currentEv)}%, 흐름이 좋다. ${topStr}에 엣지가 있다. 확실한 자리에서만.` })
+    judgmentItems.push({ icon: '🎯', text: `PF ${pfStr}x, 흐름이 좋다. ${topStr}에서 수익비가 확인됐다. 확실한 자리에서만 사이즈를 실어라.` })
   } else {
     if (totalTrades < 5) {
-      judgmentItems.push({ icon: '📊', text: `아직 데이터가 충분하지 않다. 작은 사이즈로 패턴을 먼저 확인해라.` })
+      judgmentItems.push({ icon: '📊', text: `아직 데이터가 충분하지 않다(${totalTrades}건). 작은 사이즈로 수익비 패턴을 먼저 확인해라.` })
     } else if (currentEquity < 0) {
-      judgmentItems.push({ icon: '🔄', text: `마이너스 구간이다. 복구하려 들지 마라. 다시 처음부터, 작게, 확실하게 쌓아라.` })
+      judgmentItems.push({ icon: '🔄', text: `마이너스 구간이다. 복구하려 들지 마라. 수익비가 검증된 카테고리에서만, 작게, 확실하게 쌓아라.` })
     } else {
-      judgmentItems.push({ icon: '🧱', text: `아직은 축적 단계다. 잃지 않는 게 버는 것이다.` })
+      judgmentItems.push({ icon: '🧱', text: `축적 단계다. 수익비 ${pfStr}x. 잃지 않는 게 버는 것이다.` })
     }
   }
 
-  // 지뢰 판단 추가 (사이즈 경고일 때만)
+  // 3) 카테고리별 핵심 메시지 (수익비 + 최대 단건 + 건수 종합)
+  const bestCat = categories.find(c => !c.insufficientData && c.grade === 'S')
+  const worstCat = [...categories].reverse().find(c => !c.insufficientData && c.grade === 'D')
+  if (bestCat) {
+    judgmentItems.push({ icon: '💎', text: `${bestCat.trade_type} — PF ${Number.isFinite(bestCat.profitFactor) ? bestCat.profitFactor.toFixed(1) : '—'}x, EV ${bestCat.ev_percent > 0 ? '+' : ''}${bestCat.ev_percent.toFixed(1)}%. 최강 카테고리다. 여기에 집중해라.` })
+  }
+  if (worstCat) {
+    judgmentItems.push({ icon: '🚫', text: `${worstCat.trade_type} — PF ${Number.isFinite(worstCat.profitFactor) ? worstCat.profitFactor.toFixed(1) : '—'}x, EV ${worstCat.ev_percent > 0 ? '+' : ''}${worstCat.ev_percent.toFixed(1)}%. 돈을 갉아먹는 카테고리다. 즉시 중단.` })
+  }
+
+  // 4) 지뢰 판단 추가 (사이즈 경고일 때만)
   if (minePlay.detected && minePlay.sizeWarning) {
     judgmentItems.push({
       icon: '💣',
@@ -735,9 +852,11 @@ function buildBriefingText(ctx) {
     })
   }
 
-  // 뇌동매매 판단 추가
+  // 5) 뇌동매매 판단 (엄격 유지)
   if (tradeStyleAnalysis.severity >= 2) {
     judgmentItems.push({ icon: '🧠', text: tradeStyleAnalysis.detail })
+  } else if (tradeStyleAnalysis.severity === 1) {
+    judgmentItems.push({ icon: '🧠', text: `뇌동매매 감지. 수익비와 무관하게 계획 없는 진입은 장기적으로 PF를 깎아먹는다.` })
   }
 
   const judgment = judgmentItems
@@ -867,27 +986,49 @@ export function generateSeohuBriefing(analytics, trades) {
     // 상황 분류 (A~E)
     const situation = detectSituation({ emotion, equity, recentFlow, tradeStyleAnalysis })
 
+    // 트레이드별 PF 계산 (카테고리별)
+    const catWinRateData = calculateWinRate(trades)
+    const catPfMap = {}
+    for (const c of catWinRateData) {
+      catPfMap[c.trade_type] = { pf: c.profitFactor, avgWin: c.avgWin, avgLoss: c.avgLoss, totalWinPnl: c.totalWinPnl, totalLossPnl: c.totalLossPnl }
+    }
+
+    // 전체 PF/Expectancy/R:R
+    const overallMetrics = calculateOverallMetrics(trades)
+
     const categories = tradeTypeStats
       .filter(t => Number.isFinite(t.ev_percent))
       .map(t => {
-        const grade = gradeEv(t.ev_percent)
+        const pfData = catPfMap[t.trade_type] || { pf: 0, avgWin: 0, avgLoss: 0 }
+        const pf = Number.isFinite(pfData.pf) ? pfData.pf : 0
+        const grade = gradeCategory(t.ev_percent, pf, t.trades ?? 0)
         const { permission, reason } = categoryPermission(grade, phase)
         const condition = GRADE_CONDITIONS[grade]
+        const insufficientData = (t.trades ?? 0) <= 3
         return {
           trade_type: t.trade_type,
           ev_percent: t.ev_percent,
           win_rate:   t.win_rate,
           trades:     t.trades,
+          profitFactor: pf,
+          avgWin: pfData.avgWin,
+          avgLoss: pfData.avgLoss,
           grade,
           permission,
           reason,
           conditionLabel: condition.label,
-          conditionText: condition.text,
+          conditionText: insufficientData ? `(데이터 부족 — ${t.trades}건) ${condition.text}` : condition.text,
+          insufficientData,
         }
       })
-      .sort((a, b) => b.ev_percent - a.ev_percent)
+      .sort((a, b) => {
+        // PF 기반 정렬 (Infinity 처리)
+        const pfA = Number.isFinite(a.profitFactor) ? a.profitFactor : 999
+        const pfB = Number.isFinite(b.profitFactor) ? b.profitFactor : 999
+        return pfB - pfA || b.ev_percent - a.ev_percent
+      })
 
-    const text = buildBriefingText({ phase, emotion, equity, ev, totalTrades: total, categories, minePlay, tradeStyleAnalysis })
+    const text = buildBriefingText({ phase, emotion, equity, ev, totalTrades: total, categories, minePlay, tradeStyleAnalysis, overallMetrics })
 
     // 메시지 시드 (6시간 + 트레이드 수 기반)
     const msgSeed = getMessageSeed(total)
@@ -930,6 +1071,7 @@ export function generateSeohuBriefing(analytics, trades) {
       noTradeBriefing,
       oneLiner,
       popoBriefing,
+      overallMetrics,
       ...text,
     }
   } catch (err) {

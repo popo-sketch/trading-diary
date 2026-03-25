@@ -271,15 +271,46 @@ function CategoryCard({ cat }) {
         {cat.conditionText}
       </div>
 
-      {/* EV 프로그레스 바 */}
+      {/* PF + EV 프로그레스 바 */}
       <div>
+        {/* PF 표시 */}
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          marginBottom: 4,
+        }}>
+          <span style={{ fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace' }}>PF</span>
+          <span style={{
+            fontSize: 12, fontWeight: 800,
+            color: cat.profitFactor >= 2.0 ? '#00c853' : cat.profitFactor >= 1.5 ? '#42a5f5' : cat.profitFactor >= 1.0 ? '#ffc107' : '#ff1744',
+            fontFamily: 'Inter, monospace',
+          }}>
+            {Number.isFinite(cat.profitFactor) ? `${cat.profitFactor.toFixed(2)}x` : '—'}
+          </span>
+        </div>
+        <div style={{
+          width: '100%', height: 5, borderRadius: 3,
+          background: 'rgba(255,255,255,0.06)', overflow: 'hidden',
+          marginBottom: 6,
+        }}>
+          <div style={{
+            width: `${Math.min(100, (Math.min(Number.isFinite(cat.profitFactor) ? cat.profitFactor : 0, 4) / 4) * 100)}%`,
+            height: '100%', borderRadius: 3,
+            background: cat.profitFactor >= 1.5
+              ? 'linear-gradient(90deg, #10B981, #34d399)'
+              : cat.profitFactor >= 1.0
+                ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
+                : 'linear-gradient(90deg, #EF4444, #f87171)',
+            transition: 'width 0.5s ease',
+          }} />
+        </div>
+        {/* EV 표시 */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           marginBottom: 4,
         }}>
           <span style={{ fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace' }}>EV</span>
           <span style={{
-            fontSize: 12, fontWeight: 800,
+            fontSize: 11, fontWeight: 700,
             color: cat.ev_percent >= 0 ? '#00c853' : '#ff1744',
             fontFamily: 'Inter, monospace',
           }}>
@@ -287,11 +318,11 @@ function CategoryCard({ cat }) {
           </span>
         </div>
         <div style={{
-          width: '100%', height: 5, borderRadius: 3,
+          width: '100%', height: 4, borderRadius: 2,
           background: 'rgba(255,255,255,0.06)', overflow: 'hidden',
         }}>
           <div style={{
-            width: `${evPct}%`, height: '100%', borderRadius: 3,
+            width: `${evPct}%`, height: '100%', borderRadius: 2,
             background: cat.ev_percent >= 0
               ? 'linear-gradient(90deg, #10B981, #34d399)'
               : 'linear-gradient(90deg, #EF4444, #f87171)',
@@ -299,6 +330,16 @@ function CategoryCard({ cat }) {
           }} />
         </div>
       </div>
+
+      {/* 데이터 부족 표시 */}
+      {cat.insufficientData && (
+        <div style={{
+          marginTop: 6, fontSize: 9, color: '#6b7280', fontStyle: 'italic',
+          fontFamily: "'Noto Sans KR', sans-serif",
+        }}>
+          ※ {cat.trades}건 — 데이터 부족
+        </div>
+      )}
     </div>
   )
 }
@@ -612,6 +653,19 @@ export default function SeohuBriefing({ analytics, trades, error }) {
           {/* ── 상단: 현재 상태 미니 카드 ─── */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
             <MetricCard
+              label="수익비 (PF)" icon="⚖️"
+              value={briefing.overallMetrics?.profitFactor != null && Number.isFinite(briefing.overallMetrics.profitFactor) ? `${briefing.overallMetrics.profitFactor.toFixed(2)}x` : '—'}
+              color={briefing.overallMetrics?.profitFactor >= 2.0 ? '#00c853' : briefing.overallMetrics?.profitFactor >= 1.5 ? '#42a5f5' : briefing.overallMetrics?.profitFactor >= 1.0 ? '#ffc107' : '#ff1744'}
+              subLabel={briefing.overallMetrics?.profitFactor >= 2.0 ? '강한 엣지' : briefing.overallMetrics?.profitFactor >= 1.5 ? '양수 구조' : briefing.overallMetrics?.profitFactor >= 1.0 ? '손익 분기점' : briefing.totalTrades >= 5 ? '적자 구조' : null}
+              gauge={briefing.overallMetrics ? { value: Math.min(Number.isFinite(briefing.overallMetrics.profitFactor) ? briefing.overallMetrics.profitFactor : 0, 4), max: 4, danger: briefing.overallMetrics.profitFactor < 1.0 } : null}
+            />
+            <MetricCard
+              label="평균 R:R" icon="🎯"
+              value={briefing.overallMetrics?.avgRR != null && Number.isFinite(briefing.overallMetrics.avgRR) ? `${briefing.overallMetrics.avgRR.toFixed(2)}` : '—'}
+              color={briefing.overallMetrics?.avgRR >= 2.0 ? '#00c853' : briefing.overallMetrics?.avgRR >= 1.0 ? '#42a5f5' : '#ffc107'}
+              subLabel={briefing.overallMetrics?.avgRR >= 2.0 ? '평균 수익 > 2배 손실' : briefing.overallMetrics?.avgRR >= 1.0 ? '수익 ≥ 손실' : briefing.totalTrades >= 5 ? '손실이 수익보다 큼' : null}
+            />
+            <MetricCard
               label="EV" icon="📊"
               value={evStr}
               color={evVal !== null && evVal >= 0 ? '#00c853' : '#ff1744'}
@@ -624,12 +678,6 @@ export default function SeohuBriefing({ analytics, trades, error }) {
               color={ddVal > 0.15 ? '#ff1744' : ddVal > 0.05 ? '#ffc107' : '#6B7280'}
               dangerBlink={ddVal > 0.15}
               gauge={ddVal > 0.005 ? { value: ddPct, max: 30, danger: ddVal > 0.15 } : null}
-            />
-            <MetricCard
-              label="Kelly" icon="🎯"
-              value={briefing.kelly !== null ? `${briefing.kelly.toFixed(1)}%` : '—'}
-              color={briefing.kelly === null || briefing.kelly <= 0 ? '#6B7280' : '#42a5f5'}
-              subLabel={briefing.kelly !== null && briefing.kelly <= 0 ? '거래 금지' : null}
             />
             <MetricCard
               label="거래 수" icon="📋"
