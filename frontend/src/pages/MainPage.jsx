@@ -13,6 +13,9 @@ import SeohuBriefing from '../components/SeohuBriefing'
 import JourneyRoad from '../components/JourneyRoad'
 import RiskWeatherCard from '../components/RiskWeatherCard'
 import MonthlyReplay from '../components/MonthlyReplay'
+import WinRateHeatmap from '../components/analytics/WinRateHeatmap'
+import DrawdownPanel from '../components/analytics/DrawdownPanel'
+import RMultipleHistogram from '../components/analytics/RMultipleHistogram'
 
 const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
@@ -343,7 +346,19 @@ export default function MainPage() {
           </div>
         )}
 
-        {/* 포지션 사이즈 / 트레이드 타입 + 월간 리플레이 */}
+        {/* 드로우다운 분석 + 요일·시간대 히트맵 */}
+        {analytics && (
+          <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <DrawdownPanel equityCurve={analytics.equity_curve} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <WinRateHeatmap trades={trades} />
+            </div>
+          </div>
+        )}
+
+        {/* 포지션 사이즈 / 트레이드 타입 + R배수 분포 */}
         {analytics && (
           <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -353,9 +368,14 @@ export default function MainPage() {
               <TradeTypeTableCompact stats={analytics.trade_type_stats} />
             </div>
             <div style={{ width: 300, flexShrink: 0 }}>
-              <MonthlyReplay trades={trades} analytics={analytics} />
+              <RMultipleHistogram trades={trades} />
             </div>
           </div>
+        )}
+
+        {/* 월간 리플레이 */}
+        {analytics && (
+          <MonthlyReplay trades={trades} analytics={analytics} />
         )}
       </div>
 
