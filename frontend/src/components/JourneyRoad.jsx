@@ -20,10 +20,10 @@ const CP_REWARDS = {
 }
 
 const PHASE_STYLE = {
-  BUILD:   { color: '#3B82F6', glow: 'rgba(59,130,246,0.4)', label: 'BUILD' },
-  ATTACK:  { color: '#10B981', glow: 'rgba(16,185,129,0.4)', label: 'ATTACK' },
-  DEFENSE: { color: '#EAB308', glow: 'rgba(234,179,8,0.4)',  label: 'DEFENSE' },
-  RESET:   { color: '#EF4444', glow: 'rgba(239,68,68,0.4)',  label: 'RESET' },
+  BUILD:   { color: '#42a5f5', glow: 'rgba(59,130,246,0.4)', label: 'BUILD' },
+  ATTACK:  { color: '#00c853', glow: 'rgba(16,185,129,0.4)', label: 'ATTACK' },
+  DEFENSE: { color: '#ffc107', glow: 'rgba(234,179,8,0.4)',  label: 'DEFENSE' },
+  RESET:   { color: '#ff1744', glow: 'rgba(239,68,68,0.4)',  label: 'RESET' },
 }
 
 // ─── Formatters ──────────────────────────────────────────────────────────────
@@ -217,7 +217,7 @@ function RewardCheckpoint({ cp, reached, isNext, ps, cumulativePnl, curve }) {
             bottom: -2, right: -2,
             width: 14, height: 14,
             borderRadius: '50%',
-            background: '#10B981',
+            background: '#00c853',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -461,7 +461,7 @@ function StatCards({ journey, ps }) {
       icon: '📈',
       label: '누적 PNL',
       value: fmtPnl(journey.cumulativePnl),
-      color: journey.cumulativePnl >= 0 ? '#10B981' : '#EF4444',
+      color: journey.cumulativePnl >= 0 ? '#00c853' : '#ff1744',
       type: 'text',
     },
     {
@@ -558,7 +558,7 @@ function StreakAndRecords({ journey, personalBests, ps }) {
           <div>
             <div style={{
               fontSize: 14, fontWeight: 800,
-              color: journey.streakType === 'win' ? '#10B981' : '#EF4444',
+              color: journey.streakType === 'win' ? '#00c853' : '#ff1744',
               fontFamily: 'Inter, monospace',
             }}>
               {journey.streak}연{journey.streakType === 'win' ? '승' : '패'}
@@ -638,7 +638,7 @@ function StreakAndRecords({ journey, personalBests, ps }) {
               BEST STREAK
             </div>
             <div style={{
-              fontSize: 13, fontWeight: 800, color: '#10B981', fontFamily: 'Inter, monospace',
+              fontSize: 13, fontWeight: 800, color: '#00c853', fontFamily: 'Inter, monospace',
             }}>
               {personalBests.longestWinStreak}연승
             </div>
@@ -728,7 +728,7 @@ function ConfettiEffect({ active }) {
             '--delay': `${Math.random() * 2}s`,
             '--x': `${Math.random() * 100}%`,
             '--rotation': `${Math.random() * 720}deg`,
-            '--color': ['#fbbf24', '#10B981', '#3B82F6', '#EF4444', '#a78bfa', '#f472b6'][i % 6],
+            '--color': ['#fbbf24', '#00c853', '#42a5f5', '#ff1744', '#a78bfa', '#f472b6'][i % 6],
           }}
         />
       ))}

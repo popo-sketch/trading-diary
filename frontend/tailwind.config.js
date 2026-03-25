@@ -8,13 +8,16 @@ export default {
     extend: {
       colors: {
         dark: {
-          bg: '#121212',
-          card: '#1e1e2e',
+          bg: '#0d0d1a',
+          card: '#1a1a2e',
+          hover: '#242442',
         },
-        profit: '#10B981',
-        loss: '#EF4444',
-        neutral: '#6B7280',
-        accent: '#3B82F6',
+        profit: '#00c853',
+        loss: '#ff1744',
+        warning: '#ffc107',
+        info: '#42a5f5',
+        neutral: '#9e9e9e',
+        accent: '#42a5f5',
       },
       minWidth: {
         'app': '1200px',

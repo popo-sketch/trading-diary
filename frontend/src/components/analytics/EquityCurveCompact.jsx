@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { formatPnl, formatPnlShort } from '../../utils/format'
 
 const CHART_HEIGHT = 200
-const GREEN = '#10B981'
-const RED = '#EF4444'
+const GREEN = '#00c853'
+const RED = '#ff1744'
 
 function formatEvPercent(num) {
   if (num == null || isNaN(num)) return '0%'
@@ -20,18 +20,18 @@ export default function EquityCurveCompact({ data, evCurve = [], kellyPercent })
 
   if (!hasEquity && !hasEv) {
     return (
-      <div className="rounded-lg border border-white/[0.06] bg-dark-card p-4 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-        <h3 className="text-sm font-bold text-white mb-3">Equity Curve</h3>
+      <div className="rounded-xl border border-white/[0.06] bg-dark-card p-5">
+        <h3 className="text-[15px] font-semibold text-[#e0e0e0] mb-3">Equity Curve</h3>
         <div className="text-neutral text-center py-8 text-xs">No Data</div>
       </div>
     )
   }
 
   return (
-    <div className="rounded-lg border border-white/[0.06] bg-dark-card p-4 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+    <div className="rounded-xl border border-white/[0.06] bg-dark-card p-5">
       <div className="flex w-full" style={{ minHeight: CHART_HEIGHT + 56 }}>
         {/* 좌측 50%: Equity Curve */}
-        <div className="flex-1 min-w-0 flex flex-col border-r border-[#2a2a2a] pr-2">
+        <div className="flex-1 min-w-0 flex flex-col border-r border-white/[0.06] pr-2">
           {hasEquity ? (
             <EquityChart
               data={data}
@@ -129,8 +129,8 @@ function EquityChart({ data, hoveredIndex, setHoveredIndex, height }) {
   return (
     <>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-white">Equity Curve</h3>
-        <div className="flex items-center gap-3 text-xs text-[#a0a0a0]">
+        <h3 className="text-[15px] font-semibold text-[#e0e0e0]">Equity Curve</h3>
+        <div className="flex items-center gap-3 text-[12px] text-[#9e9e9e]">
           <span>Max Drawdown: <span className="text-loss">{formatPnl(-maxDrawdown)}</span></span>
           <span>Current Equity: <span className={currentEquity >= 0 ? 'text-profit' : 'text-loss'}>{formatPnl(currentEquity)}</span></span>
         </div>
@@ -157,7 +157,7 @@ function EquityChart({ data, hoveredIndex, setHoveredIndex, height }) {
             const labelColor = value > 0 ? GREEN : value < 0 ? RED : '#ffffff'
             return (
               <g key={value}>
-                <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="#2a2a2a" strokeWidth="1" />
+                <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
                 <text x={paddingLeft - 6} y={y + 3} fill={labelColor} fontSize="9" textAnchor="end">{formatPnlShort(value)}</text>
               </g>
             )
@@ -179,11 +179,11 @@ function EquityChart({ data, hoveredIndex, setHoveredIndex, height }) {
             />
           ))}
           {hwmIndex >= 0 && (
-            <circle cx={points[hwmIndex]?.x} cy={points[hwmIndex]?.y} r="5" fill="#3B82F6" stroke="#1a1a1a" strokeWidth="2" />
+            <circle cx={points[hwmIndex]?.x} cy={points[hwmIndex]?.y} r="5" fill="#42a5f5" stroke="#1a1a2e" strokeWidth="2" />
           )}
           {hoveredIndex !== null && points[hoveredIndex] && (
             <g>
-              <rect x={points[hoveredIndex].x - 40} y={points[hoveredIndex].y - 30} width="80" height="20" fill="#1a1a1a" stroke={points[hoveredIndex].cumulative_pnl >= 0 ? GREEN : RED} strokeWidth="1" rx="4" />
+              <rect x={points[hoveredIndex].x - 40} y={points[hoveredIndex].y - 30} width="80" height="20" fill="#1a1a2e" stroke={points[hoveredIndex].cumulative_pnl >= 0 ? GREEN : RED} strokeWidth="1" rx="4" />
               <text x={points[hoveredIndex].x} y={points[hoveredIndex].y - 15} fill={points[hoveredIndex].cumulative_pnl >= 0 ? GREEN : RED} fontSize="10" textAnchor="middle" fontWeight="bold">{formatPnl(points[hoveredIndex].cumulative_pnl)}</text>
               <text x={points[hoveredIndex].x} y={points[hoveredIndex].y - 3} fill="#a0a0a0" fontSize="8" textAnchor="middle">{points[hoveredIndex].date}</text>
             </g>
@@ -242,10 +242,10 @@ function EvChart({ data, kellyPercent, hoveredIndex, setHoveredIndex, height }) 
   return (
     <>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-white">Expected Value Curve</h3>
+        <h3 className="text-[15px] font-semibold text-[#e0e0e0]">Expected Value Curve</h3>
         <div className="flex items-center gap-3 text-xs">
           <span className={currentEv >= 0 ? 'text-profit' : 'text-loss'}>Current EV: {formatEvPercent(currentEv)}</span>
-          <span className="text-[#3B82F6]">Kelly: {kellyDisplay}%</span>
+          <span className="text-info">Kelly: {kellyDisplay}%</span>
         </div>
       </div>
       <div className="overflow-x-auto relative flex-1 min-h-0">
@@ -270,7 +270,7 @@ function EvChart({ data, kellyPercent, hoveredIndex, setHoveredIndex, height }) 
             const labelColor = value > 0 ? GREEN : value < 0 ? RED : '#ffffff'
             return (
               <g key={value}>
-                <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="#2a2a2a" strokeWidth="1" />
+                <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
                 <text x={paddingLeft - 6} y={y + 3} fill={labelColor} fontSize="9" textAnchor="end">{value.toFixed(1)}%</text>
               </g>
             )
@@ -293,7 +293,7 @@ function EvChart({ data, kellyPercent, hoveredIndex, setHoveredIndex, height }) 
           ))}
           {hoveredIndex !== null && points[hoveredIndex] && (
             <g>
-              <rect x={points[hoveredIndex].x - 35} y={points[hoveredIndex].y - 30} width="70" height="20" fill="#1a1a1a" stroke={points[hoveredIndex].ev_percent >= 0 ? GREEN : RED} strokeWidth="1" rx="4" />
+              <rect x={points[hoveredIndex].x - 35} y={points[hoveredIndex].y - 30} width="70" height="20" fill="#1a1a2e" stroke={points[hoveredIndex].ev_percent >= 0 ? GREEN : RED} strokeWidth="1" rx="4" />
               <text x={points[hoveredIndex].x} y={points[hoveredIndex].y - 15} fill={points[hoveredIndex].ev_percent >= 0 ? GREEN : RED} fontSize="10" textAnchor="middle" fontWeight="bold">{formatEvPercent(points[hoveredIndex].ev_percent)}</text>
               <text x={points[hoveredIndex].x} y={points[hoveredIndex].y - 3} fill="#a0a0a0" fontSize="8" textAnchor="middle">{points[hoveredIndex].date}</text>
             </g>

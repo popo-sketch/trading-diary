@@ -164,16 +164,16 @@ export default function MonthlyReplay({ trades = [], analytics }) {
   if (events.length === 0) {
     return (
       <div style={{
-        background: '#1e1e2e',
+        background: '#1a1a2e',
         border: '1px solid rgba(255,255,255,0.06)',
-        borderRadius: '12px',
-        padding: '16px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+        borderRadius: 12,
+        padding: 20,
+        height: '100%',
+        boxSizing: 'border-box',
       }}>
         <div style={{
-          fontSize: 9, fontWeight: 700, color: '#6b7280',
-          fontFamily: 'Inter, monospace', letterSpacing: '0.12em',
-          textTransform: 'uppercase', marginBottom: 8,
+          fontSize: 15, fontWeight: 600, color: '#e0e0e0',
+          marginBottom: 12,
         }}>
           월간 리플레이
         </div>
@@ -186,16 +186,16 @@ export default function MonthlyReplay({ trades = [], analytics }) {
 
   return (
     <div style={{
-      background: '#1e1e2e',
+      background: '#1a1a2e',
       border: '1px solid rgba(255,255,255,0.06)',
-      borderRadius: '12px',
-      padding: '16px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+      borderRadius: 12,
+      padding: 20,
+      height: '100%',
+      boxSizing: 'border-box',
     }}>
       <div style={{
-        fontSize: 9, fontWeight: 700, color: '#6b7280',
-        fontFamily: 'Inter, monospace', letterSpacing: '0.12em',
-        textTransform: 'uppercase', marginBottom: 14,
+        fontSize: 15, fontWeight: 600, color: '#e0e0e0',
+        marginBottom: 14,
       }}>
         월간 리플레이 — {events.length} events
       </div>

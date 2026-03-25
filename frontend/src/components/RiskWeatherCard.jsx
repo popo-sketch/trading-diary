@@ -91,12 +91,14 @@ export default function RiskWeatherCard({ analytics, trades = [] }) {
 
   return (
     <div style={{
-      background: '#1e1e2e',
+      background: '#1a1a2e',
       border: `1px solid ${w.borderColor}44`,
-      borderRadius: '12px',
-      padding: '16px',
+      borderRadius: 12,
+      padding: 20,
       position: 'relative',
       overflow: 'hidden',
+      height: '100%',
+      boxSizing: 'border-box',
     }}>
       {/* 좌측 장식선 */}
       <div style={{
@@ -177,7 +179,7 @@ export default function RiskWeatherCard({ analytics, trades = [] }) {
 
 function WeatherStat({ label, value, color }) {
   return (
-    <div style={{ background: '#111', borderRadius: 8, padding: '8px 10px' }}>
+    <div style={{ background: '#0d0d1a', borderRadius: 8, padding: '8px 10px' }}>
       <div style={{
         fontSize: 9, color: '#4b5563',
         fontFamily: 'Inter, monospace', textTransform: 'uppercase',

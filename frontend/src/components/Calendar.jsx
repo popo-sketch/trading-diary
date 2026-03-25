@@ -47,18 +47,20 @@ export default function Calendar({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64 text-neutral">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-accent border-t-transparent" />
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-info border-t-transparent" />
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4 min-h-[60px]">
-        <h2 className="text-lg text-[#a0a0a0] shrink-0">{formatMonthKst(year, month)}</h2>
+      <div className="flex items-center justify-between gap-4">
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: '#e0e0e0', margin: 0 }}>{formatMonthKst(year, month)}</h2>
         <Link
           to={`/leaderboard?year=${year}&month=${month}`}
-          className="text-sm font-medium text-[#e8e8e8] border border-white/[0.06] bg-dark-card hover:bg-[#282838] px-3 py-2 rounded-lg transition-colors"
+          style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e0', padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', background: '#242442', transition: 'background 0.2s' }}
+          onMouseEnter={(e) => e.currentTarget.style.background = '#2e2e4a'}
+          onMouseLeave={(e) => e.currentTarget.style.background = '#242442'}
         >
           Leaderboard
         </Link>
@@ -66,10 +68,7 @@ export default function Calendar({
 
       <div className="grid grid-cols-7 gap-1">
         {WEEKDAYS.map((w) => (
-          <div
-            key={w}
-            className="text-center text-xs text-[#a0a0a0] py-2 font-medium"
-          >
+          <div key={w} style={{ textAlign: 'center', fontSize: 12, color: '#9e9e9e', padding: '8px 0', fontWeight: 500 }}>
             {w}
           </div>
         ))}
@@ -77,48 +76,48 @@ export default function Calendar({
           <div
             key={i}
             onClick={() => !cell.empty && handleDateClick(cell.date)}
-            className={`
-              min-h-[80px] p-2 rounded-lg border transition-colors
-              ${cell.empty ? 'bg-transparent border-transparent' : 'border-white/[0.06] bg-dark-card hover:bg-[#282838] cursor-pointer'}
-              ${cell.pnl != null && cell.pnl > 0 ? 'border-l-4 border-l-profit' : ''}
-              ${cell.pnl != null && cell.pnl < 0 ? 'border-l-4 border-l-loss' : ''}
-              ${cell.pnl != null && cell.pnl === 0 ? 'border-l-4 border-l-neutral' : ''}
-              ${cell.empty || cell.pnl == null ? '' : ''}
-            `}
+            style={{
+              minHeight: 80, padding: 8, borderRadius: 8,
+              border: cell.empty ? 'none' : '1px solid rgba(255,255,255,0.06)',
+              background: cell.empty ? 'transparent' : '#1a1a2e',
+              cursor: cell.empty ? 'default' : 'pointer',
+              transition: 'background 0.15s',
+              borderLeft: cell.pnl != null && cell.pnl > 0 ? '4px solid #00c853'
+                : cell.pnl != null && cell.pnl < 0 ? '4px solid #ff1744'
+                : cell.pnl != null && cell.pnl === 0 ? '4px solid #9e9e9e'
+                : undefined,
+            }}
+            onMouseEnter={(e) => { if (!cell.empty) e.currentTarget.style.background = '#242442' }}
+            onMouseLeave={(e) => { if (!cell.empty) e.currentTarget.style.background = '#1a1a2e' }}
           >
             {!cell.empty && (
               <>
-                <div className="text-sm font-medium text-[#e8e8e8]">{cell.day}</div>
-                <div
-                  className={`text-xs mt-1 font-medium truncate ${
-                    cell.pnl != null
-                      ? cell.pnl > 0
-                        ? 'text-profit'
-                        : cell.pnl < 0
-                        ? 'text-loss'
-                        : 'text-neutral'
-                      : 'text-neutral'
-                  }`}
-                >
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e0' }}>{cell.day}</div>
+                <div style={{
+                  fontSize: 12, marginTop: 4, fontWeight: 600,
+                  color: cell.pnl != null
+                    ? cell.pnl > 0 ? '#00c853' : cell.pnl < 0 ? '#ff1744' : '#9e9e9e'
+                    : '#9e9e9e',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
                   {cell.pnl != null ? formatPnl(cell.pnl) : '—'}
                 </div>
                 {cell.tradeCount > 0 && (
-                  <div className="text-[10px] mt-0.5 tracking-tighter flex flex-wrap gap-0.5">
+                  <div style={{ fontSize: 10, marginTop: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                     {cell.trades.slice(0, 5).map((trade, idx) => {
                       const pnl = Number(trade.pnl || 0)
-                      const colorClass = pnl > 0 ? 'text-profit' : pnl < 0 ? 'text-loss' : 'text-neutral'
-                      return <span key={idx} className={colorClass}>●</span>
+                      return <span key={idx} style={{ color: pnl > 0 ? '#00c853' : pnl < 0 ? '#ff1744' : '#9e9e9e' }}>●</span>
                     })}
                     {cell.tradeCount > 5 && (
-                      <span className="text-neutral">+{cell.tradeCount}</span>
+                      <span style={{ color: '#9e9e9e' }}>+{cell.tradeCount}</span>
                     )}
                   </div>
                 )}
                 {cell.giveback && (
-                  <div className={`text-[10px] mt-1 font-medium ${
-                    cell.giveback.givebackRate >= 50 ? 'text-loss' :
-                    cell.giveback.givebackRate >= 20 ? 'text-yellow-400' : 'text-[#a0a0a0]'
-                  }`}>
+                  <div style={{
+                    fontSize: 10, marginTop: 4, fontWeight: 600,
+                    color: cell.giveback.givebackRate >= 50 ? '#ff1744' : cell.giveback.givebackRate >= 20 ? '#ffc107' : '#9e9e9e',
+                  }}>
                     ↓{cell.giveback.givebackRate.toFixed(0)}% 반납
                   </div>
                 )}

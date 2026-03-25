@@ -8,12 +8,16 @@ function kellyPercent(winRatePct, avgWinPct, avgLossPct) {
   return k <= 0 ? 0 : k * 100
 }
 
+const CARD = { background: '#1a1a2e', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', padding: 20, height: '100%', display: 'flex', flexDirection: 'column' }
+const TH = { fontSize: 12, color: '#9e9e9e', padding: '8px 6px', fontWeight: 500 }
+const TD = { fontSize: 13, color: '#e0e0e0', padding: '8px 6px' }
+
 export default function TradeTypeTableCompact({ stats }) {
   if (stats.length === 0) {
     return (
-      <div className="rounded-lg border border-white/[0.06] bg-dark-card p-4 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-        <h3 className="text-sm font-bold text-white mb-3">Trade Type Analysis</h3>
-        <div className="text-neutral text-center py-4 text-xs">No Data</div>
+      <div style={CARD}>
+        <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e0e0e0', marginBottom: 12 }}>Trade Type Analysis</h3>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9e9e9e', fontSize: 13 }}>No Data</div>
       </div>
     )
   }
@@ -21,20 +25,20 @@ export default function TradeTypeTableCompact({ stats }) {
   const sortedStats = [...stats].sort((a, b) => (b.total_pnl ?? 0) - (a.total_pnl ?? 0))
 
   return (
-    <div className="rounded-lg border border-white/[0.06] bg-dark-card p-4 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-      <h3 className="text-sm font-bold text-white mb-3">Trade Type Analysis</h3>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs min-w-[520px]">
+    <div style={CARD}>
+      <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e0e0e0', marginBottom: 12 }}>Trade Type Analysis</h3>
+      <div style={{ overflow: 'auto', flex: 1 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 520 }}>
           <thead>
-            <tr className="border-b border-[#2a2a2a]">
-              <th className="text-left py-2 px-1.5 text-[#a0a0a0] whitespace-nowrap">Trade Type</th>
-              <th className="text-right py-2 px-1.5 text-[#a0a0a0]">Trades</th>
-              <th className="text-right py-2 px-1.5 text-[#a0a0a0]">Win%</th>
-              <th className="text-right py-2 px-1.5 text-[#a0a0a0]">Avg Win%</th>
-              <th className="text-right py-2 px-1.5 text-[#a0a0a0]">Avg Loss%</th>
-              <th className="text-right py-2 px-1.5 text-[#a0a0a0]">EV%</th>
-              <th className="text-right py-2 px-1.5 text-[#a0a0a0]">Kelly%</th>
-              <th className="text-right py-2 px-1.5 text-[#a0a0a0]">Total PnL$</th>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <th style={{ ...TH, textAlign: 'left' }}>Trade Type</th>
+              <th style={{ ...TH, textAlign: 'right' }}>Trades</th>
+              <th style={{ ...TH, textAlign: 'right' }}>Win%</th>
+              <th style={{ ...TH, textAlign: 'right' }}>Avg Win%</th>
+              <th style={{ ...TH, textAlign: 'right' }}>Avg Loss%</th>
+              <th style={{ ...TH, textAlign: 'right' }}>EV%</th>
+              <th style={{ ...TH, textAlign: 'right' }}>Kelly%</th>
+              <th style={{ ...TH, textAlign: 'right' }}>Total PnL$</th>
             </tr>
           </thead>
           <tbody>
@@ -43,19 +47,21 @@ export default function TradeTypeTableCompact({ stats }) {
               const avgLoss = stat.avg_loss_percent ?? 0
               const kelly = kellyPercent(stat.win_rate, avgWin, avgLoss)
               return (
-                <tr key={i} className="border-b border-[#2a2a2a] hover:bg-[#222]">
-                  <td className="py-2 px-1.5 text-white font-medium whitespace-nowrap">{stat.trade_type}</td>
-                  <td className="py-2 px-1.5 text-white text-right">{stat.trades}</td>
-                  <td className="py-2 px-1.5 text-white text-right">{stat.win_rate.toFixed(1)}%</td>
-                  <td className="py-2 px-1.5 text-right text-profit">{avgWin.toFixed(1)}%</td>
-                  <td className="py-2 px-1.5 text-right text-loss">{Math.abs(avgLoss).toFixed(1)}%</td>
-                  <td className={`py-2 px-1.5 text-right font-medium ${stat.ev_percent >= 0 ? 'text-profit' : 'text-loss'}`}>
+                <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.15s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#242442'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                  <td style={{ ...TD, fontWeight: 600, whiteSpace: 'nowrap' }}>{stat.trade_type}</td>
+                  <td style={{ ...TD, textAlign: 'right' }}>{stat.trades}</td>
+                  <td style={{ ...TD, textAlign: 'right' }}>{stat.win_rate.toFixed(1)}%</td>
+                  <td style={{ ...TD, textAlign: 'right', color: '#00c853' }}>{avgWin.toFixed(1)}%</td>
+                  <td style={{ ...TD, textAlign: 'right', color: '#ff1744' }}>{Math.abs(avgLoss).toFixed(1)}%</td>
+                  <td style={{ ...TD, textAlign: 'right', fontWeight: 700, color: stat.ev_percent >= 0 ? '#00c853' : '#ff1744' }}>
                     {stat.ev_percent.toFixed(1)}%
                   </td>
-                  <td className="py-2 px-1.5 text-right font-medium" style={{ color: '#3B82F6' }}>
+                  <td style={{ ...TD, textAlign: 'right', fontWeight: 700, color: '#42a5f5' }}>
                     {kelly.toFixed(0)}%
                   </td>
-                  <td className={`py-2 px-1.5 text-right font-medium ${stat.total_pnl >= 0 ? 'text-profit' : 'text-loss'}`}>
+                  <td style={{ ...TD, textAlign: 'right', fontWeight: 700, color: stat.total_pnl >= 0 ? '#00c853' : '#ff1744' }}>
                     {formatPnl(stat.total_pnl)}
                   </td>
                 </tr>

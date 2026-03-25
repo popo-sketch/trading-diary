@@ -4,32 +4,32 @@ import { generateSeohuBriefing } from '../utils/seohuEngine'
 // ─── Style Maps ───────────────────────────────────────────────────────────────
 
 const PHASE_META = {
-  BUILD:   { label: 'BUILD',   color: '#3B82F6', bg: '#3B82F610', headerBg: 'linear-gradient(135deg, rgba(59,130,246,0.06), transparent)' },
-  ATTACK:  { label: 'ATTACK',  color: '#10B981', bg: '#10B98110', headerBg: 'linear-gradient(135deg, rgba(16,185,129,0.06), transparent)' },
-  DEFENSE: { label: 'DEFENSE', color: '#EAB308', bg: '#EAB30810', headerBg: 'linear-gradient(135deg, rgba(234,179,8,0.06), transparent)' },
-  RESET:   { label: 'RESET',   color: '#EF4444', bg: '#EF444410', headerBg: 'linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02))' },
+  BUILD:   { label: 'BUILD',   color: '#42a5f5', bg: '#3B82F610', headerBg: 'linear-gradient(135deg, rgba(59,130,246,0.06), transparent)' },
+  ATTACK:  { label: 'ATTACK',  color: '#00c853', bg: '#10B98110', headerBg: 'linear-gradient(135deg, rgba(16,185,129,0.06), transparent)' },
+  DEFENSE: { label: 'DEFENSE', color: '#ffc107', bg: '#EAB30810', headerBg: 'linear-gradient(135deg, rgba(234,179,8,0.06), transparent)' },
+  RESET:   { label: 'RESET',   color: '#ff1744', bg: '#EF444410', headerBg: 'linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02))' },
 }
 
 const GRADE_META = {
   S: { color: '#fbbf24', bg: '#fbbf2415', border: '#fbbf2440' },
-  A: { color: '#10B981', bg: '#10B98115', border: '#10B98140' },
-  B: { color: '#3B82F6', bg: '#3B82F615', border: '#3B82F640' },
+  A: { color: '#00c853', bg: '#10B98115', border: '#10B98140' },
+  B: { color: '#42a5f5', bg: '#3B82F615', border: '#3B82F640' },
   C: { color: '#6B7280', bg: '#6B728015', border: '#6B728040' },
-  D: { color: '#EF4444', bg: '#EF444415', border: '#EF444440' },
+  D: { color: '#ff1744', bg: '#EF444415', border: '#EF444440' },
 }
 
 const PERM_META = {
-  '집중 가능':   { color: '#10B981', bg: '#10B98118', label: '집중 가능' },
+  '집중 가능':   { color: '#00c853', bg: '#10B98118', label: '집중 가능' },
   '선택적 허용': { color: '#fbbf24', bg: '#fbbf2418', label: '선택적 허용' },
   '제한':       { color: '#f97316', bg: '#f9731618', label: '제한' },
-  '금지':       { color: '#EF4444', bg: '#EF444418', label: '금지' },
+  '금지':       { color: '#ff1744', bg: '#EF444418', label: '금지' },
 }
 
 const EMOTION_EMOJI = {
   CALM:           { emoji: '😌', text: '안정',     color: '#6B7280' },
-  OVERCONFIDENCE: { emoji: '😐', text: '과신 주의', color: '#EAB308' },
-  REVENGE:        { emoji: '😰', text: '복구욕망',  color: '#EF4444' },
-  TILT:           { emoji: '🔥', text: '틸트',     color: '#EF4444' },
+  OVERCONFIDENCE: { emoji: '😐', text: '과신 주의', color: '#ffc107' },
+  REVENGE:        { emoji: '😰', text: '복구욕망',  color: '#ff1744' },
+  TILT:           { emoji: '🔥', text: '틸트',     color: '#ff1744' },
 }
 
 // ─── Mini Gauge Bar ─────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ function MetricCard({ label, value, color, icon, gauge, dangerBlink, subLabel })
           fontFamily: 'Inter, monospace',
         }}>{label}</span>
         {dangerBlink && (
-          <span className="seohu-blink" style={{ fontSize: 10, color: '#EF4444' }}>⚠</span>
+          <span className="seohu-blink" style={{ fontSize: 10, color: '#ff1744' }}>⚠</span>
         )}
       </div>
       <div style={{
@@ -94,7 +94,7 @@ function MetricCard({ label, value, color, icon, gauge, dangerBlink, subLabel })
 
 function AccordionSection({ title, severity, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen)
-  const sevColor = severity >= 3 ? '#EF4444' : severity === 2 ? '#EAB308' : '#6B7280'
+  const sevColor = severity >= 3 ? '#ff1744' : severity === 2 ? '#ffc107' : '#6B7280'
 
   return (
     <div style={{
@@ -229,7 +229,7 @@ function CategoryCard({ cat }) {
           <span style={{ fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace' }}>EV</span>
           <span style={{
             fontSize: 12, fontWeight: 800,
-            color: cat.ev_percent >= 0 ? '#10B981' : '#EF4444',
+            color: cat.ev_percent >= 0 ? '#00c853' : '#ff1744',
             fontFamily: 'Inter, monospace',
           }}>
             {cat.ev_percent > 0 ? '+' : ''}{cat.ev_percent.toFixed(1)}%
@@ -340,7 +340,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
               }}>EV </span>
               <span style={{
                 fontSize: 13, fontWeight: 800,
-                color: evVal >= 0 ? '#10B981' : '#EF4444',
+                color: evVal >= 0 ? '#00c853' : '#ff1744',
                 fontFamily: 'Inter, monospace',
               }}>{evStr}</span>
             </div>
@@ -357,7 +357,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
               }}>DD </span>
               <span style={{
                 fontSize: 13, fontWeight: 800,
-                color: ddVal > 0.15 ? '#EF4444' : ddVal > 0.05 ? '#EAB308' : '#a0a0a0',
+                color: ddVal > 0.15 ? '#ff1744' : ddVal > 0.05 ? '#ffc107' : '#a0a0a0',
                 fontFamily: 'Inter, monospace',
               }}>{ddStr}</span>
             </div>
@@ -375,21 +375,21 @@ export default function SeohuBriefing({ analytics, trades, error }) {
             <MetricCard
               label="EV" icon="📊"
               value={evStr}
-              color={evVal !== null && evVal >= 0 ? '#10B981' : '#EF4444'}
+              color={evVal !== null && evVal >= 0 ? '#00c853' : '#ff1744'}
               subLabel={briefing.ev.trend === 'DECLINING' ? '↓ 하락 추세' : briefing.ev.trend === 'RISING' ? '↑ 상승 추세' : null}
               gauge={evVal !== null ? { value: Math.abs(evVal), max: 30, danger: evVal < -3 } : null}
             />
             <MetricCard
               label="낙폭 (HWM)" icon="📉"
               value={ddStr}
-              color={ddVal > 0.15 ? '#EF4444' : ddVal > 0.05 ? '#EAB308' : '#6B7280'}
+              color={ddVal > 0.15 ? '#ff1744' : ddVal > 0.05 ? '#ffc107' : '#6B7280'}
               dangerBlink={ddVal > 0.15}
               gauge={ddVal > 0.005 ? { value: ddPct, max: 30, danger: ddVal > 0.15 } : null}
             />
             <MetricCard
               label="Kelly" icon="🎯"
               value={briefing.kelly !== null ? `${briefing.kelly.toFixed(1)}%` : '—'}
-              color={briefing.kelly === null || briefing.kelly <= 0 ? '#6B7280' : '#3B82F6'}
+              color={briefing.kelly === null || briefing.kelly <= 0 ? '#6B7280' : '#42a5f5'}
               subLabel={briefing.kelly !== null && briefing.kelly <= 0 ? '거래 금지' : null}
             />
             <MetricCard
@@ -439,7 +439,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                   borderRadius: 10, padding: '10px 12px',
                 }}>
                   <div style={{
-                    fontSize: 9, fontWeight: 700, color: '#10B981',
+                    fontSize: 9, fontWeight: 700, color: '#00c853',
                     textTransform: 'uppercase', letterSpacing: '0.1em',
                     fontFamily: 'Inter, monospace', marginBottom: 6,
                   }}>✅ 지금 해야 할 플레이</div>
@@ -455,7 +455,7 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                   borderRadius: 10, padding: '10px 12px',
                 }}>
                   <div style={{
-                    fontSize: 9, fontWeight: 700, color: '#EF4444',
+                    fontSize: 9, fontWeight: 700, color: '#ff1744',
                     textTransform: 'uppercase', letterSpacing: '0.1em',
                     fontFamily: 'Inter, monospace', marginBottom: 6,
                   }}>🚫 금지 행동</div>
@@ -525,8 +525,8 @@ export default function SeohuBriefing({ analytics, trades, error }) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{
                         fontSize: 13, fontWeight: 700,
-                        color: briefing.recentFlow.type === 'hot_streak' ? '#10B981' :
-                               briefing.recentFlow.type === 'cold_streak' ? '#EF4444' :
+                        color: briefing.recentFlow.type === 'hot_streak' ? '#00c853' :
+                               briefing.recentFlow.type === 'cold_streak' ? '#ff1744' :
                                briefing.recentFlow.type === 'winning' ? '#10B981aa' :
                                briefing.recentFlow.type === 'losing' ? '#EF4444aa' : '#6b7280',
                         fontFamily: "'Noto Sans KR', sans-serif",
