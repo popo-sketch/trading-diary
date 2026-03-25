@@ -11,6 +11,7 @@ import PositionSizeTableCompact from '../components/analytics/PositionSizeTableC
 import TradeTypeTableCompact from '../components/analytics/TradeTypeTableCompact'
 import SeohuBriefing from '../components/SeohuBriefing'
 import JourneyRoad from '../components/JourneyRoad'
+import { computeJourneyState, getJourneyBriefing } from '../utils/journeyEngine'
 import RiskWeatherCard from '../components/RiskWeatherCard'
 import MonthlyReplay from '../components/MonthlyReplay'
 import WinRateHeatmap from '../components/analytics/WinRateHeatmap'
@@ -53,6 +54,13 @@ export default function MainPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
+
+  const popoBriefing = useMemo(() => {
+    if (!allTimeAnalytics) return null
+    const journey = computeJourneyState(allTimeAnalytics)
+    const { phase, briefing } = getJourneyBriefing(journey, allTimeAnalytics)
+    return { phase, briefing }
+  }, [allTimeAnalytics])
 
   useEffect(() => {
     if (location.state?.year != null && location.state?.month != null) {
@@ -273,7 +281,7 @@ export default function MainPage() {
         )}
 
         {/* 이서후 브리핑 */}
-        <SeohuBriefing analytics={analytics} trades={trades} error={error} />
+        <SeohuBriefing analytics={analytics} trades={trades} error={error} popoBriefing={popoBriefing} />
 
         {/* 캘린더 + 트레이딩 규칙 */}
         <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>

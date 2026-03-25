@@ -298,22 +298,22 @@ function Character({ pct, charState, ps, cumulativePnl, nextCpRemaining }) {
       <div style={{
         background: 'linear-gradient(135deg, #0a0f1a, #121830)',
         border: `1px solid ${ps.color}66`,
-        borderRadius: 10,
-        padding: '5px 12px',
-        marginBottom: 4,
-        boxShadow: `0 0 14px ${ps.color}33`,
+        borderRadius: 8,
+        padding: '3px 8px',
+        marginBottom: 2,
+        boxShadow: `0 0 10px ${ps.color}33`,
         whiteSpace: 'nowrap',
         backdropFilter: 'blur(4px)',
       }}>
         <div style={{
-          fontSize: 13, fontWeight: 800, color: ps.color,
+          fontSize: 10, fontWeight: 800, color: ps.color,
           fontFamily: 'Inter, monospace', textAlign: 'center',
         }}>
           {fmtPnl(cumulativePnl)}
         </div>
         {nextCpRemaining > 0 && (
           <div style={{
-            fontSize: 9, color: '#6b7280', fontFamily: 'Inter, monospace', textAlign: 'center',
+            fontSize: 8, color: '#6b7280', fontFamily: 'Inter, monospace', textAlign: 'center',
           }}>
             다음까지 {fmtK(nextCpRemaining)}
           </div>
@@ -324,8 +324,8 @@ function Character({ pct, charState, ps, cumulativePnl, nextCpRemaining }) {
       <div
         className={`char-anim-${charState}`}
         style={{
-          fontSize: 28,
-          filter: `drop-shadow(0 0 10px ${ps.color}66)`,
+          fontSize: 18,
+          filter: `drop-shadow(0 0 6px ${ps.color}66)`,
           lineHeight: 1,
         }}
       >
@@ -821,28 +821,6 @@ export default function JourneyRoad({ allTimeAnalytics }) {
       {/* 획득 보상 */}
       <BadgeRow journey={journey} />
 
-      {/* 응원 멘트 */}
-      <div style={{
-        padding: '12px 16px 14px',
-        borderTop: '1px solid rgba(255,255,255,0.04)',
-        position: 'relative', zIndex: 1,
-        background: `linear-gradient(90deg, ${ps.color}06, ${ps.color}03, transparent)`,
-      }}>
-        <div style={{
-          fontSize: 9, fontWeight: 700, color: '#4a4a5a',
-          fontFamily: 'Inter, monospace', letterSpacing: '0.12em',
-          textTransform: 'uppercase', marginBottom: 6,
-        }}>
-          포포 브리핑
-        </div>
-        <p style={{
-          fontSize: 12.5, lineHeight: 1.7, color: `${ps.color}cc`,
-          fontFamily: "'Noto Sans KR', sans-serif",
-          margin: 0,
-        }}>
-          {briefing}
-        </p>
-      </div>
 
       <style>{`
         /* 캐릭터 애니메이션 */

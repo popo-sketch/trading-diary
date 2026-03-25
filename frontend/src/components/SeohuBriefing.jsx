@@ -254,7 +254,7 @@ function CategoryCard({ cat }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function SeohuBriefing({ analytics, trades, error }) {
+export default function SeohuBriefing({ analytics, trades, error, popoBriefing }) {
   const [expanded, setExpanded] = useState(true)
 
   const briefing = useMemo(() => {
@@ -365,6 +365,29 @@ export default function SeohuBriefing({ analytics, trades, error }) {
           <span style={{ fontSize: 11, color: '#4a4a5a' }}>{expanded ? '▲' : '▼'}</span>
         </div>
       </div>
+
+      {/* ── 포포 응원 멘트 ──────────────────────────────────────────── */}
+      {popoBriefing && popoBriefing.briefing && (
+        <div style={{
+          padding: '8px 18px',
+          background: popoBriefing.phase === 'RESET' || popoBriefing.phase === 'DEFENSE'
+            ? 'rgba(255,23,68,0.05)'
+            : 'rgba(0,200,83,0.05)',
+          borderBottom: '1px solid rgba(255,255,255,0.04)',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{ fontSize: 13, flexShrink: 0 }}>🐾</span>
+          <p style={{
+            margin: 0, fontSize: 12, lineHeight: 1.6,
+            color: popoBriefing.phase === 'RESET' || popoBriefing.phase === 'DEFENSE'
+              ? '#ff6d6dcc'
+              : '#69f0aecc',
+            fontFamily: "'Noto Sans KR', sans-serif",
+          }}>
+            {popoBriefing.briefing}
+          </p>
+        </div>
+      )}
 
       {/* ── Expanded Content ──────────────────────────────────────────── */}
       {expanded && (
