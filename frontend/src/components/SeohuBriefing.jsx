@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { generateSeohuBriefing } from '../utils/seohuEngine'
+import { generateSeohuBriefing, GRADE_CONDITIONS } from '../utils/seohuEngine'
+import { formatPnl } from '../utils/format'
 
 // ─── Style Maps ───────────────────────────────────────────────────────────────
 
@@ -10,19 +11,31 @@ const PHASE_META = {
   RESET:   { label: 'RESET',   color: '#ff1744', bg: '#EF444410', headerBg: 'linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02))' },
 }
 
+const SITUATION_BG = {
+  A: 'rgba(0,200,83,0.03)',
+  B: 'rgba(66,165,245,0.03)',
+  C: 'transparent',
+  D: 'rgba(255,193,7,0.03)',
+  E: 'rgba(255,23,68,0.03)',
+}
+
 const GRADE_META = {
   S: { color: '#fbbf24', bg: '#fbbf2415', border: '#fbbf2440' },
   A: { color: '#00c853', bg: '#10B98115', border: '#10B98140' },
   B: { color: '#42a5f5', bg: '#3B82F615', border: '#3B82F640' },
-  C: { color: '#6B7280', bg: '#6B728015', border: '#6B728040' },
+  C: { color: '#f97316', bg: '#f9731615', border: '#f9731640' },
   D: { color: '#ff1744', bg: '#EF444415', border: '#EF444440' },
 }
 
 const PERM_META = {
-  '집중 가능':   { color: '#00c853', bg: '#10B98118', label: '집중 가능' },
-  '선택적 허용': { color: '#fbbf24', bg: '#fbbf2418', label: '선택적 허용' },
-  '제한':       { color: '#f97316', bg: '#f9731618', label: '제한' },
-  '금지':       { color: '#ff1744', bg: '#EF444418', label: '금지' },
+  '집중 가능':   { color: '#00c853', bg: '#10B98118' },
+  '적극 허용':   { color: '#00c853', bg: '#10B98118' },
+  '선택적 허용': { color: '#fbbf24', bg: '#fbbf2418' },
+  '허용':       { color: '#69f0ae', bg: '#69f0ae18' },
+  '조건부':     { color: '#42a5f5', bg: '#42a5f518' },
+  '자제':       { color: '#f97316', bg: '#f9731618' },
+  '제한':       { color: '#f97316', bg: '#f9731618' },
+  '금지':       { color: '#ff1744', bg: '#EF444418' },
 }
 
 const EMOTION_EMOJI = {
@@ -90,18 +103,18 @@ function MetricCard({ label, value, color, icon, gauge, dangerBlink, subLabel })
   )
 }
 
-// ─── Accordion Section ──────────────────────────────────────────────────────
+// ─── Accordion Section (v4: 접힌 상태 한줄 요약) ─────────────────────────────
 
-function AccordionSection({ title, severity, children, defaultOpen = false }) {
+function AccordionSection({ title, severity, summaryLine, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen)
-  const sevColor = severity >= 3 ? '#ff1744' : severity === 2 ? '#ffc107' : '#6B7280'
+  const sevColor = severity >= 2 ? '#ffc107' : '#6B7280'
 
   return (
     <div style={{
       border: `1px solid ${severity >= 2 ? sevColor + '30' : 'rgba(255,255,255,0.06)'}`,
       borderRadius: 8,
       overflow: 'hidden',
-      background: severity >= 3 ? 'rgba(239,68,68,0.03)' : 'transparent',
+      background: severity >= 2 ? 'rgba(255,193,7,0.02)' : 'transparent',
     }}>
       <div
         onClick={() => setOpen(v => !v)}
@@ -110,25 +123,25 @@ function AccordionSection({ title, severity, children, defaultOpen = false }) {
           padding: '8px 12px', cursor: 'pointer', userSelect: 'none',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
           <span style={{
             fontSize: 9, fontWeight: 700, color: sevColor,
             fontFamily: 'Inter, monospace', textTransform: 'uppercase',
-            letterSpacing: '0.1em',
+            letterSpacing: '0.1em', flexShrink: 0,
           }}>
             {title}
           </span>
-          {severity >= 2 && (
+          {!open && summaryLine && (
             <span style={{
-              fontSize: 8, fontWeight: 700, padding: '1px 6px', borderRadius: 4,
-              background: severity >= 3 ? '#EF444420' : '#EAB30820',
-              color: sevColor, fontFamily: 'Inter, monospace',
+              fontSize: 10, color: '#6b7280', fontFamily: 'Inter, monospace',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              marginLeft: 4,
             }}>
-              {severity >= 3 ? '위험' : '주의'}
+              — {summaryLine}
             </span>
           )}
         </div>
-        <span style={{ fontSize: 10, color: '#4a4a5a' }}>{open ? '▲' : '▼'}</span>
+        <span style={{ fontSize: 10, color: '#4a4a5a', flexShrink: 0, marginLeft: 8 }}>{open ? '▲' : '▼'}</span>
       </div>
       {open && (
         <div style={{
@@ -141,7 +154,40 @@ function AccordionSection({ title, severity, children, defaultOpen = false }) {
   )
 }
 
-// ─── Category Card ──────────────────────────────────────────────────────────
+// ─── Keyword Chip Highlighter (v4: 컬러 칩) ─────────────────────────────────
+
+const CHIP_STYLES = {
+  지뢰: { emoji: '💣', background: '#3B82F625', color: '#60a5fa' },
+  뇌동: { emoji: '🧠', background: '#f9731625', color: '#fb923c' },
+  주의: { emoji: '⚠️', background: '#EAB30825', color: '#fbbf24' },
+  좋음: { emoji: '✅', background: '#10B98125', color: '#34d399' },
+  위험: { emoji: '🚨', background: '#EF444425', color: '#f87171' },
+  금지: { emoji: '🚫', background: '#EF444425', color: '#f87171' },
+  틸트: { emoji: '🔥', background: '#EF444425', color: '#f87171' },
+}
+
+function highlightKeywords(text) {
+  if (!text) return text
+  const regex = new RegExp(`(${Object.keys(CHIP_STYLES).join('|')})`, 'g')
+  const parts = text.split(regex)
+  return parts.map((part, i) => {
+    const chip = CHIP_STYLES[part]
+    if (chip) {
+      return (
+        <span key={i} style={{
+          background: chip.background, color: chip.color,
+          borderRadius: 4, padding: '1px 6px', fontSize: 11, fontWeight: 700,
+          display: 'inline-flex', alignItems: 'center', gap: 2,
+        }}>
+          <span style={{ fontSize: 10 }}>{chip.emoji}</span>{part}
+        </span>
+      )
+    }
+    return part
+  })
+}
+
+// ─── Category Card (v4: 5등급 + 조건 텍스트) ──────────────────────────────────
 
 function CategoryCard({ cat }) {
   const [hovered, setHovered] = useState(false)
@@ -163,7 +209,6 @@ function CategoryCard({ cat }) {
         borderColor: hovered ? `${gm.color}40` : 'rgba(255,255,255,0.06)',
       }}
     >
-      {/* Tooltip */}
       {hovered && cat.reason && (
         <div style={{
           position: 'absolute', bottom: '100%', left: '50%',
@@ -187,12 +232,11 @@ function CategoryCard({ cat }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        {/* 등급 원형 뱃지 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <div style={{
-          width: 32, height: 32, borderRadius: '50%',
+          width: 30, height: 30, borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14, fontWeight: 900,
+          fontSize: 13, fontWeight: 900,
           color: gm.color, background: gm.bg,
           border: `2px solid ${gm.border}`,
           fontFamily: 'Inter, monospace',
@@ -208,16 +252,23 @@ function CategoryCard({ cat }) {
           }}>
             {cat.trade_type}
           </div>
-          {/* Permission 뱃지 */}
           <span style={{
             display: 'inline-block', marginTop: 2,
             fontSize: 9, fontWeight: 700, padding: '2px 8px',
             borderRadius: 4, color: pm.color, background: pm.bg,
             fontFamily: 'Inter, monospace',
           }}>
-            {pm.label}
+            {cat.conditionLabel || cat.permission}
           </span>
         </div>
+      </div>
+
+      {/* 조건 텍스트 */}
+      <div style={{
+        fontSize: 10, color: '#6b7280', lineHeight: 1.4, marginBottom: 6,
+        fontFamily: "'Noto Sans KR', sans-serif",
+      }}>
+        {cat.conditionText}
       </div>
 
       {/* EV 프로그레스 바 */}
@@ -252,9 +303,163 @@ function CategoryCard({ cat }) {
   )
 }
 
+// ─── 매매 품질 비교 카드 (v4 신규: 계획 vs 뇌동) ──────────────────────────────
+
+function TradeQualityCards({ tradeQuality }) {
+  if (!tradeQuality?.hasData) return null
+
+  const { planned, impulsive, insight } = tradeQuality
+
+  function StatBox({ label, stats, borderColor }) {
+    return (
+      <div style={{
+        flex: 1,
+        background: 'rgba(255,255,255,0.02)',
+        borderRadius: 10,
+        borderTop: `3px solid ${borderColor}`,
+        padding: '12px 14px',
+      }}>
+        <div style={{
+          fontSize: 11, fontWeight: 700, color: borderColor,
+          fontFamily: 'Inter, monospace', marginBottom: 8,
+        }}>{label}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          <div>
+            <div style={{ fontSize: 9, color: '#6b7280' }}>건수</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace' }}>
+              {stats.count}건
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 9, color: '#6b7280' }}>승률</div>
+            <div style={{
+              fontSize: 16, fontWeight: 800, fontFamily: 'Inter, monospace',
+              color: stats.winRate >= 0.5 ? '#00c853' : stats.count > 0 ? '#ff1744' : '#6b7280',
+            }}>
+              {stats.count > 0 ? `${(stats.winRate * 100).toFixed(0)}%` : '—'}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 9, color: '#6b7280' }}>총 손익</div>
+            <div style={{
+              fontSize: 13, fontWeight: 700, fontFamily: 'Inter, monospace',
+              color: stats.totalPnl >= 0 ? '#00c853' : '#ff1744',
+            }}>
+              {stats.count > 0 ? formatPnl(stats.totalPnl) : '—'}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 9, color: '#6b7280' }}>평균 손익</div>
+            <div style={{
+              fontSize: 13, fontWeight: 700, fontFamily: 'Inter, monospace',
+              color: stats.avgPnl >= 0 ? '#00c853' : '#ff1744',
+            }}>
+              {stats.count > 0 ? formatPnl(stats.avgPnl) : '—'}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+        <StatBox label="계획매매" stats={planned} borderColor="#00c853" />
+        <StatBox label="뇌동매매" stats={impulsive} borderColor="#ff1744" />
+      </div>
+      {insight && (
+        <div style={{
+          padding: '8px 12px', borderRadius: 8,
+          background: 'rgba(255,193,7,0.06)',
+          border: '1px solid rgba(255,193,7,0.15)',
+        }}>
+          <p style={{
+            margin: 0, fontSize: 12, lineHeight: 1.6,
+            color: '#fbbf24', fontWeight: 700,
+            fontFamily: "'Noto Sans KR', sans-serif",
+          }}>
+            💡 {insight}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── 지뢰플레이 현황 콘텐츠 (v4: 투입/회수 기반) ──────────────────────────────
+
+function MinePlayContent({ mine }) {
+  return (
+    <div>
+      {/* 투입/회수 요약 카드 */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <div style={{
+          flex: 1, padding: '8px 10px', borderRadius: 8,
+          background: 'rgba(59,130,246,0.06)',
+        }}>
+          <div style={{ fontSize: 9, color: '#6b7280', marginBottom: 2 }}>총 투입</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#60a5fa', fontFamily: 'Inter, monospace' }}>
+            ${Math.round(mine.totalInvested).toLocaleString()}
+          </div>
+        </div>
+        <div style={{
+          flex: 1, padding: '8px 10px', borderRadius: 8,
+          background: 'rgba(59,130,246,0.06)',
+        }}>
+          <div style={{ fontSize: 9, color: '#6b7280', marginBottom: 2 }}>총 회수</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#60a5fa', fontFamily: 'Inter, monospace' }}>
+            ${Math.round(mine.totalRecovered).toLocaleString()}
+          </div>
+        </div>
+        <div style={{
+          flex: 1, padding: '8px 10px', borderRadius: 8,
+          background: mine.netPnl >= 0 ? 'rgba(0,200,83,0.06)' : 'rgba(255,255,255,0.03)',
+        }}>
+          <div style={{ fontSize: 9, color: '#6b7280', marginBottom: 2 }}>순손익</div>
+          <div style={{
+            fontSize: 15, fontWeight: 800, fontFamily: 'Inter, monospace',
+            color: mine.netPnl >= 0 ? '#00c853' : '#ff1744',
+          }}>
+            {mine.netPnl >= 0 ? '+' : ''}${Math.round(mine.netPnl).toLocaleString()}
+          </div>
+        </div>
+      </div>
+
+      {/* 건수 정보 */}
+      <div style={{
+        display: 'flex', gap: 12, fontSize: 11, color: '#6b7280',
+        fontFamily: 'Inter, monospace', marginBottom: 8,
+      }}>
+        <span>전체 {mine.mineCount}건</span>
+        <span style={{ color: '#00c853' }}>수익 {mine.mineWins}건</span>
+        <span style={{ color: '#ff1744' }}>손실 {mine.mineLosses}건</span>
+        <span>비중 {(mine.capitalRatio * 100).toFixed(1)}%</span>
+      </div>
+
+      {/* 인사이트 */}
+      <p style={{
+        margin: 0, fontSize: 12, lineHeight: 1.6,
+        color: '#9ca3af',
+        fontFamily: "'Noto Sans KR', sans-serif",
+      }}>
+        {highlightKeywords(mine.detail)}
+      </p>
+
+      {/* 하단 톤 메시지 */}
+      <p style={{
+        margin: '6px 0 0', fontSize: 11, color: '#4b5563', fontStyle: 'italic',
+        fontFamily: "'Noto Sans KR', sans-serif",
+      }}>
+        지뢰는 원래 많이 잃고 한 번에 크게 먹는 전략. 사이즈 관리만 잘하면 OK.
+      </p>
+    </div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function SeohuBriefing({ analytics, trades, error, popoBriefing }) {
+export default function SeohuBriefing({ analytics, trades, error }) {
   const [expanded, setExpanded] = useState(true)
 
   const briefing = useMemo(() => {
@@ -266,6 +471,7 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
 
   const pm = PHASE_META[briefing.phase]
   const em = EMOTION_EMOJI[briefing.emotion?.state ?? 'CALM']
+  const sitBg = SITUATION_BG[briefing.situation] || 'transparent'
 
   const evVal = briefing.ev.current
   const evStr = evVal !== null
@@ -275,10 +481,13 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
   const ddPct = ddVal * 100
   const ddStr = ddVal > 0.005 ? `${ddPct.toFixed(1)}%` : '—'
 
-  // Determine header color hint based on danger level
-  const isDanger = briefing.phase === 'RESET' || ddVal > 0.15 || (evVal !== null && evVal < -5)
-  const isWarning = briefing.phase === 'DEFENSE' || (evVal !== null && evVal < 0) || ddVal > 0.05
-  const headerHint = isDanger ? 'rgba(239,68,68,0.06)' : isWarning ? 'rgba(234,179,8,0.04)' : 'rgba(16,185,129,0.03)'
+  // 상황 기반 EV/DD 뱃지 색상 강조
+  const sitEvHighlight = briefing.situation === 'A'
+  const sitDdHighlight = briefing.situation === 'E'
+
+  // 상황 기반 플레이/금지 박스 강조
+  const highlightPlay = briefing.situation === 'D'
+  const highlightForbid = briefing.situation === 'E'
 
   return (
     <div style={{
@@ -295,11 +504,10 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
         style={{
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '14px 18px', cursor: 'pointer', userSelect: 'none',
-          background: headerHint,
+          background: sitBg,
           borderBottom: expanded ? '1px solid rgba(255,255,255,0.04)' : 'none',
         }}
       >
-        {/* Left: title + phase */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <span style={{
             fontSize: 12, fontWeight: 800, color: '#7a7a8a',
@@ -316,7 +524,6 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
           </span>
         </div>
 
-        {/* Center: One-liner message */}
         <p style={{
           flex: 1, margin: 0,
           fontSize: 14, fontWeight: 700, color: pm.color,
@@ -326,13 +533,14 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
           {briefing.oneLiner}
         </p>
 
-        {/* Right: EV & DD badges */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {evVal !== null && (
             <div style={{
               padding: '4px 10px', borderRadius: 6,
-              background: evVal >= 0 ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
-              border: `1px solid ${evVal >= 0 ? '#10B98140' : '#EF444440'}`,
+              background: sitEvHighlight
+                ? 'rgba(0,200,83,0.2)'
+                : evVal >= 0 ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+              border: `1px solid ${sitEvHighlight ? '#00c85340' : evVal >= 0 ? '#10B98140' : '#EF444440'}`,
             }}>
               <span style={{
                 fontSize: 10, fontWeight: 700, color: '#6b7280',
@@ -348,8 +556,10 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
           {ddVal > 0.005 && (
             <div style={{
               padding: '4px 10px', borderRadius: 6,
-              background: ddVal > 0.15 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${ddVal > 0.15 ? '#EF444440' : 'rgba(255,255,255,0.08)'}`,
+              background: sitDdHighlight
+                ? 'rgba(255,23,68,0.2)'
+                : ddVal > 0.15 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${sitDdHighlight ? '#ff174440' : ddVal > 0.15 ? '#EF444440' : 'rgba(255,255,255,0.08)'}`,
             }}>
               <span style={{
                 fontSize: 10, fontWeight: 700, color: '#6b7280',
@@ -366,25 +576,27 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
         </div>
       </div>
 
-      {/* ── 포포 응원 멘트 ──────────────────────────────────────────── */}
-      {popoBriefing && popoBriefing.briefing && (
+      {/* ── 포포 응원 멘트 (v4: 상황별 메시지 풀) ─────────────────────── */}
+      {briefing.popoBriefing && (
         <div style={{
           padding: '8px 18px',
-          background: popoBriefing.phase === 'RESET' || popoBriefing.phase === 'DEFENSE'
-            ? 'rgba(255,23,68,0.05)'
-            : 'rgba(0,200,83,0.05)',
+          background: briefing.situation === 'E' ? 'rgba(255,23,68,0.05)'
+                    : briefing.situation === 'D' ? 'rgba(255,193,7,0.04)'
+                    : briefing.situation === 'A' ? 'rgba(0,200,83,0.05)'
+                    : 'rgba(66,165,245,0.03)',
           borderBottom: '1px solid rgba(255,255,255,0.04)',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ fontSize: 13, flexShrink: 0 }}>🐾</span>
           <p style={{
             margin: 0, fontSize: 12, lineHeight: 1.6,
-            color: popoBriefing.phase === 'RESET' || popoBriefing.phase === 'DEFENSE'
-              ? '#ff6d6dcc'
-              : '#69f0aecc',
+            color: briefing.situation === 'E' ? '#ff6d6dcc'
+                 : briefing.situation === 'D' ? '#fbbf24cc'
+                 : briefing.situation === 'A' ? '#69f0aecc'
+                 : '#90caf9cc',
             fontFamily: "'Noto Sans KR', sans-serif",
           }}>
-            {popoBriefing.briefing}
+            {briefing.popoBriefing}
           </p>
         </div>
       )}
@@ -434,7 +646,7 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
             {/* 좌측: 이서후 판단 (60-65%) */}
             <div style={{ flex: '0 0 62%', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-              {/* 이서후 판단 */}
+              {/* 이서후 판단 (v4: 리스트 형식) */}
               <div style={{
                 background: 'rgba(255,255,255,0.02)',
                 border: '1px solid rgba(255,255,255,0.06)',
@@ -445,24 +657,40 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
                   textTransform: 'uppercase', letterSpacing: '0.12em',
                   fontFamily: 'Inter, monospace', marginBottom: 8,
                 }}>이서후 판단</div>
-                <p style={{
-                  fontSize: 13, lineHeight: 1.7, color: '#d0d0d0', margin: 0,
-                  fontFamily: "'Noto Sans KR', sans-serif",
-                }}>
-                  {briefing.judgment}
-                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {Array.isArray(briefing.judgment) ? (
+                    briefing.judgment.map((item, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                        <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
+                        <p style={{
+                          fontSize: 13, lineHeight: 1.7, color: '#d0d0d0', margin: 0,
+                          fontFamily: "'Noto Sans KR', sans-serif",
+                        }}>
+                          {highlightKeywords(item.text)}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p style={{
+                      fontSize: 13, lineHeight: 1.7, color: '#d0d0d0', margin: 0,
+                      fontFamily: "'Noto Sans KR', sans-serif",
+                    }}>
+                      {highlightKeywords(briefing.judgment)}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* 지금 해야 할 플레이 + 금지 행동 */}
               <div style={{ display: 'flex', gap: 10 }}>
                 <div style={{
                   flex: 1,
-                  background: 'rgba(16,185,129,0.03)',
-                  border: '1px solid rgba(16,185,129,0.2)',
+                  background: highlightPlay ? 'rgba(255,193,7,0.06)' : 'rgba(16,185,129,0.03)',
+                  border: `1px solid ${highlightPlay ? 'rgba(255,193,7,0.3)' : 'rgba(16,185,129,0.2)'}`,
                   borderRadius: 10, padding: '10px 12px',
                 }}>
                   <div style={{
-                    fontSize: 9, fontWeight: 700, color: '#00c853',
+                    fontSize: 9, fontWeight: 700, color: highlightPlay ? '#fbbf24' : '#00c853',
                     textTransform: 'uppercase', letterSpacing: '0.1em',
                     fontFamily: 'Inter, monospace', marginBottom: 6,
                   }}>✅ 지금 해야 할 플레이</div>
@@ -473,8 +701,8 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
                 </div>
                 <div style={{
                   flex: 1,
-                  background: 'rgba(239,68,68,0.03)',
-                  border: '1px solid rgba(239,68,68,0.2)',
+                  background: highlightForbid ? 'rgba(255,23,68,0.08)' : 'rgba(239,68,68,0.03)',
+                  border: `1px solid ${highlightForbid ? 'rgba(255,23,68,0.4)' : 'rgba(239,68,68,0.2)'}`,
                   borderRadius: 10, padding: '10px 12px',
                 }}>
                   <div style={{
@@ -508,43 +736,38 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
 
               {/* 아코디언 분석 섹션들 */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {/* 지뢰 분석 */}
+                {/* 지뢰플레이 현황 */}
                 {briefing.mineAnalysis && (
                   <AccordionSection
-                    title="💣 지뢰플레이 분석"
+                    title="💣 지뢰플레이 현황"
                     severity={briefing.mineAnalysis.severity}
+                    summaryLine={briefing.mineAnalysis.summaryLine}
                     defaultOpen={briefing.mineAnalysis.severity >= 2}
                   >
-                    <p style={{
-                      color: briefing.mineAnalysis.severity >= 3 ? '#f87171cc' :
-                             briefing.mineAnalysis.severity === 2 ? '#EAB308cc' : '#6b7280',
-                      margin: 0, fontFamily: "'Noto Sans KR', sans-serif",
-                    }}>
-                      {highlightKeywords(briefing.mineAnalysis.detail)}
-                    </p>
+                    <MinePlayContent mine={briefing.mineAnalysis} />
                   </AccordionSection>
                 )}
 
-                {/* 매매 스타일 분석 */}
-                {briefing.tradeStyleAnalysis?.severity >= 1 && (
+                {/* 매매 품질 분석 (계획 vs 뇌동) */}
+                {briefing.tradeQuality?.hasData && (
                   <AccordionSection
-                    title="🧠 매매 스타일 분석"
-                    severity={briefing.tradeStyleAnalysis.severity}
-                    defaultOpen={briefing.tradeStyleAnalysis.severity >= 2}
+                    title="🧠 매매 품질 분석"
+                    severity={briefing.tradeStyleAnalysis?.severity >= 2 ? 2 : 0}
+                    summaryLine={briefing.tradeQuality.summaryLine}
+                    defaultOpen={briefing.tradeStyleAnalysis?.severity >= 2}
                   >
-                    <p style={{
-                      color: briefing.tradeStyleAnalysis.severity >= 3 ? '#f87171cc' :
-                             briefing.tradeStyleAnalysis.severity === 2 ? '#EAB308cc' : '#6b7280',
-                      margin: 0, fontFamily: "'Noto Sans KR', sans-serif",
-                    }}>
-                      {highlightKeywords(briefing.tradeStyleAnalysis.detail)}
-                    </p>
+                    <TradeQualityCards tradeQuality={briefing.tradeQuality} />
                   </AccordionSection>
                 )}
 
                 {/* 최근 흐름 */}
                 {briefing.recentFlow && briefing.recentFlow.type !== 'idle' && (
-                  <AccordionSection title="📈 최근 흐름" severity={0} defaultOpen>
+                  <AccordionSection
+                    title="📈 최근 흐름"
+                    severity={0}
+                    summaryLine={briefing.recentFlow.detail}
+                    defaultOpen
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{
                         fontSize: 13, fontWeight: 700,
@@ -628,25 +851,4 @@ export default function SeohuBriefing({ analytics, trades, error, popoBriefing }
       `}</style>
     </div>
   )
-}
-
-// ─── Keyword Highlighter ────────────────────────────────────────────────────
-
-function highlightKeywords(text) {
-  if (!text) return text
-  const parts = text.split(/(지뢰|뇌동|주의|위험|금지|틸트)/g)
-  return parts.map((part, i) => {
-    const chipStyle = {
-      지뢰: { background: '#EF444425', color: '#f87171', borderRadius: 3, padding: '1px 5px', fontSize: 11, fontWeight: 700 },
-      뇌동: { background: '#f9731625', color: '#fb923c', borderRadius: 3, padding: '1px 5px', fontSize: 11, fontWeight: 700 },
-      주의: { background: '#EAB30825', color: '#fbbf24', borderRadius: 3, padding: '1px 5px', fontSize: 11, fontWeight: 700 },
-      위험: { background: '#EF444425', color: '#f87171', borderRadius: 3, padding: '1px 5px', fontSize: 11, fontWeight: 700 },
-      금지: { background: '#EF444425', color: '#f87171', borderRadius: 3, padding: '1px 5px', fontSize: 11, fontWeight: 700 },
-      틸트: { background: '#EF444425', color: '#f87171', borderRadius: 3, padding: '1px 5px', fontSize: 11, fontWeight: 700 },
-    }[part]
-    if (chipStyle) {
-      return <span key={i} style={chipStyle}>{part}</span>
-    }
-    return part
-  })
 }

@@ -277,7 +277,7 @@ export default function MainPage() {
         )}
 
         {/* 이서후 브리핑 */}
-        <SeohuBriefing analytics={analytics} trades={trades} error={error} popoBriefing={popoBriefing} />
+        <SeohuBriefing analytics={analytics} trades={trades} error={error} />
 
         {/* 캘린더 + 트레이딩 규칙 */}
         <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
