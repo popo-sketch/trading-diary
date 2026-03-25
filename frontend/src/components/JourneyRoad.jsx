@@ -53,120 +53,412 @@ function fmtDollar(n) {
   return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 }
 
-// ─── Vector Character (clean SVG) ────────────────────────────────────────────
+// ─── Vector Character (clean chibi SVG, 2.5등신) ─────────────────────────────
 
 function VectorChar({ stage, height = 80, faceRight = true }) {
+  // Stage palettes: hair, skin, top, topAccent, bottom, shoe, shoeAccent
   const palettes = [
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#e0e0e0', bottom: '#8899aa', shoe: '#888', acc: null },
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#4a90d9', bottom: '#3b5998', shoe: '#f0f0f0', acc: '#8b5e3c' },
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#444', bottom: '#333', shoe: '#222', acc: '#fff' },
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#dde', bottom: '#3a3a50', shoe: '#e0e0e0', acc: '#c0c0c0' },
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#1a1008', bottom: '#222', shoe: '#d44', acc: '#333' },
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#1a1a2e', bottom: '#1a1a2e', shoe: '#333', acc: '#ffd700' },
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#8b7355', bottom: '#3a3a50', shoe: '#5a3a1a', acc: '#c0c0c0' },
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#1a1a3a', bottom: '#1a1a3a', shoe: '#333', acc: '#ffd700' },
-    { hair: '#3a2a1a', skin: '#f4c28f', top: '#e05050', bottom: '#4a90d9', shoe: '#d4956a', acc: '#ff9' },
+    // $0: 흰 민소매 + 회색 반바지 + 슬리퍼
+    { hair: '#2a1f14', skin: '#f0c088', top: '#e8e8e8', topAcc: null, bottom: '#8a8a96', shoe: '#a09080', shoeAcc: null },
+    // $1K: 파란 티셔츠 + 남색 청바지 + 흰 운동화
+    { hair: '#2a1f14', skin: '#f0c088', top: '#4a90d9', topAcc: '#3a78c0', bottom: '#2c3e6e', shoe: '#f0f0f0', shoeAcc: '#ddd' },
+    // $5K: 검정 후드티 + 회색 조거팬츠
+    { hair: '#2a1f14', skin: '#f0c088', top: '#2a2a2a', topAcc: '#3a3a3a', bottom: '#4a4a54', shoe: '#1a1a1a', shoeAcc: '#333' },
+    // $10K: 흰 셔츠 + 베이지 슬랙스 + 갈색 구두
+    { hair: '#2a1f14', skin: '#f0c088', top: '#eee', topAcc: '#ddd', bottom: '#c4a882', shoe: '#6b4226', shoeAcc: '#5a3520' },
+    // $25K: 검정 가죽자켓 + 검정 바지
+    { hair: '#2a1f14', skin: '#f0c088', top: '#1a1a1a', topAcc: '#333', bottom: '#1a1a1a', shoe: '#2a2a2a', shoeAcc: '#444' },
+    // $50K: 남색 정장 + 흰 셔츠
+    { hair: '#2a1f14', skin: '#f0c088', top: '#1a2040', topAcc: '#2a3060', bottom: '#1a2040', shoe: '#2a2a2a', shoeAcc: '#1a1a1a' },
+    // $100K: 베이지 캐시미어 코트 + 검정 슬랙스
+    { hair: '#2a1f14', skin: '#f0c088', top: '#c4a870', topAcc: '#b0986a', bottom: '#1e1e28', shoe: '#3a2a1a', shoeAcc: '#2a1a10' },
+    // $150K: 검정 풀 수트
+    { hair: '#2a1f14', skin: '#f0c088', top: '#111118', topAcc: '#1a1a24', bottom: '#111118', shoe: '#1a1a1a', shoeAcc: '#0a0a0a' },
+    // $200K: 하와이안 셔츠 + 반바지 + 샌들
+    { hair: '#2a1f14', skin: '#f0c088', top: '#d94040', topAcc: '#e06060', bottom: '#4a7ab0', shoe: '#c49060', shoeAcc: '#a87850' },
   ]
   const p = palettes[stage] || palettes[0]
-  const W = 40, H = 80
+  const W = 50, H = 80
   const scale = height / H
+
+  // Expression varies by stage
+  const isSmile = stage >= 1 && stage !== 4 && stage !== 7
+  const isConfident = stage === 3 || stage === 5 || stage === 6
+  const isDetermined = stage === 0
+  const isRelaxed = stage === 8
 
   return (
     <svg width={W * scale} height={height} viewBox={`0 0 ${W} ${H}`}
       style={{ overflow: 'visible', display: 'block', transform: faceRight ? 'scaleX(-1)' : 'none' }}>
-      <circle cx="20" cy="14" r="10" fill={p.skin} />
-      <ellipse cx="20" cy="9" rx="10" ry="6" fill={p.hair} />
-      <ellipse cx="20" cy="7" rx="8" ry="4" fill={p.hair} />
-      {/* Eyes — slight right gaze */}
-      <circle cx="16" cy="14" r="1.5" fill="#2a1a0a" />
-      <circle cx="23" cy="14" r="1.5" fill="#2a1a0a" />
-      <circle cx="16.5" cy="13.3" r="0.5" fill="#fff" />
-      <circle cx="23.5" cy="13.3" r="0.5" fill="#fff" />
-      <path d="M 17 17 Q 20 20 23 17" fill="none" stroke="#c77" strokeWidth="0.8" strokeLinecap="round" />
-      <rect x="18" y="23" width="4" height="3" rx="1" fill={p.skin} />
-      <rect x="10" y="25" width="20" height="18" rx="3" fill={p.top} />
-      {/* Arms — right arm slightly forward */}
-      <rect x="5" y="26" width="6" height="14" rx="3" fill={p.top} />
-      <rect x="29" y="25" width="6" height="15" rx="3" fill={p.top} />
-      <circle cx="8" cy="41" r="2.5" fill={p.skin} />
-      <circle cx="32" cy="41" r="2.5" fill={p.skin} />
-      {/* Legs — walking pose */}
-      <rect x="12" y="42" width="7" height="16" rx="3" fill={p.bottom} />
-      <rect x="21" y="42" width="7" height="16" rx="3" fill={p.bottom} />
-      <ellipse cx="15" cy="59" rx="5" ry="2.5" fill={p.shoe} />
-      <ellipse cx="25" cy="59" rx="5" ry="2.5" fill={p.shoe} />
-      {/* Ear */}
-      <ellipse cx="10" cy="14" r="2" fill={p.skin} />
-      {/* Nose */}
-      <ellipse cx="26" cy="15" rx="1" ry="1.2" fill="#e0b080" />
 
+      {/* ── Head ── */}
+      <circle cx="25" cy="17" r="13" fill={p.skin} />
+      {/* Ear */}
+      <ellipse cx="12" cy="18" rx="2.5" ry="3" fill={p.skin} />
+      <ellipse cx="12" cy="18" rx="1.5" ry="2" fill="#e0a870" />
+      {/* Hair base */}
+      <ellipse cx="25" cy="11" rx="14" ry="9" fill={p.hair} />
+      {/* Hair top volume */}
+      <ellipse cx="25" cy="7" rx="11" ry="6" fill={p.hair} />
+      {/* Hair side fringe */}
+      <path d="M 12 14 Q 11 8 16 6" fill={p.hair} stroke="none" />
+      <path d="M 38 14 Q 39 9 34 7" fill={p.hair} stroke="none" />
+      {/* Hair highlights */}
+      <path d="M 18 5 Q 22 3 26 5" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+
+      {/* ── Face ── */}
+      {/* Eyes */}
+      <ellipse cx="20" cy="18" rx="2" ry="2.2" fill="#1a1008" />
+      <ellipse cx="30" cy="18" rx="2" ry="2.2" fill="#1a1008" />
+      {/* Eye highlights */}
+      <circle cx="21" cy="17" r="0.8" fill="#fff" />
+      <circle cx="31" cy="17" r="0.8" fill="#fff" />
+      <circle cx="19.5" cy="18.5" r="0.4" fill="rgba(255,255,255,0.5)" />
+      <circle cx="29.5" cy="18.5" r="0.4" fill="rgba(255,255,255,0.5)" />
+      {/* Eyebrows */}
+      {isDetermined ? (
+        <>
+          <line x1="17" y1="14" x2="22" y2="14.5" stroke="#2a1f14" strokeWidth="0.8" strokeLinecap="round" />
+          <line x1="28" y1="14.5" x2="33" y2="14" stroke="#2a1f14" strokeWidth="0.8" strokeLinecap="round" />
+        </>
+      ) : (
+        <>
+          <path d="M 17 14.5 Q 19.5 13.5 22 14.5" fill="none" stroke="#2a1f14" strokeWidth="0.7" strokeLinecap="round" />
+          <path d="M 28 14.5 Q 30.5 13.5 33 14.5" fill="none" stroke="#2a1f14" strokeWidth="0.7" strokeLinecap="round" />
+        </>
+      )}
+      {/* Nose */}
+      <ellipse cx="25" cy="21" rx="1" ry="0.8" fill="#dda070" />
+      {/* Mouth */}
+      {isDetermined && <path d="M 22 24 L 28 24" fill="none" stroke="#c08060" strokeWidth="0.8" strokeLinecap="round" />}
+      {isSmile && !isConfident && !isRelaxed && <path d="M 21 24 Q 25 27 29 24" fill="none" stroke="#c08060" strokeWidth="0.8" strokeLinecap="round" />}
+      {isConfident && <path d="M 21 23.5 Q 25 27.5 29 23.5" fill="none" stroke="#c08060" strokeWidth="1" strokeLinecap="round" />}
+      {isRelaxed && (
+        <>
+          <path d="M 21 24 Q 25 28 29 24" fill="none" stroke="#c08060" strokeWidth="0.8" strokeLinecap="round" />
+          {/* Blush */}
+          <ellipse cx="17" cy="22" rx="2.5" ry="1.5" fill="rgba(255,130,100,0.15)" />
+          <ellipse cx="33" cy="22" rx="2.5" ry="1.5" fill="rgba(255,130,100,0.15)" />
+        </>
+      )}
+      {/* Stage 4, 7 default smile */}
+      {(stage === 4 || stage === 7) && <path d="M 22 24 Q 25 26 28 24" fill="none" stroke="#c08060" strokeWidth="0.7" strokeLinecap="round" />}
+
+      {/* ── Neck ── */}
+      <rect x="22" y="28" width="6" height="4" rx="2" fill={p.skin} />
+
+      {/* ── Body (torso) ── */}
+      {stage === 0 ? (
+        /* 민소매 */
+        <rect x="15" y="31" width="20" height="18" rx="3" fill={p.top} />
+      ) : stage === 2 ? (
+        /* 후드티 — hood + kangaroo pocket */
+        <>
+          <rect x="14" y="31" width="22" height="19" rx="4" fill={p.top} />
+          {/* Hood behind head */}
+          <path d="M 16 31 Q 25 28 34 31" fill={p.topAcc} stroke="none" />
+          {/* Kangaroo pocket */}
+          <rect x="18" y="42" width="14" height="5" rx="2" fill={p.topAcc} />
+        </>
+      ) : stage === 5 ? (
+        /* 정장 + 흰셔츠 + 빨간넥타이 */
+        <>
+          <rect x="14" y="31" width="22" height="19" rx="3" fill={p.top} />
+          {/* White shirt V */}
+          <path d="M 22 31 L 25 38 L 28 31" fill="#eee" stroke="none" />
+          {/* Red tie */}
+          <polygon points="24.5,32 25.5,32 26,42 25,44 24,42" fill="#cc2020" />
+          {/* Lapel lines */}
+          <line x1="22" y1="31" x2="19" y2="38" stroke={p.topAcc} strokeWidth="0.8" />
+          <line x1="28" y1="31" x2="31" y2="38" stroke={p.topAcc} strokeWidth="0.8" />
+        </>
+      ) : stage === 6 ? (
+        /* 코트 — long, open front */
+        <>
+          <rect x="13" y="31" width="24" height="22" rx="4" fill={p.top} />
+          {/* Inner shirt visible */}
+          <rect x="20" y="32" width="10" height="10" rx="1" fill="#2a2a36" />
+          {/* Coat collar */}
+          <path d="M 18 31 L 22 35" stroke={p.topAcc} strokeWidth="1.2" fill="none" />
+          <path d="M 32 31 L 28 35" stroke={p.topAcc} strokeWidth="1.2" fill="none" />
+        </>
+      ) : stage === 7 ? (
+        /* 풀 수트 */
+        <>
+          <rect x="14" y="31" width="22" height="19" rx="3" fill={p.top} />
+          <path d="M 22 31 L 25 36 L 28 31" fill="#2a2a36" stroke="none" />
+          {/* Lapel */}
+          <line x1="22" y1="31" x2="20" y2="37" stroke={p.topAcc} strokeWidth="0.6" />
+          <line x1="28" y1="31" x2="30" y2="37" stroke={p.topAcc} strokeWidth="0.6" />
+          {/* Pocket square */}
+          <rect x="16" y="35" width="3" height="2" rx="0.5" fill="#e0e0e0" />
+        </>
+      ) : stage === 8 ? (
+        /* 하와이안 셔츠 — floral pattern */
+        <>
+          <rect x="14" y="31" width="22" height="16" rx="3" fill={p.top} />
+          {/* Floral dots */}
+          <circle cx="18" cy="36" r="1.5" fill="#ffcc44" opacity="0.7" />
+          <circle cx="24" cy="34" r="1.2" fill="#44cc88" opacity="0.6" />
+          <circle cx="30" cy="38" r="1.3" fill="#ffcc44" opacity="0.6" />
+          <circle cx="20" cy="41" r="1" fill="#44cc88" opacity="0.5" />
+          <circle cx="28" cy="42" r="1.4" fill="#ffaa44" opacity="0.5" />
+          {/* Open collar */}
+          <path d="M 22 31 L 25 35 L 28 31" fill={p.skin} stroke="none" />
+        </>
+      ) : (
+        /* Default torso (stages 1, 3, 4) */
+        <>
+          <rect x="14" y="31" width="22" height="19" rx="3" fill={p.top} />
+          {/* Neckline */}
+          <path d="M 21 31 Q 25 34 29 31" fill="none" stroke={p.topAcc || 'rgba(0,0,0,0.1)'} strokeWidth="0.6" />
+          {/* Collar for stage 3 (셔츠) */}
+          {stage === 3 && (
+            <>
+              <path d="M 20 31 L 18 34" stroke={p.topAcc} strokeWidth="0.8" fill="none" />
+              <path d="M 30 31 L 32 34" stroke={p.topAcc} strokeWidth="0.8" fill="none" />
+              {/* Button */}
+              <circle cx="25" cy="36" r="0.6" fill="#bbb" />
+              <circle cx="25" cy="40" r="0.6" fill="#bbb" />
+            </>
+          )}
+        </>
+      )}
+
+      {/* ── Arms ── */}
+      {stage === 6 ? (
+        /* Coat has wider arms */
+        <>
+          <rect x="6" y="32" width="8" height="16" rx="4" fill={p.top} />
+          <rect x="36" y="31" width="8" height="17" rx="4" fill={p.top} />
+          <circle cx="10" cy="49" r="3" fill={p.skin} />
+          <circle cx="40" cy="49" r="3" fill={p.skin} />
+        </>
+      ) : (
+        <>
+          <rect x="7" y="32" width="7" height="15" rx="3.5" fill={stage === 0 ? p.skin : p.top} />
+          <rect x="36" y="31" width="7" height="16" rx="3.5" fill={stage === 0 ? p.skin : p.top} />
+          <circle cx="10.5" cy="48" r="2.8" fill={p.skin} />
+          <circle cx="39.5" cy="48" r="2.8" fill={p.skin} />
+        </>
+      )}
+
+      {/* ── Legs ── */}
+      {(stage === 0 || stage === 8) ? (
+        /* Shorts — shorter legs visible */
+        <>
+          <rect x="16" y="49" width="8" height="9" rx="3" fill={p.bottom} />
+          <rect x="26" y="49" width="8" height="9" rx="3" fill={p.bottom} />
+          {/* Exposed legs */}
+          <rect x="17" y="57" width="6" height="10" rx="2" fill={p.skin} />
+          <rect x="27" y="57" width="6" height="10" rx="2" fill={p.skin} />
+        </>
+      ) : (
+        /* Long pants */
+        <>
+          <rect x="16" y="49" width="8" height="19" rx="3" fill={p.bottom} />
+          <rect x="26" y="49" width="8" height="19" rx="3" fill={p.bottom} />
+        </>
+      )}
+
+      {/* ── Shoes ── */}
+      {stage === 0 ? (
+        /* Slippers */
+        <>
+          <ellipse cx="20" cy="68" rx="5.5" ry="2" fill={p.shoe} />
+          <ellipse cx="30" cy="68" rx="5.5" ry="2" fill={p.shoe} />
+          <path d="M 17 67 Q 20 65.5 23 67" fill={p.shoe} stroke="none" />
+          <path d="M 27 67 Q 30 65.5 33 67" fill={p.shoe} stroke="none" />
+        </>
+      ) : stage === 8 ? (
+        /* Sandals */
+        <>
+          <ellipse cx="20" cy="68" rx="5" ry="2" fill={p.shoe} />
+          <ellipse cx="30" cy="68" rx="5" ry="2" fill={p.shoe} />
+          <line x1="17" y1="67" x2="23" y2="67" stroke={p.shoeAcc} strokeWidth="0.8" />
+          <line x1="27" y1="67" x2="33" y2="67" stroke={p.shoeAcc} strokeWidth="0.8" />
+          <line x1="20" y1="65" x2="20" y2="68" stroke={p.shoeAcc} strokeWidth="0.6" />
+          <line x1="30" y1="65" x2="30" y2="68" stroke={p.shoeAcc} strokeWidth="0.6" />
+        </>
+      ) : (
+        /* Normal shoes / sneakers */
+        <>
+          <ellipse cx="20" cy="69" rx="6" ry="2.5" fill={p.shoe} />
+          <ellipse cx="30" cy="69" rx="6" ry="2.5" fill={p.shoe} />
+          {/* Shoe detail line */}
+          <path d="M 15 69 Q 20 67.5 25 69" fill="none" stroke={p.shoeAcc || 'rgba(255,255,255,0.1)'} strokeWidth="0.5" />
+          <path d="M 25 69 Q 30 67.5 35 69" fill="none" stroke={p.shoeAcc || 'rgba(255,255,255,0.1)'} strokeWidth="0.5" />
+          {stage === 1 && (
+            /* White sneaker stripes */
+            <>
+              <line x1="17" y1="69" x2="19" y2="68" stroke="#ccc" strokeWidth="0.4" />
+              <line x1="27" y1="69" x2="29" y2="68" stroke="#ccc" strokeWidth="0.4" />
+            </>
+          )}
+        </>
+      )}
+
+      {/* ── Stage-specific Accessories ── */}
+
+      {/* $1K: Coffee cup in right hand */}
       {stage === 1 && (
         <g>
-          <rect x="30" y="34" width="5" height="7" rx="1" fill={p.acc} />
-          <rect x="29.5" y="33" width="6" height="2" rx="1" fill="#a07040" />
-          <path d="M 35 36 Q 37 37 35 39" fill="none" stroke="#a07040" strokeWidth="0.8" />
-          <path d="M 31 31 Q 32 29 31 27" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5" className="steam-anim" />
-          <path d="M 33 32 Q 34 30 33 28" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" className="steam-anim-2" />
+          <rect x="37" y="42" width="6" height="8" rx="1.5" fill="#7a5230" />
+          <rect x="36.5" y="41" width="7" height="2.5" rx="1" fill="#f0f0f0" />
+          <path d="M 43 44 Q 45 45.5 43 47" fill="none" stroke="#6a4220" strokeWidth="0.8" />
+          {/* Steam */}
+          <path d="M 39 39 Q 40 37 39 35" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.5" className="steam-anim" />
+          <path d="M 41 40 Q 42 38 41 36" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="0.5" className="steam-anim-2" />
         </g>
       )}
+
+      {/* $5K: Airpods (white dots in ears) */}
       {stage === 2 && (
         <g>
-          <circle cx="10" cy="15" r="1.5" fill={p.acc} />
-          <circle cx="30" cy="15" r="1.5" fill={p.acc} />
-          <line x1="10" y1="15" x2="10" y2="20" stroke={p.acc} strokeWidth="0.5" />
-          <line x1="30" y1="15" x2="30" y2="20" stroke={p.acc} strokeWidth="0.5" />
+          <circle cx="12" cy="19" r="1.8" fill="#f0f0f0" />
+          <circle cx="12" cy="19" r="1" fill="#e0e0e0" />
+          <line x1="12" y1="21" x2="12" y2="24" stroke="#e0e0e0" strokeWidth="0.6" />
         </g>
       )}
-      {stage >= 3 && stage < 8 && (
-        <rect x="29" y="38" width="5" height="3" rx="1" fill={p.acc} stroke="#888" strokeWidth="0.3" />
+
+      {/* $10K: Gold wristwatch */}
+      {stage === 3 && (
+        <g>
+          <rect x="36" y="44" width="5" height="4" rx="1" fill="#c0a040" />
+          <rect x="37" y="44.5" width="3" height="3" rx="0.5" fill="#1a1a2a" />
+          <circle cx="38.5" cy="46" r="0.3" fill="#ffd700" />
+          {/* Watch band */}
+          <rect x="37" y="42.5" width="3" height="2" rx="0.5" fill="#c0a040" />
+          <rect x="37" y="48" width="3" height="2" rx="0.5" fill="#c0a040" />
+        </g>
       )}
+
+      {/* $25K: Sunglasses + motorcycle silhouette to the side */}
       {stage === 4 && (
         <g>
-          <rect x="13" y="12" width="6" height="4" rx="1.5" fill={p.acc} opacity="0.8" />
-          <rect x="21" y="12" width="6" height="4" rx="1.5" fill={p.acc} opacity="0.8" />
-          <line x1="19" y1="14" x2="21" y2="14" stroke={p.acc} strokeWidth="0.8" />
+          {/* Sunglasses */}
+          <rect x="16" y="16" width="7" height="4.5" rx="2" fill="#1a1a1a" opacity="0.85" />
+          <rect x="27" y="16" width="7" height="4.5" rx="2" fill="#1a1a1a" opacity="0.85" />
+          <line x1="23" y1="18" x2="27" y2="18" stroke="#1a1a1a" strokeWidth="0.8" />
+          <line x1="16" y1="18" x2="12" y2="17" stroke="#1a1a1a" strokeWidth="0.6" />
+          {/* Lens shine */}
+          <line x1="18" y1="17" x2="20" y2="17.5" stroke="rgba(255,255,255,0.2)" strokeWidth="0.4" />
+          <line x1="29" y1="17" x2="31" y2="17.5" stroke="rgba(255,255,255,0.2)" strokeWidth="0.4" />
         </g>
       )}
+
+      {/* $50K: Gold watch + relaxed confident look */}
       {stage === 5 && (
-        <polygon points="19,26 21,26 21.5,34 20,36 18.5,34" fill={p.acc} />
+        <g>
+          <rect x="36" y="44" width="5" height="4" rx="1.2" fill="#daa520" />
+          <rect x="37" y="44.5" width="3" height="3" rx="0.8" fill="#0a0a1a" />
+          <circle cx="38.5" cy="46" r="0.4" fill="#ffd700" />
+          <rect x="37" y="42.5" width="3" height="2" rx="0.5" fill="#c8a830" />
+          <rect x="37" y="48" width="3" height="2" rx="0.5" fill="#c8a830" />
+        </g>
       )}
+
+      {/* $100K: Scarf accent */}
       {stage === 6 && (
         <g>
-          <path d="M 10 26 Q 20 30 30 26" fill="none" stroke={p.acc} strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="28" y1="27" x2="30" y2="35" stroke={p.acc} strokeWidth="2" strokeLinecap="round" />
+          <path d="M 19 31 Q 25 34 31 31" fill="none" stroke="#8a7050" strokeWidth="2" strokeLinecap="round" />
+          <line x1="31" y1="31" x2="33" y2="38" stroke="#8a7050" strokeWidth="1.5" strokeLinecap="round" />
         </g>
       )}
+
+      {/* $150K: Briefcase */}
       {stage === 7 && (
         <g>
-          <rect x="30" y="38" width="8" height="6" rx="1" fill={p.acc} />
-          <rect x="32" y="37" width="4" height="2" rx="0.5" fill="none" stroke={p.acc} strokeWidth="0.5" />
+          <rect x="37" y="44" width="10" height="7" rx="1.5" fill="#2a2a2a" />
+          <rect x="40" y="42.5" width="4" height="2.5" rx="0.8" fill="none" stroke="#3a3a3a" strokeWidth="0.6" />
+          <line x1="42" y1="47" x2="42" y2="48" stroke="#c0a040" strokeWidth="0.5" />
+          <circle cx="42" cy="48.5" r="0.5" fill="#c0a040" />
         </g>
       )}
-      {stage >= 8 && (
+
+      {/* $200K: Sunglasses + relaxed */}
+      {stage === 8 && (
         <g>
-          <rect x="13" y="12" width="6" height="4" rx="1.5" fill="#333" opacity="0.7" />
-          <rect x="21" y="12" width="6" height="4" rx="1.5" fill="#333" opacity="0.7" />
-          <line x1="19" y1="14" x2="21" y2="14" stroke="#333" strokeWidth="0.8" />
-          <path d="M 11 26 Q 20 30 29 26" fill="none" stroke="#ff9" strokeWidth="2" strokeLinecap="round" />
+          <rect x="16" y="16" width="7" height="4.5" rx="2" fill="#2a2a2a" opacity="0.8" />
+          <rect x="27" y="16" width="7" height="4.5" rx="2" fill="#2a2a2a" opacity="0.8" />
+          <line x1="23" y1="18" x2="27" y2="18" stroke="#2a2a2a" strokeWidth="0.8" />
+          <line x1="16" y1="18" x2="12" y2="17" stroke="#2a2a2a" strokeWidth="0.6" />
+          {/* Lens gradient shine */}
+          <line x1="18" y1="17" x2="21" y2="17.5" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+          <line x1="29" y1="17" x2="32" y2="17.5" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
         </g>
       )}
     </svg>
   )
 }
 
-// ─── Stage Backgrounds ───────────────────────────────────────────────────────
+// ─── Stage Backgrounds (은은한 실루엣 파노라마) ──────────────────────────────
 
 const STAGE_BG = [
-  { grad: 'linear-gradient(180deg, #0a0a14 0%, #15151f 40%, #0d0d14 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
-  { grad: 'linear-gradient(180deg, #0a0a16 0%, #14141e 40%, #0f0f16 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.30), rgba(13,13,26,0.50))' },
-  { grad: 'linear-gradient(180deg, #0a0e18 0%, #0f1422 40%, #0a0e18 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
-  { grad: 'linear-gradient(180deg, #1a1410 0%, #201810 40%, #1a1410 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.30), rgba(13,13,26,0.50))' },
-  { grad: 'linear-gradient(180deg, #0a0a1a 0%, #14102a 40%, #0a0a1a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.30), rgba(13,13,26,0.50))' },
-  { grad: 'linear-gradient(180deg, #060818 0%, #0a1028 40%, #060818 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.25), rgba(13,13,26,0.45))' },
-  { grad: 'linear-gradient(180deg, #08081a 0%, #0e0e28 40%, #08081a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.25), rgba(13,13,26,0.45))' },
-  { grad: 'linear-gradient(180deg, #1a1008 0%, #2a1810 40%, #1a1008 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.20), rgba(13,13,26,0.40))' },
-  { grad: 'linear-gradient(180deg, #081820 0%, #0a2030 40%, #081820 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.20), rgba(13,13,26,0.40))' },
+  { grad: 'linear-gradient(180deg, #0a0a14 0%, #15151f 40%, #0d0d14 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
+  { grad: 'linear-gradient(180deg, #0a0a16 0%, #14141e 40%, #0f0f16 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
+  { grad: 'linear-gradient(180deg, #0a0e18 0%, #0f1422 40%, #0a0e18 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
+  { grad: 'linear-gradient(180deg, #1a1410 0%, #201810 40%, #1a1410 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
+  { grad: 'linear-gradient(180deg, #0a0a1a 0%, #14102a 40%, #0a0a1a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
+  { grad: 'linear-gradient(180deg, #060818 0%, #0a1028 40%, #060818 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
+  { grad: 'linear-gradient(180deg, #08081a 0%, #0e0e28 40%, #08081a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
+  { grad: 'linear-gradient(180deg, #1a1008 0%, #2a1810 40%, #1a1008 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
+  { grad: 'linear-gradient(180deg, #081820 0%, #0a2030 40%, #081820 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.5), rgba(13,13,26,0.7))' },
 ]
+
+/* Helper: 건물 실루엣 + 창문 */
+function BuildingSilhouette({ x, y, w, h, fill, windowRows = 3, windowCols = 2 }) {
+  const windows = []
+  const ww = 3, wh = 3, px = (w - windowCols * (ww + 4)) / 2 + 2, py = 6
+  for (let r = 0; r < windowRows; r++) {
+    for (let c = 0; c < windowCols; c++) {
+      const lit = (r * 3 + c * 7) % 5 !== 0
+      windows.push(
+        <rect key={`${r}-${c}`} x={x + px + c * (ww + 4)} y={y + py + r * (wh + 5)}
+          width={ww} height={wh} rx="0.5"
+          fill={lit ? 'rgba(255,200,100,0.08)' : '#181822'} />
+      )
+    }
+  }
+  return <g><rect x={x} y={y} width={w} height={h} fill={fill || '#1a1a24'} />{windows}</g>
+}
+
+/* Helper: 가로등 */
+function Streetlight({ x, baseY = 82, topY = 10 }) {
+  return (
+    <g>
+      <line x1={x} y1={topY} x2={x} y2={baseY} stroke="#2a2a36" strokeWidth="1.5" />
+      <circle cx={x} cy={topY - 1} r="3" fill="rgba(255,200,100,0.15)" />
+      <circle cx={x} cy={topY - 1} r="1.5" fill="rgba(255,200,100,0.3)" className="flicker-light" />
+      <ellipse cx={x} cy={baseY} rx="10" ry="3" fill="rgba(255,200,100,0.04)" />
+    </g>
+  )
+}
+
+/* Helper: 별 */
+function Stars({ count = 4, seed = 0 }) {
+  return Array.from({ length: count }).map((_, i) => (
+    <circle key={i}
+      cx={30 + ((i + seed) * 97) % 440}
+      cy={3 + ((i + seed) * 37) % 14}
+      r={0.4 + (i % 3) * 0.2}
+      fill="#fff"
+      opacity={0.3 + (i % 3) * 0.15}
+      className={i % 2 === 0 ? 'star-twinkle' : 'star-twinkle-2'} />
+  ))
+}
+
+/* Helper: 보도블록 */
+function Sidewalk({ y = 82 }) {
+  return (
+    <g>
+      <line x1="0" y1={y} x2="500" y2={y} stroke="#2a2a35" strokeWidth="0.8" />
+      {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480].map(x => (
+        <line key={x} x1={x} y1={y} x2={x} y2={y + 8} stroke="#2a2a35" strokeWidth="0.3" />
+      ))}
+    </g>
+  )
+}
 
 function StageBackground({ stage }) {
   const bg = STAGE_BG[stage] || STAGE_BG[0]
@@ -174,225 +466,175 @@ function StageBackground({ stage }) {
   const scenes = {
     0: ( // 고시원 골목 — 좁은 골목, 낡은 건물, 가로등, 갈라진 바닥
       <g>
-        {/* 건물 왼쪽 */}
-        <rect x="0" y="15" width="60" height="85" fill="#1a1a22" />
-        <rect x="5" y="25" width="12" height="10" fill="#252530" /><rect x="5" y="25" width="12" height="10" fill="rgba(255,200,100,0.04)" />
-        <rect x="25" y="20" width="12" height="10" fill="#252530" />
-        <rect x="5" y="45" width="12" height="10" fill="#252530" />
-        <rect x="25" y="50" width="12" height="10" fill="rgba(255,200,100,0.06)" />
-        {/* 건물 오른쪽 */}
-        <rect x="420" y="10" width="80" height="90" fill="#1a1a22" />
-        <rect x="430" y="22" width="12" height="10" fill="#252530" />
-        <rect x="455" y="30" width="12" height="10" fill="rgba(255,200,100,0.04)" />
-        <rect x="430" y="50" width="12" height="10" fill="#252530" />
-        <rect x="470" y="22" width="12" height="10" fill="#252530" />
+        <Stars count={3} seed={0} />
+        <BuildingSilhouette x={0} y={18} w={50} h={82} windowRows={4} windowCols={2} />
+        <BuildingSilhouette x={55} y={25} w={40} h={75} windowRows={3} windowCols={1} />
+        <BuildingSilhouette x={400} y={12} w={45} h={88} windowRows={4} windowCols={2} />
+        <BuildingSilhouette x={450} y={22} w={50} h={78} windowRows={3} windowCols={2} />
+        <Streetlight x={120} topY={15} />
+        <Streetlight x={350} topY={18} />
+        <Sidewalk y={82} />
+        <path d="M 150 82 L 160 90 L 175 85 L 190 92" fill="none" stroke="#2a2a34" strokeWidth="0.4" />
+        <path d="M 280 82 L 290 88 L 300 85" fill="none" stroke="#2a2a34" strokeWidth="0.4" />
+      </g>
+    ),
+    1: ( // 편의점이 있는 밤거리 장면
+      <g>
+        <Stars count={4} seed={1} />
+        {/* 왼쪽 건물 */}
+        <BuildingSilhouette x={0} y={20} w={55} h={80} windowRows={4} windowCols={2} />
+        <BuildingSilhouette x={60} y={28} w={40} h={72} windowRows={3} windowCols={1} />
+        {/* 편의점 건물 (중앙) */}
+        <rect x={180} y={22} width={120} height={68} fill="#1c1c28" />
+        {/* 간판 배경 */}
+        <rect x={185} y={24} width={110} height={14} fill="rgba(40,80,60,0.3)" rx="1" />
+        <text x="215" y="34" fill="rgba(68,220,136,0.5)" fontSize="7" fontFamily="Inter, monospace" fontWeight="700">24H</text>
+        {/* 간판 따뜻한 빛 glow */}
+        <ellipse cx={240} cy={30} rx={30} ry={5} fill="rgba(255,200,100,0.06)" />
+        {/* 편의점 창문 (밝은 노란 빛) */}
+        <rect x={188} y={42} width={20} height={22} fill="rgba(255,200,100,0.08)" rx="1" />
+        <rect x={212} y={42} width={20} height={22} fill="rgba(255,200,100,0.06)" rx="1" />
+        <rect x={236} y={42} width={35} height={22} fill="rgba(255,200,100,0.1)" rx="1" />
+        <rect x={276} y={42} width={18} height={22} fill="rgba(255,200,100,0.06)" rx="1" />
+        {/* 바닥 반사 */}
+        <ellipse cx={240} cy={88} rx={50} ry={6} fill="rgba(68,220,136,0.04)" />
+        {/* 오른쪽 건물들 */}
+        <BuildingSilhouette x={330} y={18} w={50} h={82} windowRows={4} windowCols={2} />
+        <BuildingSilhouette x={385} y={25} w={45} h={75} windowRows={3} windowCols={2} />
+        <BuildingSilhouette x={435} y={15} w={65} h={85} windowRows={4} windowCols={2} />
         {/* 가로등 */}
-        <line x1="100" y1="15" x2="100" y2="80" stroke="#3a3a44" strokeWidth="2" />
-        <circle cx="100" cy="14" r="4" fill="#ffc96630" /><circle cx="100" cy="14" r="2" fill="#ffc966" className="flicker-light" />
-        {/* 바닥 갈라짐 */}
-        <line x1="0" y1="82" x2="500" y2="82" stroke="#2a2a32" strokeWidth="1" />
-        <path d="M 150 82 L 160 90 L 170 85 L 185 92" fill="none" stroke="#2a2a32" strokeWidth="0.5" />
-        <path d="M 300 82 L 310 88 L 320 84" fill="none" stroke="#2a2a32" strokeWidth="0.5" />
-        {/* 별 */}
-        <circle cx="200" cy="8" r="0.8" fill="#fff" className="star-twinkle" />
-        <circle cx="350" cy="5" r="0.6" fill="#fff" className="star-twinkle-2" />
-        <circle cx="280" cy="12" r="0.5" fill="#ddd" className="star-twinkle" />
+        <Streetlight x={115} topY={12} />
+        <Streetlight x={310} topY={14} />
+        <Sidewalk y={82} />
       </g>
     ),
-    1: ( // 편의점 앞 — 간판, 네온빛, 가로등, 보도블록 (전체 영역)
+    2: ( // 원룸 — 모니터 실루엣, 작은 창문, 도시 불빛
       <g>
-        {/* 왼쪽 낡은 건물 */}
-        <rect x="0" y="15" width="70" height="85" fill="#1a1a24" />
-        <rect x="8" y="25" width="12" height="10" fill="#222230" />
-        <rect x="30" y="25" width="12" height="10" fill="rgba(255,200,100,0.06)" />
-        <rect x="8" y="45" width="12" height="10" fill="#222230" />
-        <rect x="30" y="45" width="12" height="10" fill="rgba(255,200,100,0.04)" />
-        {/* 편의점 건물 (중앙~오른쪽) */}
-        <rect x="160" y="10" width="200" height="80" fill="#1e1e2a" rx="2" />
-        <rect x="165" y="15" width="190" height="28" fill="#1a2a1a" rx="1" />
-        <rect x="165" y="15" width="190" height="28" fill="rgba(68,221,136,0.15)" rx="1" />
-        <text x="210" y="34" fill="#44dd88" fontSize="14" fontFamily="Inter, monospace" fontWeight="800" opacity="0.8">24H MART</text>
-        {/* 간판 글로우 */}
-        <ellipse cx="260" cy="14" rx="80" ry="6" fill="rgba(68,221,136,0.08)" />
-        {/* 간판 빛 바닥 반사 */}
-        <ellipse cx="260" cy="88" rx="80" ry="10" fill="rgba(68,221,136,0.08)" />
-        {/* 편의점 창문들 */}
-        <rect x="170" y="48" width="25" height="28" fill="rgba(255,200,100,0.1)" rx="1" />
-        <rect x="200" y="48" width="25" height="28" fill="rgba(255,200,100,0.08)" rx="1" />
-        <rect x="230" y="48" width="45" height="28" fill="rgba(255,200,100,0.12)" rx="1" />
-        <rect x="285" y="48" width="25" height="28" fill="rgba(255,200,100,0.08)" rx="1" />
-        <rect x="320" y="48" width="25" height="28" fill="rgba(255,200,100,0.06)" rx="1" />
-        {/* 오른쪽 건물 */}
-        <rect x="410" y="20" width="90" height="80" fill="#181822" />
-        <rect x="420" y="30" width="12" height="10" fill="#222230" />
-        <rect x="445" y="30" width="12" height="10" fill="rgba(255,200,100,0.04)" />
-        <rect x="470" y="30" width="12" height="10" fill="#222230" />
-        <rect x="420" y="50" width="12" height="10" fill="rgba(255,200,100,0.05)" />
-        <rect x="445" y="50" width="12" height="10" fill="#222230" />
-        {/* 가로등 3개 (균등 배치) */}
-        <line x1="90" y1="10" x2="90" y2="78" stroke="#3a3a44" strokeWidth="2" />
-        <circle cx="90" cy="9" r="4" fill="#ffc96630" /><circle cx="90" cy="9" r="2" fill="#ffc966" className="flicker-light" />
-        <ellipse cx="90" cy="82" rx="15" ry="4" fill="rgba(255,201,102,0.06)" />
-        <line x1="380" y1="12" x2="380" y2="78" stroke="#3a3a44" strokeWidth="2" />
-        <circle cx="380" cy="11" r="4" fill="#ffc96630" /><circle cx="380" cy="11" r="2" fill="#ffc966" className="flicker-light" />
-        <ellipse cx="380" cy="82" rx="15" ry="4" fill="rgba(255,201,102,0.06)" />
-        {/* 보도블록 */}
-        <line x1="0" y1="80" x2="500" y2="80" stroke="#2a2a35" strokeWidth="1" />
-        {[0,35,70,105,140,175,210,245,280,315,350,385,420,455,490].map(x => (
-          <line key={x} x1={x} y1="80" x2={x} y2="92" stroke="#2a2a35" strokeWidth="0.3" />
-        ))}
-        {/* 별 */}
-        <circle cx="30" cy="5" r="0.7" fill="#fff" className="star-twinkle" />
-        <circle cx="130" cy="3" r="0.5" fill="#ddd" className="star-twinkle-2" />
-        <circle cx="460" cy="6" r="0.6" fill="#eee" className="star-twinkle" />
-      </g>
-    ),
-    2: ( // 원룸 책상 — 듀얼 모니터, 작은 창문, 도시불빛
-      <g>
-        {/* 벽 */}
         <rect x="0" y="0" width="500" height="100" fill="#10101a" />
         {/* 창문 */}
-        <rect x="360" y="8" width="80" height="50" rx="2" fill="#0a0a16" stroke="#2a2a36" strokeWidth="1" />
-        <rect x="362" y="10" width="76" height="46" rx="1" fill="#0a0a16" />
-        {/* 창밖 도시불빛 */}
-        {[370,380,390,400,410,420,425,430].map((x, i) => (
-          <rect key={x} x={x} y={20 + (i%3)*8} width={2 + i%2} height={15 + (i%4)*5} fill={`rgba(${100+i*15},${150+i*10},255,0.15)`} />
+        <rect x="360" y="10" width="70" height="45" rx="2" fill="#0a0a16" stroke="#22223a" strokeWidth="0.8" />
+        <line x1="395" y1="10" x2="395" y2="55" stroke="#22223a" strokeWidth="0.4" />
+        {/* 창밖 빌딩 실루엣 */}
+        {[368, 378, 388, 400, 410, 418].map((x, i) => (
+          <rect key={x} x={x} y={20 + (i % 3) * 6} width={3 + i % 2} height={15 + (i % 4) * 6}
+            fill={`rgba(${80 + i * 12},${120 + i * 10},200,0.12)`} />
         ))}
-        {/* 모니터 2개 */}
-        <rect x="80" y="40" width="60" height="38" rx="2" fill="#0d0d1a" stroke="#42a5f5" strokeWidth="0.5" />
-        <rect x="82" y="42" width="56" height="32" rx="1" fill="rgba(66,165,245,0.08)" />
-        <text x="92" y="60" fill="#42a5f5" fontSize="5" opacity="0.5" fontFamily="monospace">$ profit +3.2%</text>
-        <rect x="150" y="40" width="60" height="38" rx="2" fill="#0d0d1a" stroke="#42a5f5" strokeWidth="0.5" />
-        <rect x="152" y="42" width="56" height="32" rx="1" fill="rgba(66,165,245,0.06)" />
-        {/* 모니터 차트라인 */}
-        <polyline points="155,65 165,58 175,62 185,55 195,60 205,52" fill="none" stroke="#00c853" strokeWidth="0.8" opacity="0.4" />
-        {/* 모니터 스탠드 */}
-        <rect x="100" y="78" width="20" height="3" rx="1" fill="#2a2a36" />
-        <rect x="108" y="76" width="4" height="4" fill="#2a2a36" />
-        <rect x="170" y="78" width="20" height="3" rx="1" fill="#2a2a36" />
-        <rect x="178" y="76" width="4" height="4" fill="#2a2a36" />
+        {/* 모니터 2개 실루엣 */}
+        <rect x="100" y="45" width="50" height="32" rx="2" fill="#0d0d1a" stroke="rgba(66,165,245,0.2)" strokeWidth="0.5" />
+        <rect x="102" y="47" width="46" height="26" rx="1" fill="rgba(66,165,245,0.04)" />
+        <polyline points="106,65 114,58 122,62 130,55 138,60 146,54" fill="none" stroke="rgba(0,200,83,0.2)" strokeWidth="0.6" />
+        <rect x="158" y="45" width="50" height="32" rx="2" fill="#0d0d1a" stroke="rgba(66,165,245,0.15)" strokeWidth="0.5" />
+        <rect x="160" y="47" width="46" height="26" rx="1" fill="rgba(66,165,245,0.03)" />
+        {/* 스탠드 */}
+        <rect x="118" y="77" width="14" height="3" rx="1" fill="#222236" />
+        <rect x="176" y="77" width="14" height="3" rx="1" fill="#222236" />
         {/* 책상 */}
-        <rect x="60" y="80" width="180" height="4" rx="1" fill="#2a2a36" />
-        {/* 모니터 글로우 */}
-        <ellipse cx="140" cy="85" rx="80" ry="10" fill="rgba(66,165,245,0.04)" />
+        <rect x="80" y="80" width="150" height="3" rx="1" fill="#222236" />
+        <ellipse cx="155" cy="85" rx="60" ry="8" fill="rgba(66,165,245,0.02)" />
       </g>
     ),
-    3: ( // 깔끔한 카페 — 큰 창문, 따뜻한 조명
+    3: ( // 깔끔한 카페 — 천장조명, 큰 창문, 소파
       <g>
-        <rect x="0" y="0" width="500" height="100" fill="#18140e" />
+        <rect x="0" y="0" width="500" height="100" fill="#14120e" />
         {/* 큰 창문 */}
-        <rect x="300" y="5" width="180" height="65" rx="3" fill="#10100a" stroke="#3a3020" strokeWidth="1" />
-        {/* 창밖 불빛 */}
-        {[310,330,350,370,390,410,430,450].map((x, i) => (
-          <rect key={x} x={x} y={15 + (i%3)*10} width={3} height={10 + (i%4)*8} fill={`rgba(255,${180+i*8},${80+i*5},0.1)`} />
+        <rect x="300" y="8" width="160" height="55" rx="2" fill="#0e0e08" stroke="#2a2418" strokeWidth="0.8" />
+        <line x1="380" y1="8" x2="380" y2="63" stroke="#2a2418" strokeWidth="0.4" />
+        {/* 창밖 도시 실루엣 */}
+        {[310, 325, 340, 360, 390, 410, 430, 445].map((x, i) => (
+          <rect key={x} x={x} y={18 + (i % 3) * 8} width={4}
+            height={12 + (i % 4) * 6} fill={`rgba(255,${180 + i * 6},${80 + i * 5},0.07)`} />
         ))}
-        {/* 창문 프레임 중간 */}
-        <line x1="390" y1="5" x2="390" y2="70" stroke="#3a3020" strokeWidth="0.5" />
         {/* 천장 조명 */}
-        <line x1="200" y1="0" x2="200" y2="8" stroke="#4a4030" strokeWidth="0.5" />
-        <circle cx="200" cy="10" r="4" fill="rgba(232,192,128,0.15)" />
-        <circle cx="200" cy="10" r="2" fill="rgba(232,192,128,0.3)" className="flicker-light" />
-        <ellipse cx="200" cy="85" rx="80" ry="10" fill="rgba(232,192,128,0.04)" />
+        <line x1="180" y1="0" x2="180" y2="6" stroke="#3a3020" strokeWidth="0.4" />
+        <circle cx="180" cy="8" r="3" fill="rgba(232,192,128,0.1)" />
+        <circle cx="180" cy="8" r="1.5" fill="rgba(232,192,128,0.2)" className="flicker-light" />
+        <ellipse cx="180" cy="85" rx="60" ry="8" fill="rgba(232,192,128,0.03)" />
         {/* 바닥 */}
-        <rect x="0" y="78" width="500" height="22" fill="#1a1610" />
-        {/* 왼쪽 소파/의자 */}
-        <rect x="20" y="55" width="40" height="25" rx="4" fill="#2a2218" />
-        <rect x="80" y="60" width="25" height="20" rx="3" fill="#2a2218" />
+        <rect x="0" y="78" width="500" height="22" fill="#18150e" />
+        {/* 소파 */}
+        <rect x="20" y="58" width="35" height="22" rx="3" fill="#24201a" />
+        <rect x="70" y="62" width="22" height="18" rx="2" fill="#24201a" />
         {/* 테이블 */}
-        <rect x="75" y="72" width="35" height="3" rx="1" fill="#3a3020" />
-        <circle cx="90" cy="70" r="2" fill="rgba(232,192,128,0.15)" />
+        <rect x="68" y="74" width="28" height="2.5" rx="1" fill="#302a1e" />
       </g>
     ),
-    4: ( // 도심 거리 — 네온사인, 빌딩, 반사광
+    4: ( // 도심 네온 거리 — 빌딩, 네온 라인, 반사
       <g>
-        {/* 빌딩들 */}
-        <rect x="0" y="5" width="40" height="95" fill="#1a1a28" />
-        <rect x="45" y="15" width="35" height="85" fill="#161624" />
-        <rect x="400" y="0" width="45" height="100" fill="#1a1a28" />
-        <rect x="450" y="10" width="50" height="90" fill="#161624" />
-        {/* 네온사인 라인 */}
-        <line x1="5" y1="20" x2="5" y2="70" stroke="#b794f6" strokeWidth="1.5" opacity="0.4" className="neon-pulse" />
-        <line x1="35" y1="30" x2="35" y2="60" stroke="#ff44aa" strokeWidth="1" opacity="0.3" className="neon-pulse-2" />
-        <line x1="410" y1="15" x2="410" y2="65" stroke="#42a5f5" strokeWidth="1" opacity="0.3" className="neon-pulse" />
-        <line x1="475" y1="25" x2="475" y2="75" stroke="#b794f6" strokeWidth="1.5" opacity="0.4" className="neon-pulse-2" />
-        {/* 창문 빛 */}
-        {[8,18,52,58,408,420,458,468,478].map((x, i) => (
-          <rect key={i} x={x} y={25 + (i*11)%40} width="5" height="5" fill={`rgba(255,${180+i*8},${100+i*10},0.08)`} rx="0.5" />
-        ))}
-        {/* 바닥 반사 */}
+        <Stars count={3} seed={4} />
+        <BuildingSilhouette x={0} y={8} w={35} h={92} windowRows={5} windowCols={1} />
+        <BuildingSilhouette x={40} y={18} w={30} h={82} windowRows={4} windowCols={1} />
+        <BuildingSilhouette x={400} y={5} w={40} h={95} windowRows={5} windowCols={2} />
+        <BuildingSilhouette x={445} y={12} w={55} h={88} windowRows={4} windowCols={2} />
+        {/* 네온 라인 */}
+        <line x1="5" y1="22" x2="5" y2="65" stroke="#b794f6" strokeWidth="1" opacity="0.3" className="neon-pulse" />
+        <line x1="30" y1="32" x2="30" y2="55" stroke="#ff44aa" strokeWidth="0.8" opacity="0.2" className="neon-pulse-2" />
+        <line x1="410" y1="18" x2="410" y2="60" stroke="#42a5f5" strokeWidth="0.8" opacity="0.2" className="neon-pulse" />
+        <line x1="470" y1="28" x2="470" y2="70" stroke="#b794f6" strokeWidth="1" opacity="0.3" className="neon-pulse-2" />
+        {/* 바닥 젖은 반사 */}
         <rect x="0" y="82" width="500" height="18" fill="#0a0a16" />
-        <line x1="0" y1="82" x2="500" y2="82" stroke="rgba(183,148,246,0.15)" strokeWidth="0.5" />
-        <ellipse cx="20" cy="90" rx="20" ry="4" fill="rgba(183,148,246,0.04)" />
-        <ellipse cx="460" cy="90" rx="25" ry="4" fill="rgba(66,165,245,0.04)" />
-        {/* 별 */}
-        <circle cx="200" cy="5" r="0.6" fill="#fff" className="star-twinkle" />
-        <circle cx="300" cy="8" r="0.5" fill="#ddd" className="star-twinkle-2" />
+        <line x1="0" y1="82" x2="500" y2="82" stroke="rgba(183,148,246,0.1)" strokeWidth="0.4" />
+        <ellipse cx="20" cy="90" rx="15" ry="3" fill="rgba(183,148,246,0.03)" />
+        <ellipse cx="460" cy="90" rx="18" ry="3" fill="rgba(66,165,245,0.03)" />
       </g>
     ),
-    5: ( // 한강 야경 — 강물, 다리, 빌딩 반사, 물결
+    5: ( // 한강 야경 — 스카이라인, 강물, 다리
       <g>
-        {/* 하늘 */}
-        {/* 먼 빌딩 실루엣 */}
-        {[60,90,120,140,180,210,250,280,310,340,370,400].map((x, i) => (
-          <rect key={i} x={x} y={25 + (i%3)*8} width={12 + i%8} height={35 - (i%3)*8} fill="#0c0c20" />
+        <Stars count={4} seed={5} />
+        {/* 스카이라인 실루엣 */}
+        {[50, 80, 110, 135, 170, 200, 240, 270, 300, 330, 360, 390, 420].map((x, i) => (
+          <rect key={i} x={x} y={28 + (i % 3) * 6}
+            width={10 + i % 6} height={30 - (i % 3) * 6}
+            fill="#0c0c20" />
         ))}
-        {/* 빌딩 창문 빛 */}
-        {[65,95,125,185,255,315,345,375,405].map((x, i) => (
-          <rect key={i} x={x} y={30 + (i*7)%20} width="2" height="2" fill={`rgba(255,${200+i*5},${80+i*10},0.15)`} />
+        {/* 빌딩 창문 빛 (작은 점들) */}
+        {[55, 90, 120, 180, 250, 310, 365, 395, 425].map((x, i) => (
+          <rect key={i} x={x} y={32 + (i * 5) % 16} width="2" height="2"
+            fill={`rgba(255,${200 + i * 4},${80 + i * 8},0.1)`} />
         ))}
         {/* 강물 */}
-        <rect x="0" y="62" width="500" height="38" fill="#0a1530" />
+        <rect x="0" y="60" width="500" height="40" fill="#0a1530" />
         {/* 다리 */}
-        <line x1="80" y1="55" x2="420" y2="55" stroke="#1a1a30" strokeWidth="4" />
-        <line x1="80" y1="53" x2="420" y2="53" stroke="#22223a" strokeWidth="1" />
-        {[120,170,220,270,320,370].map(x => (
-          <line key={x} x1={x} y1="55" x2={x} y2="62" stroke="#1a1a30" strokeWidth="1.5" />
+        <line x1="70" y1="56" x2="430" y2="56" stroke="#161630" strokeWidth="3" />
+        {[110, 160, 210, 260, 310, 360].map(x => (
+          <line key={x} x1={x} y1="56" x2={x} y2="60" stroke="#161630" strokeWidth="1" />
         ))}
-        {/* 물위 반사 */}
-        <ellipse cx="150" cy="75" rx="20" ry="2" fill="rgba(255,215,0,0.08)" className="water-glow" />
-        <ellipse cx="300" cy="72" rx="25" ry="2" fill="rgba(255,215,0,0.06)" className="water-glow" />
-        <ellipse cx="400" cy="78" rx="15" ry="1.5" fill="rgba(66,165,245,0.06)" className="water-glow" />
-        {/* 물결 라인 */}
-        <path d="M 0 68 Q 50 66 100 68 Q 150 70 200 68 Q 250 66 300 68 Q 350 70 400 68 Q 450 66 500 68" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-        {/* 별 */}
-        <circle cx="100" cy="8" r="0.7" fill="#ffd700" className="star-twinkle" />
-        <circle cx="250" cy="5" r="0.5" fill="#fff" className="star-twinkle-2" />
-        <circle cx="450" cy="10" r="0.6" fill="#ddd" className="star-twinkle" />
+        {/* 물결 */}
+        <path d="M 0 66 Q 50 64 100 66 Q 150 68 200 66 Q 250 64 300 66 Q 350 68 400 66 Q 450 64 500 66"
+          fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="0.4" />
+        {/* 반사광 */}
+        <ellipse cx="150" cy="75" rx="15" ry="2" fill="rgba(255,215,0,0.05)" className="water-glow" />
+        <ellipse cx="300" cy="72" rx="20" ry="2" fill="rgba(255,215,0,0.04)" className="water-glow" />
       </g>
     ),
-    6: ( // 펜트하우스 — 고층 야경, 불빛, 별
+    6: ( // 펜트하우스 — 고층 야경, 난간, 도시 불빛
       <g>
-        {/* 바닥 (발코니) */}
-        <rect x="0" y="75" width="500" height="25" fill="#1a1a28" />
-        <line x1="0" y1="75" x2="500" y2="75" stroke="#2a2a3a" strokeWidth="1" />
+        <Stars count={8} seed={6} />
+        {/* 먼 빌딩 실루엣 */}
+        {[25, 70, 140, 220, 300, 380, 440].map((x, i) => (
+          <rect key={i} x={x} y={32 + (i % 4) * 8}
+            width={6 + i % 4} height={38 - (i % 4) * 8}
+            fill="#10101a" opacity="0.5" />
+        ))}
         {/* 난간 */}
-        <line x1="0" y1="72" x2="500" y2="72" stroke="#3a3a4a" strokeWidth="1.5" />
-        {[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480].map(x => (
-          <line key={x} x1={x} y1="72" x2={x} y2="75" stroke="#3a3a4a" strokeWidth="0.5" />
+        <line x1="0" y1="72" x2="500" y2="72" stroke="#2a2a3a" strokeWidth="1.2" />
+        {Array.from({ length: 17 }).map((_, i) => (
+          <line key={i} x1={i * 30} y1="72" x2={i * 30} y2="75" stroke="#2a2a3a" strokeWidth="0.4" />
         ))}
-        {/* 아래 도시불빛 (수백개) */}
-        {Array.from({length: 60}).map((_, i) => (
-          <circle key={i} cx={10 + (i * 31) % 480} cy={78 + (i * 7) % 15}
-            r={0.5 + (i%3)*0.3}
-            fill={['#ffd700','#fff','#42a5f5','#ff6b6b','#b794f6'][i%5]}
-            opacity={0.15 + (i%4)*0.05} />
-        ))}
-        {/* 먼 빌딩 */}
-        {[30,80,160,250,320,400,450].map((x, i) => (
-          <rect key={i} x={x} y={30 + (i%4)*10} width={8 + i%5} height={42 - (i%4)*10} fill="#10101a" opacity="0.6" />
-        ))}
-        {/* 별 */}
-        {Array.from({length: 12}).map((_, i) => (
-          <circle key={i} cx={20 + (i * 41) % 460} cy={5 + (i * 13) % 20}
-            r={0.3 + (i%3)*0.2} fill="#fff" opacity={0.3 + (i%3)*0.15}
-            className={i%2 === 0 ? 'star-twinkle' : 'star-twinkle-2'} />
+        {/* 바닥 */}
+        <rect x="0" y="75" width="500" height="25" fill="#161624" />
+        {/* 도시 불빛 (작은 점들) */}
+        {Array.from({ length: 40 }).map((_, i) => (
+          <circle key={i}
+            cx={8 + (i * 37) % 484}
+            cy={78 + (i * 11) % 12}
+            r={0.4 + (i % 3) * 0.2}
+            fill={['#ffd700', '#fff', '#42a5f5', '#ff8888', '#b794f6'][i % 5]}
+            opacity={0.1 + (i % 4) * 0.04} />
         ))}
       </g>
     ),
-    7: ( // 해안도로 — 바다, 야자수, 석양 그라데이션
+    7: ( // 해안도로 — 바다, 야자수, 석양
       <g>
-        {/* 석양 하늘 */}
-        <rect x="0" y="0" width="500" height="50" fill="url(#sunset-grad)" />
         <defs>
           <linearGradient id="sunset-grad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#2a1808" />
@@ -400,52 +642,50 @@ function StageBackground({ stage }) {
             <stop offset="100%" stopColor="#1a1008" />
           </linearGradient>
         </defs>
-        {/* 태양 */}
-        <circle cx="400" cy="25" r="15" fill="rgba(255,136,85,0.2)" />
-        <circle cx="400" cy="25" r="8" fill="rgba(255,136,85,0.3)" />
+        <rect x="0" y="0" width="500" height="50" fill="url(#sunset-grad)" />
+        {/* 석양 */}
+        <circle cx="400" cy="28" r="12" fill="rgba(255,136,85,0.15)" />
+        <circle cx="400" cy="28" r="6" fill="rgba(255,136,85,0.2)" />
         {/* 바다 */}
-        <rect x="0" y="55" width="500" height="45" fill="#0a1828" />
-        <path d="M 0 58 Q 60 55 120 58 Q 180 61 240 58 Q 300 55 360 58 Q 420 61 500 58" fill="none" stroke="rgba(255,136,85,0.1)" strokeWidth="0.5" />
-        {/* 바다 반사 */}
-        <ellipse cx="400" cy="65" rx="40" ry="3" fill="rgba(255,136,85,0.08)" className="water-glow" />
+        <rect x="0" y="52" width="500" height="25" fill="#0a1828" />
+        <path d="M 0 56 Q 60 54 120 56 Q 180 58 240 56 Q 300 54 360 56 Q 420 58 500 56"
+          fill="none" stroke="rgba(255,136,85,0.06)" strokeWidth="0.4" />
+        <ellipse cx="400" cy="62" rx="30" ry="2" fill="rgba(255,136,85,0.05)" className="water-glow" />
         {/* 도로 */}
-        <rect x="0" y="72" width="500" height="12" fill="#1a1a22" />
-        <line x1="0" y1="78" x2="500" y2="78" stroke="#2a2a32" strokeWidth="0.5" strokeDasharray="10 8" />
+        <rect x="0" y="75" width="500" height="10" fill="#161620" />
+        <line x1="0" y1="80" x2="500" y2="80" stroke="#22222e" strokeWidth="0.4" strokeDasharray="8 6" />
+        <rect x="0" y="85" width="500" height="15" fill="#1a1a20" />
         {/* 야자수 */}
-        <line x1="440" y1="15" x2="440" y2="55" stroke="#2a4020" strokeWidth="3" />
-        <ellipse cx="428" cy="12" rx="18" ry="7" fill="#2a5020" opacity="0.7" className="palm-sway" />
-        <ellipse cx="452" cy="10" rx="15" ry="6" fill="#2a5020" opacity="0.6" className="palm-sway" />
-        <ellipse cx="435" cy="16" rx="12" ry="5" fill="#305028" opacity="0.5" className="palm-sway" />
+        <line x1="435" y1="18" x2="435" y2="52" stroke="#1e3818" strokeWidth="2.5" />
+        <ellipse cx="422" cy="15" rx="16" ry="6" fill="#1e4018" opacity="0.6" className="palm-sway" />
+        <ellipse cx="448" cy="13" rx="13" ry="5" fill="#1e4018" opacity="0.5" className="palm-sway" />
+        <ellipse cx="430" cy="19" rx="10" ry="4" fill="#244820" opacity="0.4" className="palm-sway" />
+        <Stars count={3} seed={7} />
       </g>
     ),
-    8: ( // 프라이빗 비치 — 열대 해변, 맑은 바다, 야자수, 해먹
+    8: ( // 프라이빗 비치 — 열대 해변, 맑은 바다, 야자수
       <g>
-        {/* 하늘 */}
-        <rect x="0" y="0" width="500" height="50" fill="#082028" />
+        <Stars count={5} seed={8} />
+        <rect x="0" y="0" width="500" height="48" fill="#082028" />
         {/* 바다 */}
-        <rect x="0" y="45" width="500" height="20" fill="#0a2838" />
-        <rect x="0" y="50" width="500" height="15" fill="rgba(64,224,208,0.06)" />
-        <path d="M 0 48 Q 50 46 100 48 Q 150 50 200 48 Q 250 46 300 48 Q 350 50 400 48 Q 450 46 500 48" fill="none" stroke="rgba(64,224,208,0.1)" strokeWidth="0.5" />
-        {/* 모래 해변 */}
-        <rect x="0" y="65" width="500" height="35" fill="#2a2418" rx="0" />
-        <rect x="0" y="65" width="500" height="5" fill="#3a3420" />
+        <rect x="0" y="45" width="500" height="18" fill="#0a2838" />
+        <rect x="0" y="50" width="500" height="10" fill="rgba(64,224,208,0.04)" />
+        <path d="M 0 48 Q 60 46 120 48 Q 180 50 240 48 Q 300 46 360 48 Q 420 50 500 48"
+          fill="none" stroke="rgba(64,224,208,0.06)" strokeWidth="0.4" />
+        {/* 모래 */}
+        <rect x="0" y="63" width="500" height="37" fill="#221e14" />
+        <rect x="0" y="63" width="500" height="4" fill="#2a2418" />
         {/* 야자수 왼쪽 */}
-        <line x1="50" y1="10" x2="50" y2="55" stroke="#2a4020" strokeWidth="3.5" />
-        <ellipse cx="35" cy="8" rx="20" ry="7" fill="#2a5020" opacity="0.7" className="palm-sway" />
-        <ellipse cx="62" cy="6" rx="16" ry="6" fill="#2a5020" opacity="0.6" className="palm-sway" />
-        <ellipse cx="45" cy="14" rx="14" ry="5" fill="#305028" opacity="0.5" className="palm-sway" />
+        <line x1="45" y1="12" x2="45" y2="52" stroke="#1e3818" strokeWidth="3" />
+        <ellipse cx="30" cy="10" rx="18" ry="6" fill="#1e4018" opacity="0.6" className="palm-sway" />
+        <ellipse cx="58" cy="8" rx="14" ry="5" fill="#1e4018" opacity="0.5" className="palm-sway" />
+        <ellipse cx="40" cy="15" rx="12" ry="4" fill="#244820" opacity="0.4" className="palm-sway" />
         {/* 야자수 오른쪽 */}
-        <line x1="440" y1="15" x2="440" y2="55" stroke="#2a4020" strokeWidth="3" />
-        <ellipse cx="428" cy="12" rx="17" ry="7" fill="#2a5020" opacity="0.6" className="palm-sway" />
-        <ellipse cx="453" cy="10" rx="14" ry="6" fill="#2a5020" opacity="0.5" className="palm-sway" />
+        <line x1="435" y1="16" x2="435" y2="52" stroke="#1e3818" strokeWidth="2.5" />
+        <ellipse cx="422" cy="13" rx="15" ry="6" fill="#1e4018" opacity="0.5" className="palm-sway" />
+        <ellipse cx="448" cy="11" rx="12" ry="5" fill="#1e4018" opacity="0.4" className="palm-sway" />
         {/* 해먹 */}
-        <path d="M 45 40 Q 75 52 105 40" fill="none" stroke="#aa6633" strokeWidth="1.5" opacity="0.6" />
-        {/* 별 */}
-        {Array.from({length: 8}).map((_, i) => (
-          <circle key={i} cx={60 + (i * 53) % 380} cy={5 + (i * 9) % 15}
-            r={0.4 + (i%3)*0.2} fill="#fff" opacity={0.25 + (i%3)*0.1}
-            className={i%2 === 0 ? 'star-twinkle' : 'star-twinkle-2'} />
-        ))}
+        <path d="M 40 38 Q 70 48 100 38" fill="none" stroke="rgba(170,100,50,0.3)" strokeWidth="1" />
       </g>
     ),
   }
@@ -454,7 +694,7 @@ function StageBackground({ stage }) {
     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', borderRadius: 16 }}>
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: bg.grad }} />
       <svg width="100%" height="100%" viewBox="0 0 500 100" preserveAspectRatio="none"
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.35 }}>
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.28 }}>
         {scenes[stage]}
       </svg>
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: bg.overlay }} />
@@ -604,33 +844,30 @@ function CharacterProfileCard({ stage, journey }) {
   return (
     <div style={{
       background: '#1a1a2e', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
-      padding: '16px 20px', position: 'relative', overflow: 'hidden',
+      padding: 12, position: 'relative', overflow: 'hidden',
       backgroundImage: `linear-gradient(to top right, ${tint}, transparent)`,
       width: '100%',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ flexShrink: 0, width: 50, height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ flexShrink: 0, width: 55, height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <VectorChar stage={stage} height={100} faceRight />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 10, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.7 }}>현재 단계</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace', marginBottom: 4 }}>{current.icon} {current.label}</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace', marginBottom: 4, whiteSpace: 'nowrap' }}>{current.icon} {current.label}</div>
           {next ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-              <span style={{ fontSize: 12, color: '#4b5563', fontFamily: 'Inter, monospace', lineHeight: 1.7 }}>다음: {next.label}</span>
-              <span style={{ fontSize: 10, color: '#374151' }}>🔒</span>
+            <div style={{ marginBottom: 8, whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 11, color: '#4b5563', fontFamily: 'Inter, monospace', lineHeight: 1.7 }}>다음: {next.label} 🔒</span>
             </div>
-          ) : <div style={{ fontSize: 12, color: '#fbbf24', fontFamily: 'Inter, monospace', marginBottom: 10, lineHeight: 1.7 }}>최종 단계 달성!</div>}
+          ) : <div style={{ fontSize: 11, color: '#fbbf24', fontFamily: 'Inter, monospace', marginBottom: 8, lineHeight: 1.7 }}>최종 단계 달성!</div>}
           {next && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 11, color: '#9e9e9e', fontFamily: 'Inter, monospace', lineHeight: 1.7 }}>다음 변신까지</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: INFO, fontFamily: 'Inter, monospace', lineHeight: 1.7 }}>{fmtDollar(stageRemaining)} 남음</span>
-              </div>
-              <div style={{ width: '100%', height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <div style={{ fontSize: 11, color: '#9e9e9e', fontFamily: 'Inter, monospace', lineHeight: 1.7, marginBottom: 2 }}>다음 변신까지</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: INFO, fontFamily: 'Inter, monospace', lineHeight: 1.7, marginBottom: 6 }}>{fmtDollar(stageRemaining)} 남음</div>
+              <div style={{ width: '100%', height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
                 <div style={{ width: `${stageProgress}%`, height: '100%', borderRadius: 3, background: stage <= 1 ? '#cd7f32' : stage <= 4 ? INFO : '#ffd700', transition: 'width 0.5s' }} />
               </div>
-              <div style={{ fontSize: 10, color: '#4b5563', fontFamily: 'Inter, monospace', marginTop: 3, textAlign: 'right', lineHeight: 1.7 }}>{stageProgress.toFixed(1)}%</div>
+              <div style={{ fontSize: 10, color: '#4b5563', fontFamily: 'Inter, monospace', marginTop: 2, textAlign: 'right', lineHeight: 1.7 }}>{stageProgress.toFixed(1)}%</div>
             </div>
           )}
         </div>
@@ -737,9 +974,9 @@ function ProgressSection({ journey, ps, curve, personalBests, stage }) {
             {journey.nextCpRemaining > 0 && <div style={{ fontSize: 9, color: '#9e9e9e', fontFamily: 'Inter, monospace', textAlign: 'center', lineHeight: 1.7 }}>다음까지 {fmtK(journey.nextCpRemaining)}</div>}
             <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '4px solid rgba(255,255,255,0.15)' }} />
           </div>
-          {/* 캐릭터 (65px, 오른쪽 바라봄) */}
+          {/* 캐릭터 (64px, 오른쪽 바라봄) */}
           <div className="char-bounce">
-            <VectorChar stage={stage} height={65} faceRight />
+            <VectorChar stage={stage} height={64} faceRight />
           </div>
         </div>
       </div>
