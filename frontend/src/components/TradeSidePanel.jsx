@@ -2,37 +2,15 @@
  * TradeSidePanel.jsx — 날짜별 트레이드 상세 사이드 패널
  *
  * 달력 날짜 클릭 → 오른쪽 슬라이드인 패널
- * 트레이드 카드, 감정 태그, 규칙 준수 체크, 메모, 스크린샷 업로드
+ * 트레이드 카드 (편집/삭제), 새 매매 등록
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { formatPnl } from '../utils/format'
+import { formatPnl, formatDollarKMB, parseDollarInput, formatDollarInput } from '../utils/format'
+import { createTrade, updateTrade, deleteTrade } from '../api/trades'
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토']
-
-const EMOTION_TAGS = [
-  { label: '침착', type: 'positive' },
-  { label: '자신감', type: 'positive' },
-  { label: '조급', type: 'negative' },
-  { label: 'FOMO', type: 'negative' },
-  { label: '복수매매', type: 'negative' },
-  { label: '과신', type: 'negative' },
-  { label: '불안', type: 'negative' },
-  { label: '무계획', type: 'negative' },
-]
-
-const RULES = [
-  '좋은 판에만 앉기',
-  '잃지 않는 구조 우선',
-  '흥분은 잡음, 냉정하게',
-  '현금은 옵션이다',
-  '복구 욕망 금지',
-]
-
-const TAG_COLORS = {
-  positive: { bg: 'rgba(0,200,83,0.15)', border: '#00c853', color: '#00c853' },
-  negative: { bg: 'rgba(255,23,68,0.15)', border: '#ff1744', color: '#ff1744' },
-  custom: { bg: 'rgba(66,165,245,0.15)', border: '#42a5f5', color: '#42a5f5' },
-}
+const CHAINS = ['Solana', 'Base', 'Bnb', 'etc']
+const TRADE_TYPES = ['Viral', 'Cult', 'KOL / Cabal', 'Political', 'Reversal', 'AI', 'Tech', 'Animal', 'Meta', 'seed', 'Elon', 'CZ', 'HeYi', 'Trump', 'Binance', 'ETC']
 
 function formatDateKr(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
@@ -49,6 +27,40 @@ function formatMcap(value) {
   if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}K`
   return `$${value.toFixed(0)}`
 }
+
+function solBadgeStyle() {
+  return {
+    fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 4,
+    background: 'linear-gradient(90deg, #9945FF, #14F195)',
+    color: '#ffffff', fontFamily: 'Inter, monospace',
+  }
+}
+
+function bscBadgeStyle() {
+  return {
+    fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 4,
+    background: 'rgba(243,186,47,0.15)', color: '#f3ba2f',
+    fontFamily: 'Inter, monospace',
+  }
+}
+
+function chainBadge(chain) {
+  if (!chain) return null
+  if (chain === 'Solana') return <span style={solBadgeStyle()}>SOL</span>
+  if (chain === 'BNB' || chain === 'BSC' || chain === 'Bnb') return <span style={bscBadgeStyle()}>BSC</span>
+  return <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: '#9e9e9e', fontFamily: 'Inter, monospace' }}>{chain}</span>
+}
+
+/* ─── PnL comma formatter ─────────────────────────────── */
+function handlePnlInput(raw) {
+  const isNeg = raw.startsWith('-')
+  const stripped = raw.replace(/[^0-9.]/g, '')
+  if (stripped === '') return isNeg ? '-' : ''
+  const parts = stripped.split('.')
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return isNeg ? '-' + parts.join('.') : parts.join('.')
+}
+function parsePnlNum(v) { return Number(String(v).replace(/,/g, '')) }
 
 /* ─── 요약 미니 카드 ──────────────────────────────────────── */
 function SummaryCards({ trades }) {
@@ -86,213 +98,455 @@ function SummaryCards({ trades }) {
   )
 }
 
-/* ─── 감정 태그 ──────────────────────────────────────────── */
-function EmotionTags({ selected, onToggle, customTags, onAddCustom }) {
-  const [adding, setAdding] = useState(false)
-  const [newTag, setNewTag] = useState('')
-  const inputRef = useRef(null)
+/* ─── 새 매매 등록 폼 ───────────────────────────────────── */
+function AddTradeForm({ dateStr, onCreated, onCancel }) {
+  const [ticker, setTicker] = useState('')
+  const [chain, setChain] = useState('Solana')
+  const [ca, setCa] = useState('')
+  const [pnl, setPnl] = useState('')
+  const [returnPercent, setReturnPercent] = useState('')
+  const [tradeType, setTradeType] = useState('')
+  const [avgEntryMc, setAvgEntryMc] = useState('')
+  const [isMine, setIsMine] = useState(false)
+  const [tradeStyle, setTradeStyle] = useState('')
+  const [memo, setMemo] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  useEffect(() => {
-    if (adding && inputRef.current) inputRef.current.focus()
-  }, [adding])
+  const pnlNum = parsePnlNum(pnl)
+  const returnNum = Number(returnPercent)
+  const calculatedEntry = (pnl && returnPercent && !isNaN(pnlNum) && !isNaN(returnNum) && returnNum !== 0)
+    ? (() => {
+        let nr = returnNum
+        if ((pnlNum > 0 && returnNum < 0) || (pnlNum < 0 && returnNum > 0)) nr = -Math.abs(returnNum)
+        const e = pnlNum / (nr / 100)
+        return e > 0 ? e.toFixed(2) : ''
+      })()
+    : ''
 
-  const allTags = [...EMOTION_TAGS, ...customTags.map((t) => ({ label: t, type: 'custom' }))]
+  const handleSubmit = async () => {
+    if (!ticker) { setError('종목명을 입력하세요'); return }
+    if (!pnl || pnl === '-' || !returnPercent) { setError('PnL ($)과 PnL (%)을 입력하세요'); return }
+    if (isNaN(pnlNum) || !Number.isFinite(pnlNum)) { setError('PnL이 올바르지 않습니다'); return }
+    if (isNaN(returnNum) || !Number.isFinite(returnNum) || returnNum === 0) { setError('PnL %가 올바르지 않습니다'); return }
 
-  return (
-    <div style={{ marginTop: 10 }}>
-      <div style={{ fontSize: 10, color: '#6b7280', fontFamily: 'Inter, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-        감정 태그
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        {allTags.map((tag) => {
-          const isSelected = selected.includes(tag.label)
-          const colors = TAG_COLORS[tag.type]
-          return (
-            <button
-              key={tag.label}
-              onClick={() => onToggle(tag.label)}
-              style={{
-                padding: '4px 10px', borderRadius: 12, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                border: `1px solid ${colors.border}`,
-                background: isSelected ? colors.bg : 'transparent',
-                color: isSelected ? colors.color : '#6b7280',
-                transition: 'all 0.15s',
-                fontFamily: "'Noto Sans KR', sans-serif",
-              }}
-            >
-              {tag.label}
-            </button>
-          )
-        })}
-        {adding ? (
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            if (newTag.trim()) { onAddCustom(newTag.trim()); setNewTag(''); setAdding(false) }
-          }} style={{ display: 'inline-flex' }}>
-            <input
-              ref={inputRef}
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onBlur={() => { if (!newTag.trim()) setAdding(false) }}
-              placeholder="태그명"
-              style={{
-                width: 70, padding: '4px 8px', borderRadius: 12, fontSize: 11,
-                border: '1px solid #42a5f5', background: 'transparent', color: '#e0e0e0',
-                outline: 'none',
-              }}
-            />
-          </form>
-        ) : (
-          <button
-            onClick={() => setAdding(true)}
-            style={{
-              padding: '4px 10px', borderRadius: 12, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-              border: '1px dashed #4b5563', background: 'transparent', color: '#6b7280',
-            }}
-          >
-            +
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
+    let normalizedReturn = returnNum
+    if ((pnlNum > 0 && returnNum < 0) || (pnlNum < 0 && returnNum > 0)) normalizedReturn = -Math.abs(returnNum)
 
-/* ─── 규칙 준수 체크박스 ──────────────────────────────────── */
-function RuleChecklist({ checked, onToggle }) {
-  return (
-    <div style={{ marginTop: 10 }}>
-      <div style={{ fontSize: 10, color: '#6b7280', fontFamily: 'Inter, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-        규칙 준수
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {RULES.map((rule, i) => (
-          <label
-            key={i}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-              padding: '4px 6px', borderRadius: 6,
-              transition: 'background 0.15s',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#242442'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-          >
-            <div style={{
-              width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-              border: checked[i] ? '2px solid #00c853' : '2px solid #4b5563',
-              background: checked[i] ? 'rgba(0,200,83,0.15)' : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.15s',
-            }}
-              onClick={(e) => { e.preventDefault(); onToggle(i) }}
-            >
-              {checked[i] && (
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path d="M2 5L4 7L8 3" stroke="#00c853" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </div>
-            <span style={{ fontSize: 11, color: checked[i] ? '#e0e0e0' : '#6b7280', fontFamily: "'Noto Sans KR', sans-serif" }}>
-              {rule}
-            </span>
-          </label>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/* ─── 스크린샷 업로드 ─────────────────────────────────────── */
-function ScreenshotUpload({ images, onAdd }) {
-  const fileRef = useRef(null)
-  const [dragOver, setDragOver] = useState(false)
-
-  const handleFiles = (files) => {
-    Array.from(files).forEach((file) => {
-      if (!file.type.startsWith('image/')) return
-      const reader = new FileReader()
-      reader.onload = (e) => onAdd(e.target.result)
-      reader.readAsDataURL(file)
-    })
+    setLoading(true)
+    setError(null)
+    try {
+      await onCreated({
+        date: dateStr,
+        ticker: ticker.startsWith('$') ? ticker : `$${ticker}`,
+        chain,
+        ca: ca || null,
+        pnl: pnlNum,
+        memo: memo || null,
+        return_percent: normalizedReturn,
+        trade_type: tradeType || null,
+        avg_entry_mc: parseDollarInput(avgEntryMc) ?? null,
+        is_mine: isMine,
+        trade_style: tradeStyle || null,
+      })
+    } catch (e) {
+      setError(e?.message || '저장 실패')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  return (
-    <div style={{ marginTop: 10 }}>
-      <div style={{ fontSize: 10, color: '#6b7280', fontFamily: 'Inter, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-        스크린샷
-      </div>
-      <div
-        onClick={() => fileRef.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files) }}
-        style={{
-          border: `1px dashed ${dragOver ? '#42a5f5' : '#4b5563'}`,
-          borderRadius: 8, padding: '12px 16px', textAlign: 'center',
-          cursor: 'pointer', transition: 'border-color 0.15s',
-          background: dragOver ? 'rgba(66,165,245,0.05)' : 'transparent',
-        }}
-      >
-        <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => handleFiles(e.target.files)} />
-        <span style={{ fontSize: 11, color: '#6b7280' }}>클릭 또는 드래그하여 이미지 업로드</span>
-      </div>
-      {images.length > 0 && (
-        <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-          {images.map((src, i) => (
-            <img key={i} src={src} alt="" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)' }} />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ─── 트레이드 카드 ───────────────────────────────────────── */
-function TradeCard({ trade, onMemoUpdate }) {
-  const [memo, setMemo] = useState(trade.memo || '')
-  const [memoSaving, setMemoSaving] = useState(false)
-  const [emotions, setEmotions] = useState([])
-  const [customTags, setCustomTags] = useState([])
-  const [ruleChecks, setRuleChecks] = useState([false, false, false, false, false])
-  const [screenshots, setScreenshots] = useState([])
-  const memoTimer = useRef(null)
-
-  const pnl = Number(trade.pnl || 0)
-  const returnPct = trade.return_percent ?? 0
-  const isProfit = pnl >= 0
-  const direction = returnPct >= 0 ? (pnl >= 0 ? 'Long' : 'Short') : (pnl >= 0 ? 'Short' : 'Long')
-
-  const handleMemoChange = (value) => {
-    setMemo(value)
-    if (memoTimer.current) clearTimeout(memoTimer.current)
-    memoTimer.current = setTimeout(() => {
-      setMemoSaving(true)
-      onMemoUpdate(trade.id, value).finally(() => setMemoSaving(false))
-    }, 1000)
+  const INP = {
+    width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12,
+    background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.08)',
+    color: '#e0e0e0', outline: 'none', fontFamily: 'Inter, monospace',
+    boxSizing: 'border-box',
   }
-
-  const toggleEmotion = (tag) => {
-    setEmotions((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag])
-  }
-
-  const toggleRule = (idx) => {
-    setRuleChecks((prev) => { const next = [...prev]; next[idx] = !next[idx]; return next })
-  }
-
-  const gridItems = [
-    { label: 'Entry Amount', value: trade.entry_amount ? `$${trade.entry_amount.toFixed(0)}` : '—' },
-    { label: 'Return', value: `${returnPct >= 0 ? '+' : ''}${returnPct.toFixed(1)}%`, color: returnPct >= 0 ? '#00c853' : '#ff1744' },
-    { label: 'PnL', value: formatPnl(pnl), color: pnl >= 0 ? '#00c853' : '#ff1744' },
-    { label: 'Avg Entry MC', value: formatMcap(trade.avg_entry_mc) },
-    { label: 'Chain', value: trade.chain || '—' },
-    { label: 'Style', value: trade.trade_style || '—', color: trade.trade_style === '뇌동매매' ? '#ff1744' : trade.trade_style === '계획매매' ? '#00c853' : '#9e9e9e' },
-  ]
+  const LABEL = { fontSize: 10, color: '#6b7280', fontFamily: 'Inter, monospace', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }
 
   return (
     <div style={{
       background: '#1a1a2e', borderRadius: 12, padding: 16,
-      border: `1px solid ${isProfit ? 'rgba(0,200,83,0.15)' : 'rgba(255,23,68,0.15)'}`,
+      border: '1px solid #42a5f540',
     }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#e0e0e0', marginBottom: 12, fontFamily: 'Inter, monospace' }}>
+        + 새 매매 등록
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {/* 종목명 + 체인 */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ flex: 2 }}>
+            <div style={LABEL}>종목명 *</div>
+            <input value={ticker} onChange={e => setTicker(e.target.value)} placeholder="$TOKEN" style={INP} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={LABEL}>체인</div>
+            <select value={chain} onChange={e => setChain(e.target.value)} style={{ ...INP, cursor: 'pointer' }}>
+              {CHAINS.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* CA */}
+        <div>
+          <div style={LABEL}>CA</div>
+          <input value={ca} onChange={e => setCa(e.target.value)} placeholder="Contract Address" style={INP} />
+        </div>
+
+        {/* 카테고리 + 매매스타일 */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div style={LABEL}>카테고리</div>
+            <select value={tradeType} onChange={e => setTradeType(e.target.value)} style={{ ...INP, cursor: 'pointer' }}>
+              <option value="">— 선택 —</option>
+              {TRADE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={LABEL}>매매 스타일</div>
+            <select value={tradeStyle} onChange={e => setTradeStyle(e.target.value)} style={{ ...INP, cursor: 'pointer' }}>
+              <option value="">— 선택 —</option>
+              <option value="계획매매">계획매매</option>
+              <option value="뇌동매매">뇌동매매</option>
+            </select>
+          </div>
+        </div>
+
+        {/* 지뢰플레이 */}
+        <div>
+          <button type="button" onClick={() => setIsMine(!isMine)} style={{
+            padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+            border: isMine ? '1px solid #ff174450' : '1px solid rgba(255,255,255,0.08)',
+            background: isMine ? 'rgba(255,23,68,0.1)' : 'transparent',
+            color: isMine ? '#ff1744' : '#6b7280', fontFamily: 'Inter, monospace',
+          }}>
+            {isMine ? '💣 지뢰 ON' : '지뢰 OFF'}
+          </button>
+        </div>
+
+        {/* PnL + Return% */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div style={LABEL}>PnL ($) *</div>
+            <input value={pnl} onChange={e => setPnl(handlePnlInput(e.target.value))} placeholder="0" style={INP} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={LABEL}>PnL (%) *</div>
+            <input type="number" step="0.01" value={returnPercent} onChange={e => setReturnPercent(e.target.value)} placeholder="0" style={INP} />
+          </div>
+        </div>
+
+        {/* Entry Amount (자동계산) */}
+        <div>
+          <div style={LABEL}>Entry Amount (자동계산)</div>
+          <input value={calculatedEntry || '—'} readOnly style={{ ...INP, opacity: 0.6, cursor: 'not-allowed' }} />
+        </div>
+
+        {/* Avg Entry MC */}
+        <div>
+          <div style={LABEL}>Avg. Entry MC ($)</div>
+          <input value={avgEntryMc} onChange={e => {
+            const cleaned = e.target.value.replace(/[^0-9]/g, '')
+            setAvgEntryMc(cleaned === '' ? '' : formatDollarInput(parseInt(cleaned, 10)))
+          }} placeholder="0" style={INP} />
+        </div>
+
+        {/* 메모 */}
+        <div>
+          <div style={LABEL}>메모</div>
+          <textarea value={memo} onChange={e => setMemo(e.target.value)} rows={2} placeholder="트레이드 복기..." style={{
+            ...INP, resize: 'vertical', fontFamily: "'Noto Sans KR', sans-serif", lineHeight: 1.7,
+          }} />
+        </div>
+
+        {error && <div style={{ fontSize: 11, color: '#ff1744', lineHeight: 1.7 }}>{error}</div>}
+
+        {/* 버튼 */}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button onClick={onCancel} style={{
+            padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)',
+            background: 'transparent', color: '#9e9e9e', fontSize: 12, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'Inter, monospace',
+          }}>취소</button>
+          <button onClick={handleSubmit} disabled={loading} style={{
+            padding: '8px 16px', borderRadius: 8, border: 'none',
+            background: '#42a5f5', color: '#fff', fontSize: 12, fontWeight: 700,
+            cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
+            fontFamily: 'Inter, monospace',
+          }}>{loading ? '저장 중...' : '저장'}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─── 삭제 확인 모달 ─────────────────────────────────────── */
+function DeleteConfirmModal({ trade, onConfirm, onCancel }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 10000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
+    }} onClick={onCancel}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#1a1a2e', borderRadius: 16,
+        border: '1px solid #ff174430', padding: 24,
+        maxWidth: 360, width: '90%', textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: '#e0e0e0', marginBottom: 8, fontFamily: 'Inter, monospace' }}>
+          이 매매 기록을 삭제하시겠습니까?
+        </div>
+        <div style={{ fontSize: 12, color: '#9e9e9e', marginBottom: 16, lineHeight: 1.7 }}>
+          {trade.ticker} ({formatPnl(Number(trade.pnl || 0))}) — 삭제하면 복구할 수 없습니다.
+        </div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <button onClick={onCancel} style={{
+            padding: '8px 20px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)',
+            background: 'transparent', color: '#9e9e9e', fontSize: 12, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'Inter, monospace',
+          }}>취소</button>
+          <button onClick={onConfirm} style={{
+            padding: '8px 20px', borderRadius: 8, border: 'none',
+            background: '#ff1744', color: '#fff', fontSize: 12, fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'Inter, monospace',
+          }}>삭제</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─── 트레이드 카드 (읽기 + 편집 모드) ─────────────────── */
+function TradeCard({ trade, onUpdate, onDelete }) {
+  const [editing, setEditing] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  // Edit state
+  const [ticker, setTicker] = useState(trade.ticker || '')
+  const [chain, setChain] = useState(trade.chain || 'Solana')
+  const [ca, setCa] = useState(trade.ca || '')
+  const [pnl, setPnl] = useState(String(trade.pnl || 0))
+  const [returnPercent, setReturnPercent] = useState(String(trade.return_percent || 0))
+  const [tradeType, setTradeType] = useState(trade.trade_type || '')
+  const [avgEntryMc, setAvgEntryMc] = useState(trade.avg_entry_mc ? formatDollarInput(trade.avg_entry_mc) : '')
+  const [isMine, setIsMine] = useState(trade.is_mine || false)
+  const [tradeStyle, setTradeStyle] = useState(trade.trade_style || '')
+  const [memo, setMemo] = useState(trade.memo || '')
+
+  const resetEdit = () => {
+    setTicker(trade.ticker || '')
+    setChain(trade.chain || 'Solana')
+    setCa(trade.ca || '')
+    setPnl(String(trade.pnl || 0))
+    setReturnPercent(String(trade.return_percent || 0))
+    setTradeType(trade.trade_type || '')
+    setAvgEntryMc(trade.avg_entry_mc ? formatDollarInput(trade.avg_entry_mc) : '')
+    setIsMine(trade.is_mine || false)
+    setTradeStyle(trade.trade_style || '')
+    setMemo(trade.memo || '')
+    setEditing(false)
+  }
+
+  const handleSave = async () => {
+    const pnlNum = parsePnlNum(pnl)
+    const returnNum = Number(returnPercent)
+    let normalizedReturn = returnNum
+    if ((pnlNum > 0 && returnNum < 0) || (pnlNum < 0 && returnNum > 0)) normalizedReturn = -Math.abs(returnNum)
+
+    setSaving(true)
+    try {
+      await onUpdate(trade.id, {
+        ticker: ticker.startsWith('$') ? ticker : `$${ticker}`,
+        chain,
+        ca: ca || null,
+        pnl: pnlNum,
+        memo: memo || null,
+        return_percent: normalizedReturn || trade.return_percent,
+        trade_type: tradeType || null,
+        avg_entry_mc: parseDollarInput(avgEntryMc) ?? null,
+        is_mine: isMine,
+        trade_style: tradeStyle || null,
+      })
+      setEditing(false)
+    } catch (e) {
+      console.error('Update failed:', e)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    try {
+      await onDelete(trade.id)
+    } catch (e) {
+      console.error('Delete failed:', e)
+    }
+    setShowDeleteModal(false)
+  }
+
+  const pnlVal = Number(trade.pnl || 0)
+  const returnPct = trade.return_percent ?? 0
+  const isProfit = pnlVal >= 0
+  const direction = returnPct >= 0 ? (pnlVal >= 0 ? 'Long' : 'Short') : (pnlVal >= 0 ? 'Short' : 'Long')
+
+  const INP = {
+    width: '100%', padding: '6px 8px', borderRadius: 6, fontSize: 11,
+    background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.08)',
+    color: '#e0e0e0', outline: 'none', fontFamily: 'Inter, monospace',
+    boxSizing: 'border-box',
+  }
+  const LABEL = { fontSize: 9, color: '#4b5563', fontFamily: 'Inter, monospace', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }
+
+  if (editing) {
+    return (
+      <>
+        <div style={{
+          background: '#1a1a2e', borderRadius: 12, padding: 16,
+          border: '2px solid #42a5f5',
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* 종목명 + 체인 */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 2 }}>
+                <div style={LABEL}>종목명</div>
+                <input value={ticker} onChange={e => setTicker(e.target.value)} style={INP} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={LABEL}>체인</div>
+                <select value={chain} onChange={e => setChain(e.target.value)} style={{ ...INP, cursor: 'pointer' }}>
+                  {CHAINS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* CA */}
+            <div>
+              <div style={LABEL}>CA</div>
+              <input value={ca} onChange={e => setCa(e.target.value)} style={INP} />
+            </div>
+
+            {/* PnL + Return */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={LABEL}>PnL ($)</div>
+                <input value={pnl} onChange={e => setPnl(handlePnlInput(e.target.value))} style={INP} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={LABEL}>PnL (%)</div>
+                <input type="number" step="0.01" value={returnPercent} onChange={e => setReturnPercent(e.target.value)} style={INP} />
+              </div>
+            </div>
+
+            {/* 카테고리 + 스타일 */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={LABEL}>카테고리</div>
+                <select value={tradeType} onChange={e => setTradeType(e.target.value)} style={{ ...INP, cursor: 'pointer' }}>
+                  <option value="">— 없음 —</option>
+                  {TRADE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={LABEL}>매매 스타일</div>
+                <select value={tradeStyle} onChange={e => setTradeStyle(e.target.value)} style={{ ...INP, cursor: 'pointer' }}>
+                  <option value="">— 없음 —</option>
+                  <option value="계획매매">계획매매</option>
+                  <option value="뇌동매매">뇌동매매</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Avg Entry MC + 지뢰 */}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+              <div style={{ flex: 1 }}>
+                <div style={LABEL}>Avg. Entry MC</div>
+                <input value={avgEntryMc} onChange={e => {
+                  const cleaned = e.target.value.replace(/[^0-9]/g, '')
+                  setAvgEntryMc(cleaned === '' ? '' : formatDollarInput(parseInt(cleaned, 10)))
+                }} style={INP} />
+              </div>
+              <button type="button" onClick={() => setIsMine(!isMine)} style={{
+                padding: '6px 12px', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                border: isMine ? '1px solid #ff174450' : '1px solid rgba(255,255,255,0.08)',
+                background: isMine ? 'rgba(255,23,68,0.1)' : 'transparent',
+                color: isMine ? '#ff1744' : '#6b7280', fontFamily: 'Inter, monospace',
+                marginBottom: 0, height: 32,
+              }}>
+                {isMine ? '💣 ON' : '지뢰'}
+              </button>
+            </div>
+
+            {/* 메모 */}
+            <div>
+              <div style={LABEL}>메모</div>
+              <textarea value={memo} onChange={e => setMemo(e.target.value)} rows={2} style={{
+                ...INP, resize: 'vertical', fontFamily: "'Noto Sans KR', sans-serif", lineHeight: 1.7,
+              }} />
+            </div>
+
+            {/* 버튼 */}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 4 }}>
+              <button onClick={() => setShowDeleteModal(true)} style={{
+                padding: '6px 12px', borderRadius: 8, border: 'none',
+                background: 'rgba(255,23,68,0.1)', color: '#ff1744', fontSize: 11,
+                fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, monospace',
+              }}>🗑️ 삭제</button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={resetEdit} style={{
+                  padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'transparent', color: '#9e9e9e', fontSize: 11, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'Inter, monospace',
+                }}>취소</button>
+                <button onClick={handleSave} disabled={saving} style={{
+                  padding: '6px 14px', borderRadius: 8, border: 'none',
+                  background: '#42a5f5', color: '#fff', fontSize: 11, fontWeight: 700,
+                  cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1,
+                  fontFamily: 'Inter, monospace',
+                }}>{saving ? '저장 중...' : '저장'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {showDeleteModal && (
+          <DeleteConfirmModal trade={trade} onConfirm={handleDelete} onCancel={() => setShowDeleteModal(false)} />
+        )}
+      </>
+    )
+  }
+
+  // ─── 읽기 모드 ───
+  const gridItems = [
+    { label: 'Entry Amount', value: trade.entry_amount ? `$${trade.entry_amount.toFixed(0)}` : '—' },
+    { label: 'Return', value: `${returnPct >= 0 ? '+' : ''}${returnPct.toFixed(1)}%`, color: returnPct >= 0 ? '#00c853' : '#ff1744' },
+    { label: 'PnL', value: formatPnl(pnlVal), color: pnlVal >= 0 ? '#00c853' : '#ff1744' },
+    { label: 'Avg Entry MC', value: formatMcap(trade.avg_entry_mc) },
+    { label: 'Chain', badge: true },
+    { label: 'Style', value: trade.trade_style || '—', color: trade.trade_style === '뇌동매매' ? '#ff1744' : trade.trade_style === '계획매매' ? '#00c853' : '#9e9e9e' },
+  ]
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: '#1a1a2e', borderRadius: 12, padding: 16, position: 'relative',
+        border: `1px solid ${isProfit ? 'rgba(0,200,83,0.15)' : 'rgba(255,23,68,0.15)'}`,
+        transition: 'border-color 0.2s',
+      }}
+    >
+      {/* 편집 아이콘 */}
+      {hovered && (
+        <button onClick={() => setEditing(true)} style={{
+          position: 'absolute', top: 10, right: 10,
+          background: 'rgba(66,165,245,0.1)', border: '1px solid rgba(66,165,245,0.3)',
+          borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontSize: 12,
+          color: '#42a5f5', zIndex: 2,
+        }}>✏️</button>
+      )}
+
       {/* 상단: 종목명 + 방향 뱃지 */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -310,8 +564,7 @@ function TradeCard({ trade, onMemoUpdate }) {
             <span style={{
               fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
               background: 'rgba(66,165,245,0.12)', color: '#42a5f5',
-              border: '1px solid rgba(66,165,245,0.3)',
-              fontFamily: 'Inter, monospace',
+              border: '1px solid rgba(66,165,245,0.3)', fontFamily: 'Inter, monospace',
             }}>
               {trade.trade_type}
             </span>
@@ -320,15 +573,14 @@ function TradeCard({ trade, onMemoUpdate }) {
             <span style={{
               fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
               background: 'rgba(255,193,7,0.12)', color: '#ffc107',
-              border: '1px solid rgba(255,193,7,0.3)',
-              fontFamily: 'Inter, monospace',
+              border: '1px solid rgba(255,193,7,0.3)', fontFamily: 'Inter, monospace',
             }}>
               MINE
             </span>
           )}
         </div>
         <span style={{ fontSize: 16, fontWeight: 800, color: isProfit ? '#00c853' : '#ff1744', fontFamily: 'Inter, monospace' }}>
-          {formatPnl(pnl)}
+          {formatPnl(pnlVal)}
         </span>
       </div>
 
@@ -339,69 +591,49 @@ function TradeCard({ trade, onMemoUpdate }) {
             <div style={{ fontSize: 9, color: '#4b5563', fontFamily: 'Inter, monospace', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
               {item.label}
             </div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: item.color || '#e0e0e0', fontFamily: 'Inter, monospace' }}>
-              {item.value}
-            </div>
+            {item.badge ? (
+              <div>{chainBadge(trade.chain)}</div>
+            ) : (
+              <div style={{ fontSize: 12, fontWeight: 600, color: item.color || '#e0e0e0', fontFamily: 'Inter, monospace' }}>
+                {item.value}
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {/* CA 주소 (있을 때만) */}
+      {/* CA */}
       {trade.ca && (
         <div style={{ fontSize: 10, color: '#4b5563', fontFamily: 'monospace', marginBottom: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           CA: {trade.ca}
         </div>
       )}
 
-      {/* 메모 */}
-      <div style={{ position: 'relative' }}>
-        <textarea
-          value={memo}
-          onChange={(e) => handleMemoChange(e.target.value)}
-          placeholder="트레이드 복기 메모..."
-          rows={2}
-          style={{
-            width: '100%', background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: 8, padding: '8px 10px', color: '#e0e0e0', fontSize: 12,
-            fontFamily: "'Noto Sans KR', sans-serif", resize: 'vertical',
-            outline: 'none', lineHeight: 1.5, boxSizing: 'border-box',
-          }}
-          onFocus={(e) => e.target.style.borderColor = '#42a5f5'}
-          onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.06)'}
-        />
-        {memoSaving && (
-          <span style={{ position: 'absolute', bottom: 6, right: 8, fontSize: 9, color: '#42a5f5' }}>저장 중...</span>
-        )}
-      </div>
-
-      {/* 스크린샷 업로드 */}
-      <ScreenshotUpload images={screenshots} onAdd={(src) => setScreenshots((prev) => [...prev, src])} />
-
-      {/* 감정 태그 */}
-      <EmotionTags
-        selected={emotions}
-        onToggle={toggleEmotion}
-        customTags={customTags}
-        onAddCustom={(tag) => setCustomTags((prev) => [...prev, tag])}
-      />
-
-      {/* 규칙 준수 체크 */}
-      <RuleChecklist checked={ruleChecks} onToggle={toggleRule} />
+      {/* 메모 (읽기 전용) */}
+      {trade.memo && (
+        <div style={{
+          padding: '8px 10px', borderRadius: 8, fontSize: 12,
+          background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.04)',
+          color: '#9e9e9e', fontFamily: "'Noto Sans KR', sans-serif", lineHeight: 1.7,
+          whiteSpace: 'pre-wrap',
+        }}>
+          {trade.memo}
+        </div>
+      )}
     </div>
   )
 }
 
 /* ─── 메인 사이드 패널 ────────────────────────────────────── */
-export default function TradeSidePanel({ dateStr, trades = [], onClose, onMemoUpdate }) {
+export default function TradeSidePanel({ dateStr, trades = [], onClose, onRefresh }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [showAddForm, setShowAddForm] = useState(false)
   const panelRef = useRef(null)
 
-  // 마운트 시 슬라이드인
   useEffect(() => {
     requestAnimationFrame(() => setIsOpen(true))
   }, [])
 
-  // ESC 키
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') handleClose() }
     window.addEventListener('keydown', handler)
@@ -412,6 +644,22 @@ export default function TradeSidePanel({ dateStr, trades = [], onClose, onMemoUp
     setIsOpen(false)
     setTimeout(onClose, 300)
   }, [onClose])
+
+  const handleCreate = async (payload) => {
+    await createTrade(payload)
+    setShowAddForm(false)
+    if (onRefresh) onRefresh()
+  }
+
+  const handleUpdate = async (id, payload) => {
+    await updateTrade(id, payload)
+    if (onRefresh) onRefresh()
+  }
+
+  const handleDelete = async (id) => {
+    await deleteTrade(id)
+    if (onRefresh) onRefresh()
+  }
 
   if (!dateStr) return null
 
@@ -462,6 +710,23 @@ export default function TradeSidePanel({ dateStr, trades = [], onClose, onMemoUp
 
           {/* 요약 카드 */}
           <SummaryCards trades={trades} />
+
+          {/* 새 매매 등록 버튼 */}
+          {!showAddForm && (
+            <button onClick={() => setShowAddForm(true)} style={{
+              width: '100%', padding: '10px 0', borderRadius: 10,
+              border: '1px dashed rgba(66,165,245,0.4)',
+              background: 'rgba(66,165,245,0.05)',
+              color: '#42a5f5', fontSize: 13, fontWeight: 700,
+              cursor: 'pointer', fontFamily: 'Inter, monospace',
+              transition: 'background 0.2s',
+            }}
+              onMouseEnter={e => e.target.style.background = 'rgba(66,165,245,0.1)'}
+              onMouseLeave={e => e.target.style.background = 'rgba(66,165,245,0.05)'}
+            >
+              + 새 매매 등록
+            </button>
+          )}
         </div>
 
         {/* 트레이드 리스트 (스크롤 영역) */}
@@ -471,7 +736,16 @@ export default function TradeSidePanel({ dateStr, trades = [], onClose, onMemoUp
         }}
           className="trade-panel-scroll"
         >
-          {trades.length === 0 ? (
+          {/* 새 매매 등록 폼 */}
+          {showAddForm && (
+            <AddTradeForm
+              dateStr={dateStr}
+              onCreated={handleCreate}
+              onCancel={() => setShowAddForm(false)}
+            />
+          )}
+
+          {trades.length === 0 && !showAddForm ? (
             <div style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#4b5563', fontSize: 13,
@@ -481,7 +755,7 @@ export default function TradeSidePanel({ dateStr, trades = [], onClose, onMemoUp
             </div>
           ) : (
             trades.map((trade) => (
-              <TradeCard key={trade.id} trade={trade} onMemoUpdate={onMemoUpdate} />
+              <TradeCard key={trade.id} trade={trade} onUpdate={handleUpdate} onDelete={handleDelete} />
             ))
           )}
         </div>

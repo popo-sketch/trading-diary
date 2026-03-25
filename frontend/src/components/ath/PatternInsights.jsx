@@ -3,10 +3,9 @@
  *
  * A) 체인별 비교 카드
  * B) 카테고리별 비교
- * C) 보유 시간별 ATH 효율
- * D) 수익/손실별 ATH 효율
+ * C) 수익/손실별 ATH 효율
  */
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { formatPnl } from '../../utils/format'
 
 const GREEN = '#00c853'
@@ -35,7 +34,7 @@ function ChainComparison({ analyses }) {
     const bnb = valid.filter(a => a.chain === 'BNB' || a.chain === 'BSC')
 
     return [
-      { name: 'Solana', icon: '◎', color: '#b794f6', data: sol },
+      { name: 'Solana', icon: '◎', color: '#14F195', data: sol },
       { name: 'BNB', icon: '◆', color: '#f3ba2f', data: bnb },
     ].filter(c => c.data.length > 0)
   }, [valid])
@@ -178,83 +177,7 @@ function CategoryComparison({ analyses }) {
   )
 }
 
-// ─── C) 보유 시간별 ATH 효율 ─────────────────────────────────────────────────
-
-const HOLD_BUCKETS = [
-  { label: '<1h', maxMs: 3600000 },
-  { label: '1-6h', maxMs: 21600000 },
-  { label: '6-24h', maxMs: 86400000 },
-  { label: '1-3d', maxMs: 259200000 },
-  { label: '3d+', maxMs: Infinity },
-]
-
-function HoldTimeChart({ analyses }) {
-  const valid = analyses.filter(a => a.athStatus === 'ok' && a.athMultiple > 1 && a.created_at)
-
-  const bucketData = useMemo(() => {
-    return HOLD_BUCKETS.map((b, idx) => {
-      const minMs = idx === 0 ? 0 : HOLD_BUCKETS[idx - 1].maxMs
-      const items = valid.filter(a => {
-        // 보유 시간 추정: created_at → date 기반 (정확하지 않지만 가능한 추정)
-        const created = new Date(a.created_at)
-        const dateEnd = new Date(a.date + 'T23:59:59')
-        const holdMs = dateEnd - created
-        return holdMs >= minMs && holdMs < b.maxMs
-      })
-      return { ...b, count: items.length, avgEff: avg(items, 'athEfficiency') }
-    })
-  }, [valid])
-
-  const maxEff = Math.max(...bucketData.map(b => b.avgEff), 1)
-
-  return (
-    <div>
-      <div style={{
-        fontSize: 10, fontWeight: 700, color: '#4b5563',
-        textTransform: 'uppercase', letterSpacing: '0.08em',
-        fontFamily: 'Inter, monospace', marginBottom: 10,
-      }}>보유 시간별 ATH 효율</div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 100 }}>
-        {bucketData.map(b => {
-          const heightPct = maxEff > 0 ? (b.avgEff / maxEff) * 100 : 0
-          const color = b.avgEff >= 50 ? GREEN : b.avgEff >= 25 ? WARN : RED
-          return (
-            <div key={b.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
-              {b.count > 0 && (
-                <div style={{ fontSize: 10, fontWeight: 700, color, marginBottom: 4, fontFamily: 'Inter, monospace' }}>
-                  {b.avgEff.toFixed(0)}%
-                </div>
-              )}
-              <div style={{
-                width: '100%', minHeight: 4,
-                height: `${Math.max(heightPct, b.count > 0 ? 8 : 2)}%`,
-                background: b.count > 0 ? color : 'rgba(255,255,255,0.04)',
-                borderRadius: '4px 4px 0 0',
-                opacity: 0.75,
-              }} />
-            </div>
-          )
-        })}
-      </div>
-      <div style={{
-        display: 'flex', gap: 8, marginTop: 6,
-        borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 6,
-      }}>
-        {bucketData.map(b => (
-          <div key={b.label} style={{
-            flex: 1, textAlign: 'center', fontSize: 9, color: '#6b7280',
-            fontFamily: 'Inter, monospace',
-          }}>
-            {b.label}
-            <div style={{ fontSize: 8, color: '#4b5563' }}>{b.count}건</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ─── D) 수익/손실별 ATH 효율 ─────────────────────────────────────────────────
+// ─── C) 수익/손실별 ATH 효율 ─────────────────────────────────────────────────
 
 function PnlGroupComparison({ analyses }) {
   const valid = analyses.filter(a => a.athStatus === 'ok' && a.athMultiple > 1)
@@ -345,14 +268,7 @@ export default function PatternInsights({ analyses }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <ChainComparison analyses={analyses} />
         <CategoryComparison analyses={analyses} />
-        <div style={{ display: 'flex', gap: 16 }}>
-          <div style={{ flex: 1 }}>
-            <HoldTimeChart analyses={analyses} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <PnlGroupComparison analyses={analyses} />
-          </div>
-        </div>
+        <PnlGroupComparison analyses={analyses} />
       </div>
     </div>
   )

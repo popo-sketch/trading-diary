@@ -361,17 +361,16 @@ export default function MainPage() {
           dateStr={selectedDate}
           trades={dailyTrades[selectedDate] ?? []}
           onClose={() => setSelectedDate(null)}
-          onMemoUpdate={async (tradeId, memo) => {
-            try {
-              const API = import.meta.env.VITE_API_URL || 'http://168.144.42.254:8001'
-              await fetch(`${API}/trades/${tradeId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ memo }),
-              })
-            } catch (e) {
-              console.error('Memo update failed:', e)
-            }
+          onRefresh={() => {
+            Promise.all([
+              getTradesByMonth(year, month),
+              getMonthlyStats(year, month),
+              getAnalytics(year, month, null),
+            ]).then(([tradesData, statsData, analyticsData]) => {
+              setTrades(tradesData)
+              setStats(statsData)
+              setAnalytics(analyticsData)
+            }).catch(() => {})
           }}
         />
       )}

@@ -231,8 +231,9 @@ function ATHTradeCard({ analysis }) {
           {a.chain && (
             <span style={{
               fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 4,
-              background: a.chain === 'Solana' ? 'rgba(153,69,255,0.15)' : 'rgba(243,186,47,0.15)',
-              color: a.chain === 'Solana' ? '#b794f6' : '#f3ba2f',
+              ...(a.chain === 'Solana'
+                ? { background: 'linear-gradient(90deg, #9945FF, #14F195)', color: '#ffffff' }
+                : { background: 'rgba(243,186,47,0.15)', color: '#f3ba2f' }),
               fontFamily: 'Inter, monospace',
             }}>{a.chain === 'Solana' ? 'SOL' : 'BSC'}</span>
           )}
