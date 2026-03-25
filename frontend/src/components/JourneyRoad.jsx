@@ -170,15 +170,15 @@ function VectorChar({ stage, height = 64, faceRight = true }) {
 // ─── Stage Backgrounds (은은한 실루엣 파노라마) ──────────────────────────────
 
 const STAGE_BG = [
-  { grad: 'linear-gradient(180deg, #0a0a14 0%, #15151f 40%, #0d0d14 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
-  { grad: 'linear-gradient(180deg, #0a0a16 0%, #14141e 40%, #0f0f16 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
-  { grad: 'linear-gradient(180deg, #0a0e18 0%, #0f1422 40%, #0a0e18 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
-  { grad: 'linear-gradient(180deg, #1a1410 0%, #201810 40%, #1a1410 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
-  { grad: 'linear-gradient(180deg, #0a0a1a 0%, #14102a 40%, #0a0a1a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
-  { grad: 'linear-gradient(180deg, #060818 0%, #0a1028 40%, #060818 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
-  { grad: 'linear-gradient(180deg, #08081a 0%, #0e0e28 40%, #08081a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
-  { grad: 'linear-gradient(180deg, #1a1008 0%, #2a1810 40%, #1a1008 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
-  { grad: 'linear-gradient(180deg, #081820 0%, #0a2030 40%, #081820 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.7), rgba(13,13,26,0.85))' },
+  { grad: 'linear-gradient(180deg, #0a0a14 0%, #15151f 40%, #0d0d14 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #0a0a16 0%, #14141e 40%, #0f0f16 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #0a0e18 0%, #0f1422 40%, #0a0e18 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #1a1410 0%, #201810 40%, #1a1410 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #0a0a1a 0%, #14102a 40%, #0a0a1a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #060818 0%, #0a1028 40%, #060818 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #08081a 0%, #0e0e28 40%, #08081a 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #1a1008 0%, #2a1810 40%, #1a1008 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
+  { grad: 'linear-gradient(180deg, #081820 0%, #0a2030 40%, #081820 100%)', overlay: 'linear-gradient(to bottom, rgba(13,13,26,0.35), rgba(13,13,26,0.55))' },
 ]
 
 /* Helpers removed — each stage now has its own full inline SVG scene */
@@ -211,7 +211,7 @@ function StageBackground({ stage }) {
 
   const scenes = {
     0: ( // $0 고시원 골목
-      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.22,pointerEvents:'none'}}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.38,pointerEvents:'none'}}>
         <defs><linearGradient id="sky0" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0a0a2e"/><stop offset="100%" stopColor="#1a1a3e"/></linearGradient></defs>
         <rect width="1200" height="300" fill="url(#sky0)"/>
         {star(80,25,1,'3s')}{star(250,15,1.5,'4s')}{star(500,35,1,'2.5s')}{star(700,20,1.5,'3.5s')}{star(950,30,1,'2s')}
@@ -269,7 +269,7 @@ function StageBackground({ stage }) {
       </svg>
     ),
     1: ( // $1K 편의점 앞 밤거리
-      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.2,pointerEvents:'none'}}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.35,pointerEvents:'none'}}>
         <defs><linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0a0a2e"/><stop offset="100%" stopColor="#1a1a3e"/></linearGradient></defs>
         <rect width="1200" height="300" fill="url(#sky1)"/>
         {/* 달 */}
@@ -336,7 +336,7 @@ function StageBackground({ stage }) {
       </svg>
     ),
     2: ( // $5K 원룸 책상
-      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.22,pointerEvents:'none'}}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.38,pointerEvents:'none'}}>
         <rect width="1200" height="300" fill="#10101a"/>
         {/* 창문 */}
         <rect x="850" y="20" width="180" height="120" rx="3" fill="#0a0a16" stroke="#22223a" strokeWidth="1.5"/>
@@ -381,7 +381,7 @@ function StageBackground({ stage }) {
       </svg>
     ),
     3: ( // $10K 깔끔한 카페
-      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.22,pointerEvents:'none'}}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.38,pointerEvents:'none'}}>
         <rect width="1200" height="300" fill="#14120e"/>
         {/* 큰 창문 */}
         <rect x="700" y="15" width="420" height="150" rx="3" fill="#0e0e08" stroke="#2a2418" strokeWidth="1.5"/>
@@ -434,7 +434,7 @@ function StageBackground({ stage }) {
       </svg>
     ),
     4: ( // $25K 도심 거리
-      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.22,pointerEvents:'none'}}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.38,pointerEvents:'none'}}>
         <defs><linearGradient id="sky4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0a0a2e"/><stop offset="100%" stopColor="#12122a"/></linearGradient></defs>
         <rect width="1200" height="300" fill="url(#sky4)"/>
         {star(100,20,1,'3s')}{star(400,10,1.5,'4s')}{star(800,25,1,'2.5s')}
@@ -490,7 +490,7 @@ function StageBackground({ stage }) {
       </svg>
     ),
     5: ( // $50K 한강 야경
-      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.22,pointerEvents:'none'}}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.38,pointerEvents:'none'}}>
         <defs><linearGradient id="sky5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#060818"/><stop offset="100%" stopColor="#0a1530"/></linearGradient></defs>
         <rect width="1200" height="300" fill="url(#sky5)"/>
         {star(80,15,1.5,'3s')}{star(300,10,1,'4s')}{star(550,20,1.5,'2.5s')}{star(800,12,1,'3.5s')}{star(1050,18,1.5,'2s')}
@@ -545,7 +545,7 @@ function StageBackground({ stage }) {
       </svg>
     ),
     6: ( // $100K 펜트하우스 발코니
-      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.22,pointerEvents:'none'}}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.38,pointerEvents:'none'}}>
         <defs><linearGradient id="sky6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#08081a"/><stop offset="100%" stopColor="#0e0e28"/></linearGradient></defs>
         <rect width="1200" height="300" fill="url(#sky6)"/>
         {star(50,10,1.5,'3s')}{star(200,18,1,'4s')}{star(380,8,1.5,'2.5s')}{star(550,22,1,'3.5s')}{star(750,12,1.5,'2s')}{star(900,6,1,'4.5s')}{star(1080,15,1.5,'3s')}{star(1150,25,1,'2.5s')}
@@ -592,7 +592,7 @@ function StageBackground({ stage }) {
       </svg>
     ),
     7: ( // $150K 해안도로
-      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.22,pointerEvents:'none'}}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.38,pointerEvents:'none'}}>
         <defs><linearGradient id="sky7" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#2a1808"/><stop offset="40%" stopColor="#3a2010"/><stop offset="100%" stopColor="#1a1008"/></linearGradient></defs>
         <rect width="1200" height="300" fill="url(#sky7)"/>
         {star(100,15,1,'3s')}{star(400,10,1.5,'4s')}{star(700,20,1,'2.5s')}
@@ -662,7 +662,7 @@ function StageBackground({ stage }) {
       </svg>
     ),
     8: ( // $200K 프라이빗 비치
-      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.22,pointerEvents:'none'}}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,opacity:0.38,pointerEvents:'none'}}>
         <defs><linearGradient id="sky8" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#082028"/><stop offset="100%" stopColor="#0a2838"/></linearGradient></defs>
         <rect width="1200" height="300" fill="url(#sky8)"/>
         {star(100,12,1.5,'3s')}{star(300,8,1,'4s')}{star(550,18,1.5,'2.5s')}{star(800,10,1,'3.5s')}{star(1050,15,1.5,'2s')}
@@ -856,59 +856,84 @@ function BadgeRow({ journey, personalBests, curve }) {
   badges.push({ icon: '🏆', label: `CLEARED ${reachedCount}/${CHECKPOINTS.length}`, color: '#fbbf24' })
   if (badges.length === 0) return null
   return (
-    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
       {badges.map((b, i) => (
-        <div key={i} className="badge-hover" style={{ display: 'flex', flexDirection: 'column', gap: 2, background: `${b.color}08`, border: `1px solid ${b.borderColor || b.color}25`, borderRadius: 10, padding: '12px 16px', cursor: 'default', transition: 'transform 0.2s, box-shadow 0.2s' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 14 }}>{b.icon}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: b.color, fontFamily: 'Inter, monospace', lineHeight: 1.7 }}>{b.label}</span>
-          </div>
-          {b.sub && <div style={{ fontSize: 10, fontWeight: 700, color: b.subColor, fontFamily: 'Inter, monospace', paddingLeft: 22, lineHeight: 1.7 }}>{b.sub}</div>}
+        <div key={i} className="badge-hover" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          background: `${b.color}08`, border: `1px solid ${b.borderColor || b.color}20`,
+          borderRadius: 8, padding: '5px 12px', cursor: 'default',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+        }}>
+          <span style={{ fontSize: 12 }}>{b.icon}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: b.color, fontFamily: 'Inter, monospace', lineHeight: 1.4 }}>{b.label}</span>
+          {b.sub && <span style={{ fontSize: 9, fontWeight: 600, color: b.subColor, fontFamily: 'Inter, monospace', marginLeft: 2 }}>{b.sub}</span>}
         </div>
       ))}
     </div>
   )
 }
 
-// ─── Character Profile Card ──────────────────────────────────────────────────
+// ─── Hero Section (현재 위치 + PNL + 다음 체크포인트 통합) ─────────────────────
 
-function CharacterProfileCard({ stage, journey }) {
-  const current = STAGES[stage], next = STAGES[stage + 1]
-  const stageStart = current.cp, stageEnd = next ? next.cp : JOURNEY_GOAL
+function HeroSection({ stage, journey, ps }) {
+  const current = STAGES[stage]
+  const next = STAGES[stage + 1]
+  const pnlColor = journey.cumulativePnl >= 0 ? GREEN : RED
+  const stageStart = current.cp
+  const stageEnd = next ? next.cp : JOURNEY_GOAL
   const stageProgress = Math.min(100, Math.max(0, ((journey.cumulativePnl - stageStart) / (stageEnd - stageStart)) * 100))
-  const stageRemaining = Math.max(0, stageEnd - journey.cumulativePnl)
-  const tint = stage <= 1 ? 'rgba(107,114,128,0.06)' : stage <= 5 ? 'rgba(66,165,245,0.06)' : 'rgba(255,215,0,0.06)'
 
   return (
     <div style={{
-      background: '#1a1a2e', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
-      padding: 12, position: 'relative', overflow: 'hidden',
-      backgroundImage: `linear-gradient(to top right, ${tint}, transparent)`,
-      width: '100%',
+      display: 'flex', alignItems: 'center', padding: '16px 24px',
+      position: 'relative', zIndex: 1, gap: 0,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ flexShrink: 0, width: 55, height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <VectorChar stage={stage} height={100} faceRight />
+      {/* Left: Character + Stage */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: '0 0 auto' }}>
+        <div style={{ flexShrink: 0 }}>
+          <VectorChar stage={stage} height={72} faceRight />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 10, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.7 }}>현재 단계</div>
-          <div style={{ fontSize: 16, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace', marginBottom: 4, whiteSpace: 'nowrap' }}>{current.icon} {current.label}</div>
-          {next ? (
-            <div style={{ marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              <span style={{ fontSize: 11, color: '#4b5563', fontFamily: 'Inter, monospace', lineHeight: 1.7 }}>다음: {next.label} 🔒</span>
-            </div>
-          ) : <div style={{ fontSize: 11, color: '#fbbf24', fontFamily: 'Inter, monospace', marginBottom: 8, lineHeight: 1.7 }}>최종 단계 달성!</div>}
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 10, color: '#7a7a8a', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600 }}>현재 단계</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace', whiteSpace: 'nowrap', marginTop: 2 }}>{current.icon} {current.label}</div>
           {next && (
-            <div>
-              <div style={{ fontSize: 11, color: '#9e9e9e', fontFamily: 'Inter, monospace', lineHeight: 1.7, marginBottom: 2 }}>다음 변신까지</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#00c853', fontFamily: 'Inter, monospace', lineHeight: 1.7, marginBottom: 6 }}>{fmtDollar(stageRemaining)} 남음</div>
-              <div style={{ width: '100%', height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                <div style={{ width: `${stageProgress}%`, height: '100%', borderRadius: 3, background: stage <= 1 ? '#cd7f32' : stage <= 4 ? INFO : '#ffd700', transition: 'width 0.5s' }} />
+            <>
+              <div style={{ fontSize: 10, color: '#4b5563', fontFamily: 'Inter, monospace', marginTop: 6, whiteSpace: 'nowrap' }}>→ {next.icon} {next.label}</div>
+              <div style={{ width: 90, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', marginTop: 4 }}>
+                <div style={{ width: `${stageProgress}%`, height: '100%', borderRadius: 2, background: stage <= 1 ? '#cd7f32' : stage <= 4 ? INFO : '#ffd700', transition: 'width 0.5s' }} />
               </div>
-              <div style={{ fontSize: 10, color: '#4b5563', fontFamily: 'Inter, monospace', marginTop: 2, textAlign: 'right', lineHeight: 1.7 }}>{stageProgress.toFixed(1)}%</div>
-            </div>
+            </>
           )}
+          {!next && <div style={{ fontSize: 11, color: '#fbbf24', fontFamily: 'Inter, monospace', marginTop: 4 }}>최종 달성!</div>}
         </div>
+      </div>
+
+      <div style={{ width: 1, height: 52, background: 'rgba(255,255,255,0.06)', margin: '0 24px', flexShrink: 0 }} />
+
+      {/* Center: Current PNL (HERO) */}
+      <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
+        <div style={{ fontSize: 10, color: '#7a7a8a', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Inter, monospace', fontWeight: 600 }}>누적 PNL</div>
+        <div style={{ fontSize: 36, fontWeight: 900, color: pnlColor, fontFamily: 'Inter, monospace', letterSpacing: '-0.02em', lineHeight: 1.1, marginTop: 4 }}>{fmtPnl(journey.cumulativePnl)}</div>
+        <div style={{ fontSize: 11, color: '#7a7a8a', fontFamily: 'Inter, monospace', marginTop: 6 }}>
+          진행률 <span style={{ fontWeight: 700, color: ps.color }}>{journey.progressPercent.toFixed(2)}%</span>
+        </div>
+      </div>
+
+      <div style={{ width: 1, height: 52, background: 'rgba(255,255,255,0.06)', margin: '0 24px', flexShrink: 0 }} />
+
+      {/* Right: Next Checkpoint */}
+      <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
+        <div style={{ fontSize: 10, color: '#7a7a8a', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Inter, monospace', fontWeight: 600 }}>다음 체크포인트</div>
+        {journey.nextCheckpoint ? (
+          <>
+            <div style={{ fontSize: 28, fontWeight: 900, color: '#e0e0e0', fontFamily: 'Inter, monospace', lineHeight: 1.1, marginTop: 4 }}>{fmtK(journey.nextCheckpoint)}</div>
+            <div style={{ fontSize: 12, color: INFO, fontFamily: 'Inter, monospace', fontWeight: 600, marginTop: 6 }}>
+              남은: <span style={{ color: '#e0e0e0' }}>{fmtDollar(journey.nextCpRemaining)}</span>
+            </div>
+          </>
+        ) : (
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#fbbf24', fontFamily: 'Inter, monospace', lineHeight: 1.1, marginTop: 4 }}>🏝️ 완주!</div>
+        )}
       </div>
     </div>
   )
@@ -1001,39 +1026,40 @@ function ProgressSection({ journey, ps, curve, personalBests, stage }) {
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       {/* 캐릭터 위 영역 */}
-      <div style={{ position: 'relative', height: 105, marginBottom: 4 }}>
+      <div style={{ position: 'relative', height: 110, marginBottom: 4 }}>
         <div style={{
           position: 'absolute', left: `${Math.max(5, Math.min(95, pct))}%`, bottom: 0,
           transform: 'translateX(-50%)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10,
         }}>
-          <div style={{ background: 'rgba(26,26,46,0.92)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '4px 10px', marginBottom: 4, whiteSpace: 'nowrap', position: 'relative' }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: journey.cumulativePnl >= 0 ? GREEN : RED, fontFamily: 'Inter, monospace', textAlign: 'center' }}>{fmtPnl(journey.cumulativePnl)}</div>
+          <div style={{ background: 'rgba(20,20,36,0.94)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 10, padding: '5px 12px', marginBottom: 4, whiteSpace: 'nowrap', position: 'relative', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: journey.cumulativePnl >= 0 ? GREEN : RED, fontFamily: 'Inter, monospace', textAlign: 'center' }}>{fmtPnl(journey.cumulativePnl)}</div>
             {journey.nextCpRemaining > 0 && <div style={{ fontSize: 9, color: '#9e9e9e', fontFamily: 'Inter, monospace', textAlign: 'center', lineHeight: 1.7 }}>다음까지 {fmtK(journey.nextCpRemaining)}</div>}
-            <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '4px solid rgba(255,255,255,0.15)' }} />
+            <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '5px solid rgba(255,255,255,0.18)' }} />
           </div>
-          {/* 캐릭터 (64px, 오른쪽 바라봄) */}
+          {/* 캐릭터 (72px, 오른쪽 바라봄) */}
           <div className="char-bounce">
-            <VectorChar stage={stage} height={64} faceRight />
+            <VectorChar stage={stage} height={72} faceRight />
           </div>
         </div>
       </div>
 
-      {/* 프로그레스 바 */}
-      <div style={{ position: 'relative', height: 50 }}>
+      {/* 프로그레스 바 — 두껍고 존재감 있는 로드 */}
+      <div style={{ position: 'relative', height: 62 }}>
         <div style={{
-          position: 'absolute', top: '50%', left: 0, right: 0, height: 40,
-          transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.05)',
-          borderRadius: 20, border: '1px solid rgba(255,255,255,0.04)', overflow: 'hidden',
+          position: 'absolute', top: '50%', left: 0, right: 0, height: 48,
+          transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.06)',
+          borderRadius: 24, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden',
+          boxShadow: '0 0 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)',
         }}>
-          <div style={{ position: 'absolute', inset: 0, width: `${pct}%`, background: grad, borderRadius: 20, boxShadow: '0 0 12px rgba(255,215,0,0.3)', transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(0,0,0,0.1) 100%)', borderRadius: 20 }} />
-            <div className="progress-shimmer" style={{ position: 'absolute', inset: 0, borderRadius: 20, overflow: 'hidden' }} />
+          <div style={{ position: 'absolute', inset: 0, width: `${pct}%`, background: grad, borderRadius: 24, boxShadow: '0 0 20px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.12)', transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 50%, rgba(0,0,0,0.12) 100%)', borderRadius: 24 }} />
+            <div className="progress-shimmer" style={{ position: 'absolute', inset: 0, borderRadius: 24, overflow: 'hidden' }} />
           </div>
           {showInside ? (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, fontFamily: 'Inter, monospace', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.6)', zIndex: 5 }}>{realPct.toFixed(2)}%</div>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, fontFamily: 'Inter, monospace', color: '#fff', textShadow: '0 1px 6px rgba(0,0,0,0.7)', zIndex: 5 }}>{realPct.toFixed(2)}%</div>
           ) : (
-            <div style={{ position: 'absolute', top: '50%', left: `${pct + 2}%`, transform: 'translateY(-50%)', fontSize: 11, fontWeight: 800, fontFamily: 'Inter, monospace', color: '#9e9e9e', zIndex: 5, whiteSpace: 'nowrap' }}>{realPct.toFixed(2)}%</div>
+            <div style={{ position: 'absolute', top: '50%', left: `${pct + 2}%`, transform: 'translateY(-50%)', fontSize: 12, fontWeight: 800, fontFamily: 'Inter, monospace', color: '#9e9e9e', zIndex: 5, whiteSpace: 'nowrap' }}>{realPct.toFixed(2)}%</div>
           )}
         </div>
         {CHECKPOINTS.map(cp => (
@@ -1220,49 +1246,40 @@ export default function JourneyRoad({ allTimeAnalytics }) {
   const stageInfo = STAGES[stage]
 
   return (
-    <div style={{ borderRadius: 16, overflow: 'hidden', position: 'relative', border: `1px solid ${ps.color}30`, boxShadow: `0 0 40px ${ps.color}08` }}>
+    <div style={{ borderRadius: 16, overflow: 'hidden', position: 'relative', border: `1px solid ${ps.color}35`, boxShadow: `0 0 50px ${ps.color}10, 0 2px 20px rgba(0,0,0,0.3)` }}>
       <StageBackground stage={stage} />
       <ConfettiEffect active={showConfetti} />
       {celebrationStage !== null && <CelebrationModal stage={celebrationStage} onClose={() => setCelebrationStage(null)} />}
       {showResetModal && <ResetModal stage={stage} onConfirm={handleReset} onCancel={() => setShowResetModal(false)} />}
 
       {/* 헤더 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', position: 'relative', zIndex: 1 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#5a5a6a', letterSpacing: '0.14em', fontFamily: 'Inter, monospace' }}>JOURNEY TO $200K</span>
-          <span style={{ fontSize: 10, fontWeight: 800, fontFamily: 'Inter, monospace', color: ps.color, background: `${ps.color}12`, border: `1px solid ${ps.color}30`, borderRadius: 6, padding: '3px 10px', letterSpacing: '0.1em' }}>{ps.label}</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#6a6a7a', letterSpacing: '0.14em', fontFamily: 'Inter, monospace' }}>JOURNEY TO $200K</span>
+          <span style={{ fontSize: 10, fontWeight: 800, fontFamily: 'Inter, monospace', color: ps.color, background: `${ps.color}15`, border: `1px solid ${ps.color}35`, borderRadius: 6, padding: '3px 10px', letterSpacing: '0.1em' }}>{ps.label}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter, monospace', color: '#fbbf24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 6, padding: '3px 10px' }}>{stageInfo?.badge || '🚀 시작'}</div>
+          <div style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter, monospace', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 6, padding: '3px 10px' }}>{stageInfo?.badge || '🚀 시작'}</div>
           <button onClick={() => setShowResetModal(true)} style={{ fontSize: 9, fontWeight: 600, fontFamily: 'Inter, monospace', color: '#4b5563', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', transition: 'color 0.2s' }}
             onMouseEnter={e => e.target.style.color = RED} onMouseLeave={e => e.target.style.color = '#4b5563'}>RESET</button>
         </div>
       </div>
 
-      {/* 메인 영역: 왼쪽 프로필 + 오른쪽 배경+프로그레스 */}
-      <div style={{ display: 'flex', gap: 16, padding: '16px', position: 'relative', zIndex: 1, minHeight: 200 }}>
-        {/* 왼쪽 프로필 카드 (20%) */}
-        <div style={{ width: '20%', maxWidth: 200, flexShrink: 0 }}>
-          <CharacterProfileCard stage={stage} journey={journey} />
-        </div>
-        {/* 오른쪽 프로그레스 영역 (75%) */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 8px' }}>
-          <ProgressSection journey={journey} ps={ps} curve={curve} personalBests={personalBests} stage={stage} />
-        </div>
+      {/* Hero: 현재 위치 + PNL + 다음 체크포인트 (전체 너비) */}
+      <HeroSection stage={stage} journey={journey} ps={ps} />
+
+      {/* 프로그레스 로드 (전체 너비, 두꺼운 바) */}
+      <div style={{ position: 'relative', zIndex: 1, padding: '0 20px 12px' }}>
+        <ProgressSection journey={journey} ps={ps} curve={curve} personalBests={personalBests} stage={stage} />
       </div>
 
-      {/* 스탯 카드 */}
-      <div style={{ position: 'relative', zIndex: 1, padding: '0 16px 12px' }}>
-        <StatCards journey={journey} ps={ps} />
-      </div>
-
-      {/* 뱃지 */}
-      <div style={{ position: 'relative', zIndex: 1, padding: '0 16px 12px' }}>
+      {/* 뱃지 (컴팩트) */}
+      <div style={{ position: 'relative', zIndex: 1, padding: '0 20px 12px' }}>
         <BadgeRow journey={journey} personalBests={personalBests} curve={curve} />
       </div>
 
       {/* 변신 기록 */}
-      <div style={{ position: 'relative', zIndex: 1, padding: '0 16px 16px' }}>
+      <div style={{ position: 'relative', zIndex: 1, padding: '0 20px 16px' }}>
         <EvolutionTimeline journey={journey} curve={curve} />
       </div>
 
