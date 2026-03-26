@@ -159,9 +159,9 @@ function SummaryCards({ analyses }) {
   ]
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+    <div style={{ display: 'flex', gap: 16 }}>
       {cards.map(c => (
-        <div key={c.label} style={CARD}>
+        <div key={c.label} style={{ ...CARD, flex: 1 }}>
           <div style={{
             fontSize: 10, fontWeight: 700, color: '#4b5563',
             textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -429,7 +429,7 @@ function EfficiencyHistogram({ analyses }) {
 
 function FilterBar({ filters, setFilters, tradeTypes }) {
   const btnStyle = (active) => ({
-    padding: '5px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+    padding: '8px 16px', borderRadius: 6, fontSize: 11, fontWeight: 600,
     fontFamily: 'Inter, monospace', cursor: 'pointer', border: 'none',
     background: active ? 'rgba(66,165,245,0.15)' : 'rgba(255,255,255,0.04)',
     color: active ? INFO : '#9e9e9e',
@@ -439,7 +439,7 @@ function FilterBar({ filters, setFilters, tradeTypes }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
       {/* 체인 필터 */}
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
         {['All', 'Solana', 'BNB'].map(chain => (
           <button key={chain} style={btnStyle(filters.chain === chain)} onClick={() => setFilters(f => ({ ...f, chain }))}>
             {chain}
@@ -450,7 +450,7 @@ function FilterBar({ filters, setFilters, tradeTypes }) {
       <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.08)' }} />
 
       {/* 정렬 */}
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
         {[
           { key: 'date', label: '날짜순' },
           { key: 'efficiency', label: '효율순' },
@@ -464,7 +464,7 @@ function FilterBar({ filters, setFilters, tradeTypes }) {
       <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.08)' }} />
 
       {/* 기간 필터 */}
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
         {[
           { key: 'all', label: '전체' },
           { key: 'this_month', label: '이번 달' },
@@ -635,7 +635,7 @@ export default function AthAnalysisPage() {
 
   return (
     <div className="min-h-screen p-6 bg-dark-bg text-[#e0e0e0]">
-      <div className="max-w-7xl mx-auto" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px', width: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         <NavHeader />
 

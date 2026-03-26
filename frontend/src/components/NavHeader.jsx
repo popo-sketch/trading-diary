@@ -14,12 +14,12 @@ export default function NavHeader({ children }) {
   const location = useLocation()
 
   return (
-    <div className="flex items-center bg-dark-card rounded-xl border border-white/[0.06] px-5 py-4"
+    <div className="flex items-center bg-dark-card rounded-xl border border-white/[0.06] px-5 py-3"
       style={{ gap: 16 }}
     >
       {/* 로고 */}
       <h1
-        style={{ fontSize: 20, fontWeight: 700, color: '#ffffff', margin: 0, cursor: 'pointer', flexShrink: 0 }}
+        style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', margin: 0, cursor: 'pointer', flexShrink: 0 }}
         onClick={() => navigate('/')}
       >
         PNL Calendar
@@ -35,7 +35,7 @@ export default function NavHeader({ children }) {
               onClick={() => navigate(tab.path)}
               style={{
                 padding: '6px 14px',
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: active ? 700 : 500,
                 fontFamily: 'Inter, sans-serif',
                 color: active ? '#ffffff' : '#9e9e9e',

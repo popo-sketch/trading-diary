@@ -793,7 +793,7 @@ function StatCards({ journey, ps }) {
             <ChartIcon color={pnlColor} size={18} />
           </div>
           <div>
-            <div style={{ fontSize: 14, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>누적 PNL</div>
+            <div style={{ fontSize: 12, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>누적 PNL</div>
             <div style={{ fontSize: 22, fontWeight: 900, color: pnlColor, fontFamily: 'Inter, monospace' }}>{fmtPnl(journey.cumulativePnl)}</div>
           </div>
         </div>
@@ -804,11 +804,11 @@ function StatCards({ journey, ps }) {
             <FlagIcon color={INFO} size={18} />
           </div>
           <div>
-            <div style={{ fontSize: 14, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>다음 체크포인트</div>
+            <div style={{ fontSize: 12, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>다음 체크포인트</div>
             {journey.nextCheckpoint ? (
               <>
                 <div style={{ fontSize: 22, fontWeight: 900, color: '#e0e0e0', fontFamily: 'Inter, monospace' }}>{fmtK(journey.nextCheckpoint)}</div>
-                <div style={{ fontSize: 14, color: '#6b7280', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>(남은 금액: {fmtDollar(journey.nextCpRemaining)})</div>
+                <div style={{ fontSize: 12, color: '#6b7280', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>(남은 금액: {fmtDollar(journey.nextCpRemaining)})</div>
               </>
             ) : <div style={{ fontSize: 22, fontWeight: 900, color: '#fbbf24', fontFamily: 'Inter, monospace' }}>완주!</div>}
           </div>
@@ -818,7 +818,7 @@ function StatCards({ journey, ps }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <DonutChart percent={journey.progressPercent} size={44} strokeWidth={5} />
           <div>
-            <div style={{ fontSize: 14, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>진행률</div>
+            <div style={{ fontSize: 12, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>진행률</div>
             <div style={{ fontSize: 22, fontWeight: 900, color: ps.color, fontFamily: 'Inter, monospace' }}>{journey.progressPercent.toFixed(2)}%</div>
           </div>
         </div>
@@ -864,9 +864,9 @@ function BadgeRow({ journey, personalBests, curve }) {
           borderRadius: 8, padding: '5px 12px', cursor: 'default',
           transition: 'transform 0.2s, box-shadow 0.2s',
         }}>
-          <span style={{ fontSize: 14 }}>{b.icon}</span>
-          <span style={{ fontSize: 14, fontWeight: 700, color: b.color, fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{b.label}</span>
-          {b.sub && <span style={{ fontSize: 14, fontWeight: 600, color: b.subColor, fontFamily: 'Inter, monospace', marginLeft: 2 }}>{b.sub}</span>}
+          <span style={{ fontSize: 13 }}>{b.icon}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: b.color, fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{b.label}</span>
+          {b.sub && <span style={{ fontSize: 13, fontWeight: 600, color: b.subColor, fontFamily: 'Inter, monospace', marginLeft: 2 }}>{b.sub}</span>}
         </div>
       ))}
     </div>
@@ -894,17 +894,17 @@ function HeroSection({ stage, journey, ps }) {
           <VectorChar stage={stage} height={72} faceRight />
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 14, color: '#7a7a8a', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>현재 단계</div>
+          <div style={{ fontSize: 12, color: '#7a7a8a', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>현재 단계</div>
           <div style={{ fontSize: 17, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace', whiteSpace: 'nowrap', marginTop: 2 }}>{current.icon} {current.label}</div>
           {next && (
             <>
-              <div style={{ fontSize: 14, color: '#4b5563', fontFamily: 'Inter, monospace', marginTop: 6, whiteSpace: 'nowrap', lineHeight: 1.8 }}>→ {next.icon} {next.label}</div>
+              <div style={{ fontSize: 12, color: '#4b5563', fontFamily: 'Inter, monospace', marginTop: 6, whiteSpace: 'nowrap', lineHeight: 1.8 }}>→ {next.icon} {next.label}</div>
               <div style={{ width: 90, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', marginTop: 4 }}>
                 <div style={{ width: `${stageProgress}%`, height: '100%', borderRadius: 2, background: stage <= 1 ? '#cd7f32' : stage <= 4 ? INFO : '#ffd700', transition: 'width 0.5s' }} />
               </div>
             </>
           )}
-          {!next && <div style={{ fontSize: 14, color: '#fbbf24', fontFamily: 'Inter, monospace', marginTop: 4, lineHeight: 1.8 }}>최종 달성!</div>}
+          {!next && <div style={{ fontSize: 12, color: '#fbbf24', fontFamily: 'Inter, monospace', marginTop: 4, lineHeight: 1.8 }}>최종 달성!</div>}
         </div>
       </div>
 
@@ -912,9 +912,9 @@ function HeroSection({ stage, journey, ps }) {
 
       {/* Center: Current PNL (HERO) */}
       <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-        <div style={{ fontSize: 14, color: '#7a7a8a', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>누적 PNL</div>
+        <div style={{ fontSize: 12, color: '#7a7a8a', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>누적 PNL</div>
         <div style={{ fontSize: 36, fontWeight: 900, color: pnlColor, fontFamily: 'Inter, monospace', letterSpacing: '-0.02em', lineHeight: 1.8, marginTop: 4 }}>{fmtPnl(journey.cumulativePnl)}</div>
-        <div style={{ fontSize: 14, color: '#7a7a8a', fontFamily: 'Inter, monospace', marginTop: 6, lineHeight: 1.8 }}>
+        <div style={{ fontSize: 12, color: '#7a7a8a', fontFamily: 'Inter, monospace', marginTop: 6, lineHeight: 1.8 }}>
           진행률 <span style={{ fontWeight: 700, color: ps.color }}>{journey.progressPercent.toFixed(2)}%</span>
         </div>
       </div>
@@ -923,11 +923,11 @@ function HeroSection({ stage, journey, ps }) {
 
       {/* Right: Next Checkpoint */}
       <div style={{ flex: '0 0 auto', textAlign: 'right' }}>
-        <div style={{ fontSize: 14, color: '#7a7a8a', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>다음 체크포인트</div>
+        <div style={{ fontSize: 12, color: '#7a7a8a', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Inter, monospace', fontWeight: 600, lineHeight: 1.8 }}>다음 체크포인트</div>
         {journey.nextCheckpoint ? (
           <>
             <div style={{ fontSize: 22, fontWeight: 900, color: '#e0e0e0', fontFamily: 'Inter, monospace', lineHeight: 1.8, marginTop: 4 }}>{fmtK(journey.nextCheckpoint)}</div>
-            <div style={{ fontSize: 14, color: INFO, fontFamily: 'Inter, monospace', fontWeight: 600, marginTop: 6, lineHeight: 1.8 }}>
+            <div style={{ fontSize: 12, color: INFO, fontFamily: 'Inter, monospace', fontWeight: 600, marginTop: 6, lineHeight: 1.8 }}>
               남은: <span style={{ color: '#e0e0e0' }}>{fmtDollar(journey.nextCpRemaining)}</span>
             </div>
           </>
@@ -965,11 +965,11 @@ function MilestoneMarker({ cp, reached, isNext, pct, cumulativePnl, curve, perso
     <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       style={{ position: 'absolute', left: `${pct}%`, top: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: reached ? 3 : isNext ? 2 : 1, cursor: 'pointer', pointerEvents: 'auto' }}>
       {hovered && (
-        <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: 'rgba(26,26,46,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 12px', whiteSpace: 'nowrap', zIndex: 100, boxShadow: '0 4px 20px rgba(0,0,0,0.5)', fontSize: 14, fontFamily: 'Inter, monospace' }}>
+        <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: 'rgba(26,26,46,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 12px', whiteSpace: 'nowrap', zIndex: 100, boxShadow: '0 4px 20px rgba(0,0,0,0.5)', fontSize: 12, fontFamily: 'Inter, monospace' }}>
           <div style={{ fontWeight: 700, color: reached ? '#fbbf24' : '#9ca3af', marginBottom: 2, lineHeight: 1.8 }}>{stageInfo.icon} {stageInfo.badge || `$${CP_LABELS[cp]}`} — {reached ? '달성!' : '미달성'}</div>
-          {reached && achievedDate && <div style={{ color: '#6b7280', fontSize: 14, lineHeight: 1.8 }}>달성일: {achievedDate}</div>}
-          {!reached && <div style={{ color: '#6b7280', fontSize: 14, lineHeight: 1.8 }}>남은 금액: {fmtK(remaining)}</div>}
-          {!reached && estimateStr && <div style={{ color: '#4b5563', fontSize: 14, lineHeight: 1.8 }}>현재 페이스 기준: {estimateStr}</div>}
+          {reached && achievedDate && <div style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.8 }}>달성일: {achievedDate}</div>}
+          {!reached && <div style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.8 }}>남은 금액: {fmtK(remaining)}</div>}
+          {!reached && estimateStr && <div style={{ color: '#4b5563', fontSize: 12, lineHeight: 1.8 }}>현재 페이스 기준: {estimateStr}</div>}
           <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '5px solid rgba(255,255,255,0.12)' }} />
         </div>
       )}
@@ -1034,7 +1034,7 @@ function ProgressSection({ journey, ps, curve, personalBests, stage }) {
         }}>
           <div style={{ background: 'rgba(20,20,36,0.94)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 10, padding: '5px 12px', marginBottom: 4, whiteSpace: 'nowrap', position: 'relative', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: journey.cumulativePnl >= 0 ? GREEN : RED, fontFamily: 'Inter, monospace', textAlign: 'center' }}>{fmtPnl(journey.cumulativePnl)}</div>
-            {journey.nextCpRemaining > 0 && <div style={{ fontSize: 14, color: '#9e9e9e', fontFamily: 'Inter, monospace', textAlign: 'center', lineHeight: 1.8 }}>다음까지 {fmtK(journey.nextCpRemaining)}</div>}
+            {journey.nextCpRemaining > 0 && <div style={{ fontSize: 12, color: '#9e9e9e', fontFamily: 'Inter, monospace', textAlign: 'center', lineHeight: 1.8 }}>다음까지 {fmtK(journey.nextCpRemaining)}</div>}
             <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '5px solid rgba(255,255,255,0.18)' }} />
           </div>
           {/* 캐릭터 (72px, 오른쪽 바라봄) */}
@@ -1103,18 +1103,18 @@ function CelebrationModal({ stage, onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 20, position: 'relative', zIndex: 1 }}>
           <div className="celebration-fade-out" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <VectorChar stage={Math.max(0, stage-1)} height={60} />
-            <div style={{ fontSize: 14, color: '#6b7280', marginTop: 4, fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{prev.label}</div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{prev.label}</div>
           </div>
           <div style={{ fontSize: 24, color: '#fbbf24' }}>→</div>
           <div className="celebration-glow-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <VectorChar stage={stage} height={60} />
-            <div style={{ fontSize: 14, color: '#e0e0e0', marginTop: 4, fontFamily: 'Inter, monospace', fontWeight: 700, lineHeight: 1.8 }}>{current.label}</div>
+            <div style={{ fontSize: 12, color: '#e0e0e0', marginTop: 4, fontFamily: 'Inter, monospace', fontWeight: 700, lineHeight: 1.8 }}>{current.label}</div>
           </div>
         </div>
         <div style={{ fontSize: 24, marginBottom: 8, position: 'relative', zIndex: 1 }}>🎉</div>
         <div style={{ fontSize: 20, fontWeight: 800, color: '#e0e0e0', fontFamily: 'Inter, monospace', marginBottom: 8, position: 'relative', zIndex: 1 }}>{fmtK(current.cp)} 달성!</div>
         <div style={{ fontSize: 15, color: '#9e9e9e', marginBottom: 4, position: 'relative', zIndex: 1, lineHeight: 1.8 }}>{current.badge}</div>
-        <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 20, position: 'relative', zIndex: 1, lineHeight: 1.8 }}>{current.reward}</div>
+        <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 20, position: 'relative', zIndex: 1, lineHeight: 1.8 }}>{current.reward}</div>
         <button onClick={onClose} style={{ padding: '8px 24px', borderRadius: 8, border: 'none', background: `${GREEN}20`, color: GREEN, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, monospace', position: 'relative', zIndex: 1 }}>확인</button>
       </div>
     </div>
@@ -1140,9 +1140,9 @@ function EvolutionTimeline({ journey, curve }) {
       <div onClick={() => setOpen(!open)} style={{ padding: '14px 20px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: open ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#e0e0e0', fontFamily: 'Inter, monospace' }}>변신 기록</span>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#fbbf24', fontFamily: 'Inter, monospace', background: 'rgba(251,191,36,0.1)', borderRadius: 6, padding: '2px 8px' }}>{reachedCount}/{CHECKPOINTS.length}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24', fontFamily: 'Inter, monospace', background: 'rgba(251,191,36,0.1)', borderRadius: 6, padding: '2px 8px' }}>{reachedCount}/{CHECKPOINTS.length}</span>
         </div>
-        <span style={{ fontSize: 14, color: '#6b7280', transition: 'transform 0.3s', transform: open ? 'rotate(180deg)' : 'rotate(0)', display: 'inline-block' }}>▼</span>
+        <span style={{ fontSize: 12, color: '#6b7280', transition: 'transform 0.3s', transform: open ? 'rotate(180deg)' : 'rotate(0)', display: 'inline-block' }}>▼</span>
       </div>
       {open && (
         <div style={{ padding: '16px 20px' }}>
@@ -1155,16 +1155,16 @@ function EvolutionTimeline({ journey, curve }) {
                   {ms.reached ? (
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: '#e0e0e0', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{ms.icon} {ms.badge}</span>
-                        {ms.achievedDate && <span style={{ fontSize: 14, color: '#6b7280', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{ms.achievedDate}</span>}
-                        {ms.daysSinceStart !== null && <span style={{ fontSize: 14, color: '#4b5563', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>(시작 후 {ms.daysSinceStart}일)</span>}
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#e0e0e0', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{ms.icon} {ms.badge}</span>
+                        {ms.achievedDate && <span style={{ fontSize: 12, color: '#6b7280', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{ms.achievedDate}</span>}
+                        {ms.daysSinceStart !== null && <span style={{ fontSize: 12, color: '#4b5563', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>(시작 후 {ms.daysSinceStart}일)</span>}
                       </div>
-                      <div style={{ fontSize: 14, color: '#6b7280', marginTop: 2, lineHeight: 1.8 }}>{ms.reward}</div>
+                      <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, lineHeight: 1.8 }}>{ms.reward}</div>
                     </div>
                   ) : (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 14, color: '#374151', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>??? — {fmtK(ms.cp)} 도달 시 해금</span>
-                      <span style={{ fontSize: 14, color: '#374151' }}>🔒</span>
+                      <span style={{ fontSize: 12, color: '#374151', fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>??? — {fmtK(ms.cp)} 도달 시 해금</span>
+                      <span style={{ fontSize: 12, color: '#374151' }}>🔒</span>
                     </div>
                   )}
                 </div>
@@ -1189,12 +1189,12 @@ function ResetModal({ stage, onConfirm, onCancel }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '12px 0', marginBottom: 16, background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <VectorChar stage={stage} height={50} />
-            <div style={{ fontSize: 14, color: '#e0e0e0', marginTop: 4, fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{current.icon} {current.label}</div>
+            <div style={{ fontSize: 12, color: '#e0e0e0', marginTop: 4, fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{current.icon} {current.label}</div>
           </div>
           <div style={{ fontSize: 16, color: RED }}>→</div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <VectorChar stage={0} height={50} />
-            <div style={{ fontSize: 14, color: '#6b7280', marginTop: 4, fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{initial.icon} {initial.label}</div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, fontFamily: 'Inter, monospace', lineHeight: 1.8 }}>{initial.icon} {initial.label}</div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
@@ -1247,21 +1247,74 @@ export default function JourneyRoad({ allTimeAnalytics }) {
 
   return (
     <div style={{ borderRadius: 16, overflow: 'hidden', position: 'relative', border: `1px solid ${ps.color}35`, boxShadow: `0 0 50px ${ps.color}10, 0 2px 20px rgba(0,0,0,0.3)` }}>
+      <svg width="100%" height="100%" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',opacity:0.2,pointerEvents:'none',zIndex:0}}>
+        <defs>
+          <linearGradient id="bgSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#0a0a2e"/>
+            <stop offset="100%" stopColor="#1a1a3e"/>
+          </linearGradient>
+        </defs>
+        <rect width="1200" height="300" fill="url(#bgSky)"/>
+        <circle cx="1050" cy="45" r="20" fill="#ffd54f" opacity="0.3"/>
+        <circle cx="1058" cy="40" r="17" fill="#0a0a2e"/>
+        <circle cx="100" cy="30" r="1" fill="white" opacity="0.4"/>
+        <circle cx="300" cy="20" r="1.5" fill="white" opacity="0.3"/>
+        <circle cx="500" cy="40" r="1" fill="white" opacity="0.3"/>
+        <circle cx="750" cy="15" r="1.5" fill="white" opacity="0.4"/>
+        <circle cx="900" cy="35" r="1" fill="white" opacity="0.3"/>
+        <rect x="50" y="80" width="120" height="220" fill="#0d0d25" rx="2"/>
+        <rect x="65" y="100" width="12" height="12" fill="#ffd54f" opacity="0.2" rx="1"/>
+        <rect x="90" y="100" width="12" height="12" fill="#ffd54f" opacity="0.15" rx="1"/>
+        <rect x="65" y="130" width="12" height="12" fill="#ffd54f" opacity="0.1" rx="1"/>
+        <rect x="90" y="130" width="12" height="12" fill="#ffd54f" opacity="0.2" rx="1"/>
+        <rect x="65" y="160" width="12" height="12" fill="#ffd54f" opacity="0.15" rx="1"/>
+        <rect x="250" y="140" width="200" height="160" fill="#111130" rx="2"/>
+        <rect x="260" y="145" width="180" height="20" fill="#1a3a5c" opacity="0.3"/>
+        <text x="350" y="160" textAnchor="middle" fill="#4fc3f7" fontSize="8" opacity="0.2">24H</text>
+        <rect x="280" y="175" width="60" height="80" fill="rgba(255,220,150,0.06)" rx="1"/>
+        <rect x="360" y="175" width="60" height="80" fill="rgba(255,220,150,0.06)" rx="1"/>
+        <rect x="320" y="210" width="30" height="50" fill="rgba(255,220,150,0.08)" rx="1"/>
+        <rect x="220" y="120" width="3" height="180" fill="#2a2a4a"/>
+        <rect x="210" y="118" width="25" height="5" fill="#2a2a4a" rx="2"/>
+        <circle cx="222" cy="115" r="5" fill="rgba(255,200,100,0.4)"/>
+        <ellipse cx="222" cy="298" rx="30" ry="5" fill="rgba(255,200,100,0.04)"/>
+        <rect x="520" y="130" width="3" height="170" fill="#2a2a4a"/>
+        <rect x="510" y="128" width="25" height="5" fill="#2a2a4a" rx="2"/>
+        <circle cx="522" cy="125" r="5" fill="rgba(255,200,100,0.35)"/>
+        <rect x="460" y="210" width="30" height="50" fill="#1a1a40" rx="2"/>
+        <rect x="463" y="215" width="24" height="15" fill="rgba(100,180,255,0.1)" rx="1"/>
+        <rect x="463" y="235" width="24" height="15" fill="rgba(255,100,100,0.08)" rx="1"/>
+        <rect x="600" y="160" width="150" height="140" fill="#0e0e28" rx="2"/>
+        <rect x="620" y="190" width="40" height="50" fill="rgba(255,220,150,0.04)" rx="1"/>
+        <rect x="690" y="190" width="40" height="50" fill="rgba(255,220,150,0.03)" rx="1"/>
+        <rect x="800" y="100" width="80" height="200" fill="#08081e" rx="1"/>
+        <rect x="900" y="130" width="60" height="170" fill="#0a0a20" rx="1"/>
+        <rect x="980" y="110" width="90" height="190" fill="#08081e" rx="1"/>
+        <rect x="560" y="70" width="3" height="230" fill="#1a1a3a"/>
+        <line x1="220" y1="120" x2="560" y2="75" stroke="#1a1a3a" strokeWidth="0.5"/>
+        <line x1="560" y1="80" x2="900" y2="110" stroke="#1a1a3a" strokeWidth="0.5"/>
+        <rect x="480" y="270" width="35" height="3" fill="#2a2a4a" rx="1"/>
+        <rect x="483" y="273" width="3" height="12" fill="#2a2a4a"/>
+        <rect x="509" y="273" width="3" height="12" fill="#2a2a4a"/>
+        <ellipse cx="458" cy="278" rx="6" ry="5" fill="#3a3a5a"/>
+        <circle cx="458" cy="274" r="4" fill="#3a3a5a"/>
+        <circle cx="456" cy="273" r="0.8" fill="#aaffaa" opacity="0.4"/>
+        <circle cx="460" cy="273" r="0.8" fill="#aaffaa" opacity="0.4"/>
+        <line x1="0" y1="290" x2="1200" y2="290" stroke="#2a2a4a" strokeWidth="0.5"/>
+        <line x1="0" y1="295" x2="1200" y2="295" stroke="#1a1a3a" strokeWidth="0.5"/>
+      </svg>
       <StageBackground stage={stage} />
       <ConfettiEffect active={showConfetti} />
       {celebrationStage !== null && <CelebrationModal stage={celebrationStage} onClose={() => setCelebrationStage(null)} />}
-      {showResetModal && <ResetModal stage={stage} onConfirm={handleReset} onCancel={() => setShowResetModal(false)} />}
 
       {/* 헤더 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 800, color: '#6a6a7a', letterSpacing: '0.14em', fontFamily: 'Inter, monospace' }}>JOURNEY TO $200K</span>
-          <span style={{ fontSize: 14, fontWeight: 800, fontFamily: 'Inter, monospace', color: ps.color, background: `${ps.color}15`, border: `1px solid ${ps.color}35`, borderRadius: 6, padding: '3px 10px', letterSpacing: '0.1em' }}>{ps.label}</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#6a6a7a', letterSpacing: '0.14em', fontFamily: 'Inter, monospace' }}>JOURNEY TO $200K</span>
+          <span style={{ fontSize: 12, fontWeight: 800, fontFamily: 'Inter, monospace', color: ps.color, background: `${ps.color}15`, border: `1px solid ${ps.color}35`, borderRadius: 6, padding: '3px 10px', letterSpacing: '0.1em' }}>{ps.label}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Inter, monospace', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 6, padding: '3px 10px' }}>{stageInfo?.badge || '🚀 시작'}</div>
-          <button onClick={() => setShowResetModal(true)} style={{ fontSize: 14, fontWeight: 600, fontFamily: 'Inter, monospace', color: '#4b5563', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', transition: 'color 0.2s' }}
-            onMouseEnter={e => e.target.style.color = RED} onMouseLeave={e => e.target.style.color = '#4b5563'}>RESET</button>
+          <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter, monospace', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 6, padding: '3px 10px' }}>{stageInfo?.badge || '🚀 시작'}</div>
         </div>
       </div>
 

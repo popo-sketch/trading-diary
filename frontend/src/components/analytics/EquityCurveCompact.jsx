@@ -471,9 +471,18 @@ export default function EquityCurveCompact({ data, evCurve = [], kellyPercent })
   const hasEquity = data && data.length > 0
   const hasEv = evCurve && evCurve.length > 0
 
+  const cardStyle = {
+    background: '#1a1a2e',
+    borderRadius: 12,
+    border: '1px solid rgba(255,255,255,0.06)',
+    padding: 20,
+    display: 'flex',
+    flexDirection: 'column',
+  }
+
   if (!hasEquity && !hasEv) {
     return (
-      <div className="rounded-xl border border-white/[0.06] bg-dark-card p-5">
+      <div style={cardStyle}>
         <h3 className="text-[15px] font-semibold text-[#e0e0e0] mb-3">Equity Curve</h3>
         <div className="text-neutral text-center py-8 text-xs">No Data</div>
       </div>
@@ -482,10 +491,10 @@ export default function EquityCurveCompact({ data, evCurve = [], kellyPercent })
 
   return (
     <>
-      <div className="rounded-xl border border-white/[0.06] bg-dark-card p-5">
-        <div className="flex w-full" style={{ minHeight: CHART_HEIGHT + 56 }}>
-          {/* 좌측 50%: Equity Curve */}
-          <div className="flex-1 min-w-0 flex flex-col border-r border-white/[0.06] pr-2">
+      <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
+        {/* 좌측 50%: Equity Curve */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ ...cardStyle, minHeight: CHART_HEIGHT + 56 }}>
             {hasEquity ? (
               <EquityChart
                 data={data}
@@ -500,9 +509,11 @@ export default function EquityCurveCompact({ data, evCurve = [], kellyPercent })
               </div>
             )}
           </div>
+        </div>
 
-          {/* 우측 50%: Expected Value Curve */}
-          <div className="flex-1 min-w-0 flex flex-col pl-2">
+        {/* 우측 50%: Expected Value Curve */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ ...cardStyle, minHeight: CHART_HEIGHT + 56 }}>
             {hasEv ? (
               <EvChart
                 data={evCurve}

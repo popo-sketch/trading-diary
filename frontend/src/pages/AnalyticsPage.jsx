@@ -6,7 +6,6 @@ import NavHeader from '../components/NavHeader'
 import EquityCurveCompact from '../components/analytics/EquityCurveCompact'
 import PositionSizeTableCompact from '../components/analytics/PositionSizeTableCompact'
 import TradeTypeTableCompact from '../components/analytics/TradeTypeTableCompact'
-import RiskWeatherCard from '../components/RiskWeatherCard'
 import MonthlyReplay from '../components/MonthlyReplay'
 
 const currentYear = new Date().getFullYear()
@@ -62,7 +61,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen p-6 bg-dark-bg text-[#e0e0e0]">
-      <div className="max-w-7xl mx-auto" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px', width: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {/* Header */}
         <NavHeader>
@@ -106,17 +105,10 @@ export default function AnalyticsPage() {
 
         {analytics && (
           <>
-            {/* 상단: Risk Weather + Equity Curve */}
-            <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
-              <div style={{ width: 280, flexShrink: 0 }}>
-                <RiskWeatherCard analytics={analytics} trades={trades} />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} kellyPercent={analytics.kelly_percent} />
-              </div>
-            </div>
+            {/* 상단: Equity Curve + Expected Value Curve (2-column) */}
+            <EquityCurveCompact data={analytics.equity_curve} evCurve={analytics.ev_curve ?? []} kellyPercent={analytics.kelly_percent} />
 
-            {/* 중단: Position Size + Trade Type */}
+            {/* 중단: Position Size + Trade Type (2-column) */}
             <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <PositionSizeTableCompact buckets={analytics.position_size_buckets} />

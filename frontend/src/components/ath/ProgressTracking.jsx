@@ -108,7 +108,7 @@ function MonthlyTrendChart({ analyses, goal }) {
   if (monthly.length < 2) {
     return (
       <div style={{ color: '#6b7280', fontSize: 12, textAlign: 'center', padding: 20 }}>
-        월별 추이를 표시하려면 최소 2개월 이상의 데이터가 필요합니다
+        2개월 이상 데이터가 필요합니다
       </div>
     )
   }
